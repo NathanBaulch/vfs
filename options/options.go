@@ -16,3 +16,7 @@ package options
 type DeleteOption interface {
 	DeleteOptionName() string
 }
+
+type NewFileOption interface {
+	NewFileOptionName() string
+}
