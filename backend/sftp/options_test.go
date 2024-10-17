@@ -109,7 +109,6 @@ type getFileTest struct {
 }
 
 func (o *optionsSuite) TestGetKeyFile() {
-
 	tests := []getFileTest{
 		{
 			keyfile:    o.keyFiles.SSHPrivateKey,
@@ -176,7 +175,6 @@ type hostkeyTest struct {
 }
 
 func (o *optionsSuite) TestGetHostKeyCallback() {
-
 	knownHosts := filepath.Join(o.tmpdir, "known_hosts")
 	f, err := os.Create(knownHosts) //nolint:gosec
 	o.NoError(err, "create file for getHostKeyCallback test")
@@ -281,7 +279,6 @@ type authTest struct {
 }
 
 func (o *optionsSuite) TestGetAuthMethods() {
-
 	tests := []authTest{
 		{
 			options: Options{
@@ -428,7 +425,6 @@ type getClientTest struct {
 }
 
 func (o *optionsSuite) TestGetClient() {
-
 	auth, err := utils.NewAuthority("someuser@badhost")
 	o.NoError(err)
 

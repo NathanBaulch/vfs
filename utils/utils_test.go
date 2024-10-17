@@ -615,7 +615,6 @@ func (s *utilsSuite) TestPathToURI() {
 }
 
 func (s *utilsSuite) TestGetURI() {
-
 	// set up mocks
 	mockFs1 := new(mocks.FileSystem)
 	mockFs1.On("Scheme", mock.Anything).Return("file")
@@ -651,7 +650,6 @@ func (s *utilsSuite) TestGetURI() {
 }
 
 func (s *utilsSuite) TestTouchCopy() {
-
 	// write out blank file
 	tmpfile, err := os.CreateTemp("", "utils_test")
 	s.NoError(err, "unexpected temp file setup error")
@@ -724,11 +722,9 @@ func (s *utilsSuite) TestTouchCopy() {
 	s.NoError(err, "unexpected error creating vfs.File reader for non-existent file")
 	err = utils.TouchCopy(writer, noFile)
 	s.Error(err, "expected error running TouchCopy() using non-existent reader")
-
 }
 
 func (s *utilsSuite) TestTouchCopyBufferedDefaultBufferSize() {
-
 	// write out blank file
 	tmpfile, err := os.CreateTemp("", "utils_test")
 	s.NoError(err, "unexpected temp file setup error")
@@ -801,11 +797,9 @@ func (s *utilsSuite) TestTouchCopyBufferedDefaultBufferSize() {
 	s.NoError(err, "unexpected error creating vfs.File reader for non-existent file")
 	err = utils.TouchCopyBuffered(writer, noFile, 0)
 	s.Error(err, "expected error running TouchCopyBuffered() using non-existent reader")
-
 }
 
 func (s *utilsSuite) TestTouchCopyBufferedNonDefaultBufferSize() {
-
 	// write out blank file
 	tmpfile, err := os.CreateTemp("", "utils_test")
 	s.NoError(err, "unexpected temp file setup error")
@@ -878,7 +872,6 @@ func (s *utilsSuite) TestTouchCopyBufferedNonDefaultBufferSize() {
 	s.NoError(err, "unexpected error creating vfs.File reader for non-existent file")
 	err = utils.TouchCopyBuffered(writer, noFile, 1048576)
 	s.Error(err, "expected error running TouchCopyBuffered() using non-existent reader")
-
 }
 
 // TestSeekTo tests the seekTo function with various cases
