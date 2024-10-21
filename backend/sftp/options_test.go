@@ -296,7 +296,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 			returnCount: 1,
 			hasError:    false,
 			errMessage:  "",
-			message:     "explicit Options password",
+			message:     "env var password",
 		},
 		{
 			envVars: map[string]string{
@@ -404,7 +404,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 				}
 			} else {
 				o.NoError(err, t.message)
-				o.Equal(t.returnCount, len(auth), "auth count")
+				o.Len(auth, t.returnCount, "auth count")
 			}
 
 			// return env vars to original value

@@ -73,7 +73,7 @@ func (ts *fileTestSuite) TestRead() {
 	localFile := bytes.NewBuffer([]byte{})
 	b, copyErr := io.Copy(localFile, ftpfile)
 	ts.NoError(copyErr, "no error expected")
-	ts.EqualValues(len(contents), b, "byte count after copy")
+	ts.Len(contents, int(b), "byte count after copy")
 	ts.Equal(contents, localFile.String(), "Copying an ftp file to a buffer should fill buffer with localfile's contents")
 
 	// test read error
@@ -159,7 +159,7 @@ func (ts *fileTestSuite) TestWrite() {
 
 	// test write success
 	count, err := file.Write([]byte(contents))
-	ts.Equal(len(contents), count, "Returned count of bytes written should match number of bytes passed to Write.")
+	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 	ts.Equal(fakeDataConn.GetWriteContents(), contents, "expected contents written")
 	ts.NoError(err, "Error should be nil when calling Write")
 

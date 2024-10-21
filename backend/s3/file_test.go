@@ -97,7 +97,7 @@ func (ts *fileTestSuite) TestWrite() {
 	contents := []byte("Hello world!")
 	count, err := file.Write(contents)
 
-	ts.Equal(len(contents), count, "Returned count of bytes written should match number of bytes passed to Write.")
+	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 	ts.NoError(err, "Error should be nil when calling Write")
 }
 

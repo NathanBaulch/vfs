@@ -356,7 +356,7 @@ func (s *FileTestSuite) TestCheckTempFile_FileDoesNotExist() {
 
 	contents, err := io.ReadAll(azureFile.tempFile)
 	s.NoError(err, "No error should occur while reading the tempFile")
-	s.Equal("", string(contents))
+	s.Empty(contents)
 }
 
 func (s *FileTestSuite) TestCheckTempFile_DownloadError() {

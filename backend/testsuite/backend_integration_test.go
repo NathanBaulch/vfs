@@ -319,11 +319,11 @@ func (s *vfsTestSuite) Location(baseLoc vfs.Location) {
 
 	files, err := srcLoc.List()
 	s.NoError(err)
-	s.Equal(3, len(files), "list srcLoc location")
+	s.Len(files, 3, "list srcLoc location")
 
 	files, err = subLoc.List()
 	s.NoError(err)
-	s.Equal(1, len(files), "list subLoc location")
+	s.Len(files, 1, "list subLoc location")
 	s.Equal("that.txt", files[0], "returned basename")
 
 	files, err = cdTestLoc.List()
@@ -349,16 +349,16 @@ func (s *vfsTestSuite) Location(baseLoc vfs.Location) {
 
 	files, err = srcLoc.ListByPrefix("file")
 	s.NoError(err)
-	s.Equal(2, len(files), "list srcLoc location matching prefix")
+	s.Len(files, 2, "list srcLoc location matching prefix")
 
 	files, err = srcLoc.ListByPrefix("s")
 	s.NoError(err)
-	s.Equal(1, len(files), "list srcLoc location")
+	s.Len(files, 1, "list srcLoc location")
 	s.Equal("self.txt", files[0], "returned only file basename, not subdir matching prefix")
 
 	files, err = srcLoc.ListByPrefix("somepath/t")
 	s.NoError(err)
-	s.Equal(1, len(files), "list 'somepath' location relative to srcLoc")
+	s.Len(files, 1, "list 'somepath' location relative to srcLoc")
 	s.Equal("that.txt", files[0], "returned only file basename, using relative prefix")
 
 	files, err = cdTestLoc.List()
@@ -375,11 +375,11 @@ func (s *vfsTestSuite) Location(baseLoc vfs.Location) {
 
 	files, err = srcLoc.ListByRegex(regexp.MustCompile("^f"))
 	s.NoError(err)
-	s.Equal(2, len(files), "list srcLoc location matching prefix")
+	s.Len(files, 2, "list srcLoc location matching prefix")
 
 	files, err = srcLoc.ListByRegex(regexp.MustCompile(`.txt$`))
 	s.NoError(err)
-	s.Equal(3, len(files), "list srcLoc location matching prefix")
+	s.Len(files, 3, "list srcLoc location matching prefix")
 
 	files, err = srcLoc.ListByRegex(regexp.MustCompile(`Z`))
 	s.NoError(err)
@@ -902,7 +902,7 @@ func (s *vfsTestSuite) gsList(baseLoc vfs.Location) {
 
 	files, err := f.Location().List()
 	s.NoError(err)
-	s.Equal(1, len(files), "check file count found")
+	s.Len(len(files), 1, "check file count found")
 	s.Equal("file.txt", files[0], "file.txt was found")
 
 	// CLEAN UP

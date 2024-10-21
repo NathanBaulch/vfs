@@ -197,7 +197,7 @@ func (ts *fileTestSuite) TestDeleteRemoveAllVersions() {
 	f := file.(*File)
 	handles, err := f.getObjectGenerationHandles()
 	ts.Require().NoError(err, "Shouldn't fail getting object generation handles")
-	ts.Equal(1, len(handles))
+	ts.Len(handles, 1)
 
 	err = file.Delete(delete.WithAllVersions())
 	ts.Require().NoError(err, "Shouldn't fail deleting the file")
@@ -222,7 +222,7 @@ func (ts *fileTestSuite) TestWrite() {
 
 	count, err := file.Write([]byte(contents))
 
-	ts.Equal(len(contents), count, "Returned count of bytes written should match number of bytes passed to Write.")
+	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 	ts.NoError(err, "Error should be nil when calling Write")
 }
 
