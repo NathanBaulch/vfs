@@ -480,10 +480,10 @@ func (o *optionsSuite) TestMarshalOptions() {
 	}
 
 	raw, err := json.Marshal(opts)
-	o.Nil(err)
+	o.NoError(err)
 	optStruct := &Options{}
 	err = json.Unmarshal(raw, optStruct)
-	o.Nil(err)
+	o.NoError(err)
 
 	o.Equal(kh, optStruct.KeyFilePath, "KeyFilePath check")
 	o.Equal(pw, optStruct.Password, "Password check")

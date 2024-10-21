@@ -31,7 +31,7 @@ func (ts *fileSystemTestSuite) TestNewFileSystem() {
 func (ts *fileSystemTestSuite) TestNewFile() {
 	filePath := "/path/to/file.txt"
 	file, err := ts.ftpfs.NewFile("host.com", filePath)
-	ts.Nil(err, "No errors returned by NewFile(%s)", filePath)
+	ts.NoError(err, "No errors returned by NewFile(%s)", filePath)
 	ts.NotNil(file, "ftpfs.NewFile(%s) should assign all but first name component to key", filePath)
 }
 

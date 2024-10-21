@@ -249,7 +249,7 @@ func (s *FileTestSuite) TestSize_NonExistentFile() {
 	s.NoError(err, "The path is valid so no error should be returned")
 	size, err := f.Size()
 	s.Error(err, "If the file does not exist we get an error")
-	s.Equal(uint64(0), size, "the file does not exist so the size is 0")
+	s.Zero(size, "the file does not exist so the size is 0")
 }
 
 func (s *FileTestSuite) TestPath() {

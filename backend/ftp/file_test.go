@@ -83,7 +83,7 @@ func (ts *fileTestSuite) TestRead() {
 	cnt, rErr := ftpfile.Read(make([]byte, 1))
 	ts.Error(rErr, "no error expected")
 	ts.ErrorIs(rErr, myReadErr, "error is a read error")
-	ts.Equal(0, cnt, "byte count is 0")
+	ts.Zero(cnt, "byte count is 0")
 
 	// get dataconn error
 	dconnErr := errors.New("some getDataConn error")
@@ -163,7 +163,7 @@ func (ts *fileTestSuite) TestWrite() {
 	count, err := file.Write([]byte(contents))
 	ts.Equal(len(contents), count, "Returned count of bytes written should match number of bytes passed to Write.")
 	ts.Equal(fakeDataConn.GetWriteContents(), contents, "expected contents written")
-	ts.Nil(err, "Error should be nil when calling Write")
+	ts.NoError(err, "Error should be nil when calling Write")
 
 	// test write failure
 	myWriteErr := errors.New("some write error")
@@ -171,7 +171,7 @@ func (ts *fileTestSuite) TestWrite() {
 	count, wErr := file.Write([]byte(contents))
 	ts.Error(wErr, "no error expected")
 	ts.ErrorIs(wErr, myWriteErr, "error is a write error")
-	ts.Equal(0, count, "byte count is 0")
+	ts.Zero(count, "byte count is 0")
 
 	// get client error
 	dconnErr := errors.New("some getDataConn error")
@@ -1111,7 +1111,7 @@ func (ts *fileTestSuite) TestSize() {
 	size, err = ts.testFile.Size()
 	ts.Error(err, "expect error")
 	ts.ErrorIs(err, myErr, "got correct error")
-	ts.Equal(uint64(0), size, "Size should be 0 on error")
+	ts.Zero(size, "Size should be 0 on error")
 
 	ts.ftpClientMock.AssertExpectations(ts.T())
 }
