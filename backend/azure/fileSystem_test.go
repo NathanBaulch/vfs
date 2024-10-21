@@ -157,7 +157,7 @@ func (s *FileSystemTestSuite) TestWithOptions() {
 	s.Equal("foo-account", fs.options.AccountName)
 
 	fs = NewFileSystem().WithOptions("Not Azure Options...")
-	s.Equal("", fs.options.AccountName)
+	s.Empty(fs.options.AccountName)
 }
 
 func (s *FileSystemTestSuite) TestClient() {
@@ -187,8 +187,8 @@ func (s *FileSystemTestSuite) TestParsePath() {
 	u, _ = url.Parse(uri)
 	volume, path, err = ParsePath(u.Path)
 	s.Error(err, "a container is required so we should get an error")
-	s.Equal("", volume, "we got an error so volume should be empty")
-	s.Equal("", path, "we got an error so path should be empty")
+	s.Empty(volume, "we got an error so volume should be empty")
+	s.Empty(path, "we got an error so path should be empty")
 
 	uri = "https://my-account.blob.core.windows.net/my_container/foo/bar/baz.txt"
 	u, _ = url.Parse(uri)

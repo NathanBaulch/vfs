@@ -314,14 +314,14 @@ func (s *memFileTest) TestCopyToLocation() {
 	s.NoError(copiedFile.Touch(), "unexpected error touching file")
 	s.True(copiedFile != nil)
 	// making sure the path was correctly updated
-	s.EqualValues("/home/test.txt", copiedFile.Path())
+	s.Equal("/home/test.txt", copiedFile.Path())
 
 	_, err = copiedFile.Read(readSlice1)
 	s.NoError(err, "unexpected read error")
 
 	_, err = s.testFile.Read(readSlice2)
 	s.NoError(err, "unexpected read error")
-	s.EqualValues(string(readSlice2), string(readSlice1))
+	s.Equal(readSlice2, readSlice1)
 
 }
 
@@ -349,10 +349,10 @@ func (s *memFileTest) TestCopyToLocationOW() {
 	s.True(copiedFile != nil)
 	s.NoError(copiedFile.Close(), "unexpected close error")
 
-	s.EqualValues("/home/test.txt", copiedFile.Path())
+	s.Equal("/home/test.txt", copiedFile.Path())
 	_, err = copiedFile.Read(readSlice)
 	s.NoError(err, "unexpected read error")
-	s.EqualValues("hello world!", string(readSlice))
+	s.Equal("hello world!", string(readSlice))
 
 }
 
@@ -397,16 +397,16 @@ func (s *memFileTest) TestCopyToLocationOS() {
 	s.NoError(copiedFile.Close(), "unexpected Close error")
 
 	s.True(copiedFile != nil)
-	s.EqualValues("/test_files/test.txt", s.testFile.Path())         // testFile's path should be unchanged
-	s.EqualValues(filepath.Join(dir, "test.txt"), copiedFile.Path()) // new path should be that
+	s.Equal("/test_files/test.txt", s.testFile.Path())         // testFile's path should be unchanged
+	s.Equal(filepath.Join(dir, "test.txt"), copiedFile.Path()) // new path should be that
 
 	_, err = copiedFile.Read(readSlice)
 	s.NoError(err, "unexpected read error")
 
 	_, err = s.testFile.Read(readSlice2)
 	s.NoError(err, "unexpected read error")
-	s.EqualValues(string(readSlice2), string(readSlice)) // both reads should be the same
-	cleanErr := os.RemoveAll(dir)                        // clean up
+	s.Equal(readSlice2, readSlice) // both reads should be the same
+	cleanErr := os.RemoveAll(dir)  // clean up
 	s.NoError(cleanErr, "unexpected error cleaning up osFiles")
 }
 
@@ -433,7 +433,7 @@ func (s *memFileTest) TestCopyToFile() {
 	s.NoError(err, "unexpected creation error")
 	_, err = otherFile.Read(readSlice2)
 	s.NoError(err, "unexpected read error")
-	s.EqualValues(string(readSlice1), string(readSlice2))
+	s.Equal(readSlice1, readSlice2)
 
 }
 
@@ -574,7 +574,7 @@ func (s *memFileTest) TestMoveToFile() {
 	_, err = newFile.Read(newFileSlice)
 	s.NoError(err, "read unexpectedly failed")
 
-	s.Equal(string(expectedSlice), string(newFileSlice))
+	s.Equal(expectedSlice, newFileSlice)
 	s.Equal("/samples/test.txt", newFile.Path())
 
 }
@@ -599,7 +599,7 @@ func (s *memFileTest) TestMoveToFile2() {
 
 	_, err = newFile.Read(newFileSlice)
 	s.NoError(err, "read unexpectedly failed")
-	s.Equal(string(expectedSlice), string(newFileSlice))
+	s.Equal(expectedSlice, newFileSlice)
 	s.Equal("/samples/diffName.txt", newFile.Path())
 
 }
@@ -623,7 +623,7 @@ func (s *memFileTest) TestWrite() {
 	s.NoError(s.testFile.Close(), "unexpected close error")
 	actualText, err := io.ReadAll(s.testFile)
 	s.NoError(err, "unexpected read error")
-	s.EqualValues("Hello World!ith this world", string(actualText))
+	s.Equal("Hello World!ith this world", string(actualText))
 }
 
 // TestRead ensures read can be called successively to get an entire file's contents in chunks
@@ -639,7 +639,7 @@ func (s *memFileTest) TestRead() {
 
 	b, err := io.ReadAll(fileToRead)
 	s.NoError(err, "read error not expected")
-	s.EqualValues(12, len(b))
+	s.Len(b, 12)
 	s.Equal(expectedSlice, b)
 
 	// test for reading from a non-existent file
