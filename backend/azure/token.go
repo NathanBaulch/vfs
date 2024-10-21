@@ -37,7 +37,7 @@ func (f *DefaultTokenCredentialFactory) New(tenantID, clientID, clientSecret, az
 
 	initialToken := spt.Token()
 
-	var tokenRefresher = func(credential azblob.TokenCredential) time.Duration {
+	tokenRefresher := func(credential azblob.TokenCredential) time.Duration {
 		err := spt.Refresh()
 		if err != nil {
 			// Not sure what else to do here except panic...

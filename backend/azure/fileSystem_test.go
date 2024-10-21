@@ -125,11 +125,11 @@ func (s *FileSystemTestSuite) TestScheme() {
 }
 
 func (s *FileSystemTestSuite) TestRetry() {
-	var doNothing = func() error {
+	doNothing := func() error {
 		return nil
 	}
 
-	var errorRetry = func(wrapped func() error) error {
+	errorRetry := func(wrapped func() error) error {
 		return errors.New("i always error")
 	}
 
@@ -217,5 +217,5 @@ func (s *FileSystemTestSuite) TestIsValidURI() {
 }
 
 func TestAzureFileSystem(t *testing.T) {
-	suite.Run(t, new(FileSystemTestSuite))
+	suite.Run(t, &FileSystemTestSuite{})
 }

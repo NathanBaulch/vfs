@@ -15,9 +15,7 @@ type fileSystemTestSuite struct {
 	suite.Suite
 }
 
-var (
-	s3fs *FileSystem
-)
+var s3fs *FileSystem
 
 type mockClient struct {
 	*s3.Client
@@ -123,5 +121,5 @@ func (ts *fileSystemTestSuite) TestClient() {
 }
 
 func TestFileSystem(t *testing.T) {
-	suite.Run(t, new(fileSystemTestSuite))
+	suite.Run(t, &fileSystemTestSuite{})
 }

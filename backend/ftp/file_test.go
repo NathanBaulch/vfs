@@ -30,7 +30,7 @@ type fileTestSuite struct {
 }
 
 func TestFile(t *testing.T) {
-	suite.Run(t, new(fileTestSuite))
+	suite.Run(t, &fileTestSuite{})
 }
 
 func (ts *fileTestSuite) SetupTest() {
@@ -70,7 +70,7 @@ func (ts *fileTestSuite) TestRead() {
 		path:      fp,
 	}
 	// test successful read
-	var localFile = bytes.NewBuffer([]byte{})
+	localFile := bytes.NewBuffer([]byte{})
 	b, copyErr := io.Copy(localFile, ftpfile)
 	ts.NoError(copyErr, "no error expected")
 	ts.EqualValues(len(contents), b, "byte count after copy")
@@ -210,7 +210,7 @@ func (ts *fileTestSuite) TestSeek() {
 	// seek to position 6, whence 0
 	_, err = ftpfile.Seek(6, 0)
 	ts.NoError(err, "no error expected")
-	var localFile = bytes.NewBuffer([]byte{})
+	localFile := bytes.NewBuffer([]byte{})
 	_, err = io.Copy(localFile, ftpfile)
 	ts.NoError(err, "no error expected")
 	ts.Equal("world!", localFile.String(), "Seeking should move the ftp file cursor as expected")

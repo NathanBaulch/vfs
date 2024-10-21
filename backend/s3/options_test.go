@@ -47,5 +47,5 @@ func (o *optionsTestSuite) TestGetClient() {
 }
 
 func TestOptions(t *testing.T) {
-	suite.Run(t, new(optionsTestSuite))
+	suite.Run(t, &optionsTestSuite{})
 }

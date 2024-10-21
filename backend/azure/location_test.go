@@ -256,5 +256,5 @@ func (s *LocationTestSuite) TestContainerURL() {
 }
 
 func TestAzureLocation(t *testing.T) {
-	suite.Run(t, new(LocationTestSuite))
+	suite.Run(t, &LocationTestSuite{})
 }
