@@ -328,5 +328,5 @@ func (s *memLocationTest) TestWriteExistingFile() {
 }
 
 func TestMemLocation(t *testing.T) {
-	suite.Run(t, new(memLocationTest))
+	suite.Run(t, &memLocationTest{})
 }

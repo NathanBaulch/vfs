@@ -967,5 +967,5 @@ func recursiveSFTPRemove(absPath string, client sftp.Client) error {
 }
 
 func TestVFS(t *testing.T) {
-	suite.Run(t, new(vfsTestSuite))
+	suite.Run(t, &vfsTestSuite{})
 }

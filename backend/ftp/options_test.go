@@ -18,7 +18,7 @@ type optionsSuite struct {
 }
 
 func TestOptions(t *testing.T) {
-	suite.Run(t, new(optionsSuite))
+	suite.Run(t, &optionsSuite{})
 }
 
 func (s *optionsSuite) TestFetchUsername() {
@@ -131,8 +131,8 @@ func (s *optionsSuite) TestFetchHostPortString() {
 }
 
 func (s *optionsSuite) TestIsDisableEPSV() {
-	var trueVal = true
-	var falseVal = false
+	trueVal := true
+	falseVal := false
 	tests := []struct {
 		description string
 		options     Options

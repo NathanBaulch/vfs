@@ -180,7 +180,8 @@ func (lt *locationTestSuite) TestExists_true() {
 				ContentEncoding: "utf8",
 			},
 			Content: []byte("content"),
-		}})
+		},
+	})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 	loc, err := fs.NewLocation(bucket, "/")
@@ -285,7 +286,8 @@ func (lt *locationTestSuite) TestDeleteFile() {
 				ContentEncoding: "utf8",
 			},
 			Content: []byte("content"),
-		}})
+		},
+	})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -304,5 +306,5 @@ func (lt *locationTestSuite) TestDeleteFile() {
 }
 
 func TestLocation(t *testing.T) {
-	suite.Run(t, new(locationTestSuite))
+	suite.Run(t, &locationTestSuite{})
 }
