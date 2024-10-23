@@ -20,8 +20,10 @@ import (
 	"github.com/c2fo/vfs/v6/utils"
 )
 
-var tempFileNameGetter func(string) string
-var now = time.Now
+var (
+	tempFileNameGetter func(string) string
+	now                = time.Now
+)
 
 func init() {
 	// this func is overridable for tests

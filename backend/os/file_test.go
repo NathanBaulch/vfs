@@ -348,7 +348,7 @@ func (s *osFileTest) TestSafeOsRename() {
 	testfile := path.Join(dir, "original.txt")
 	file1, err := s.fileSystem.NewFile("", testfile)
 	s.NoError(err)
-	var testBytes = []byte("test me")
+	testBytes := []byte("test me")
 	_, err = file1.Write(testBytes)
 	s.NoError(err)
 	s.NoError(file1.Close())
@@ -383,7 +383,7 @@ func (s *osFileTest) TestOsCopy() {
 
 	file1, err := s.fileSystem.NewFile("", path.Join(dir, "original.txt"))
 	s.NoError(err)
-	var testBytes = []byte("test me")
+	testBytes := []byte("test me")
 	_, err = file1.Write(testBytes)
 	s.NoError(err)
 	s.NoError(file1.Close())
@@ -747,7 +747,7 @@ func teardownTestFiles(baseLoc vfs.Location) {
 
 func createDir(baseLoc vfs.Location, dirname string) {
 	dir := path.Join(baseLoc.Path(), dirname)
-	perm := os.FileMode(0755)
+	perm := os.FileMode(0o755)
 	err := os.Mkdir(dir, perm)
 	if err != nil {
 		teardownTestFiles(baseLoc)

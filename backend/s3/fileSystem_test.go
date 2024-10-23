@@ -15,9 +15,7 @@ type fileSystemTestSuite struct {
 	suite.Suite
 }
 
-var (
-	s3fs *FileSystem
-)
+var s3fs *FileSystem
 
 type mockClient struct {
 	*s3.Client

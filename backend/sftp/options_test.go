@@ -589,7 +589,7 @@ func (o *optionsSuite) TestGetFileMode() {
 		{
 			name:            "ValidOctalString",
 			filePermissions: utils.Ptr("0755"),
-			expectedMode:    utils.Ptr(os.FileMode(0755)),
+			expectedMode:    utils.Ptr(os.FileMode(0o755)),
 			expectError:     false,
 		},
 		{
@@ -607,7 +607,7 @@ func (o *optionsSuite) TestGetFileMode() {
 		{
 			name:            "ValidDecimalString",
 			filePermissions: utils.Ptr("493"), // 0755 in decimal
-			expectedMode:    utils.Ptr(os.FileMode(0755)),
+			expectedMode:    utils.Ptr(os.FileMode(0o755)),
 			expectError:     false,
 		},
 	}
@@ -643,7 +643,7 @@ func setupKeyFiles(tmpdir string) (*keyFiles, error) {
 
 	// setup ssh dir
 	dir := path.Join(tmpdir, "ssh_keys")
-	err := os.Mkdir(dir, 0700)
+	err := os.Mkdir(dir, 0o700)
 	if err != nil {
 		return nil, err
 	}

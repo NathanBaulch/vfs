@@ -12,8 +12,10 @@ import (
 )
 
 // Scheme defines the file system type.
-const Scheme = "s3"
-const name = "AWS S3"
+const (
+	Scheme = "s3"
+	name   = "AWS S3"
+)
 
 // FileSystem implements vfs.FileSystem for the S3 file system.
 type FileSystem struct {

@@ -100,7 +100,7 @@ func (ts *fileTestSuite) TestRead() {
 	file, err := fs.NewFile(bucketName, "/"+objectName)
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
-	var localFile = bytes.NewBuffer([]byte{})
+	localFile := bytes.NewBuffer([]byte{})
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
 	_, copyErr := io.CopyBuffer(localFile, file, buffer)
@@ -303,7 +303,8 @@ func (ts *fileTestSuite) TestExists() {
 				ContentEncoding: "utf8",
 			},
 			Content: []byte("content"),
-		}})
+		},
+	})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -368,7 +369,8 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 						ContentEncoding: "utf8",
 					},
 					Content: content,
-				}}
+				},
+			}
 			fakeObjects = append(fakeObjects, fakestorage.Object{
 				ObjectAttrs: fakestorage.ObjectAttrs{
 					BucketName:      targetBucketName,
@@ -472,7 +474,8 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 						ContentEncoding: "utf8",
 					},
 					Content: content,
-				}}
+				},
+			}
 			fakeObjects = append(fakeObjects, fakestorage.Object{
 				ObjectAttrs: fakestorage.ObjectAttrs{
 					BucketName:      targetBucketName,

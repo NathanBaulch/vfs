@@ -23,7 +23,7 @@ func CopyOsLocation(loc vfs.Location) vfs.Location {
 		panic(err)
 	}
 	if !exists {
-		err := os.Mkdir(ret.Path(), 0750)
+		err := os.Mkdir(ret.Path(), 0o750)
 		if err != nil {
 			panic(err)
 		}

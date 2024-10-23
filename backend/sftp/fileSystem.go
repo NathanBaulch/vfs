@@ -19,9 +19,11 @@ import (
 )
 
 // Scheme defines the filesystem type.
-const Scheme = "sftp"
-const name = "Secure File Transfer Protocol"
-const defaultAutoDisconnectDuration = 10
+const (
+	Scheme                        = "sftp"
+	name                          = "Secure File Transfer Protocol"
+	defaultAutoDisconnectDuration = 10
+)
 
 var defaultClientGetter func(utils.Authority, Options) (Client, io.Closer, error)
 

@@ -14,11 +14,15 @@ import (
 )
 
 // Scheme defines the filesystem type.
-const Scheme = "ftp"
-const name = "File Transfer Protocol"
+const (
+	Scheme = "ftp"
+	name   = "File Transfer Protocol"
+)
 
-var dataConnGetterFunc func(context.Context, utils.Authority, *FileSystem, *File, types.OpenType) (types.DataConn, error)
-var defaultClientGetter func(context.Context, utils.Authority, Options) (client types.Client, err error)
+var (
+	dataConnGetterFunc  func(context.Context, utils.Authority, *FileSystem, *File, types.OpenType) (types.DataConn, error)
+	defaultClientGetter func(context.Context, utils.Authority, Options) (client types.Client, err error)
+)
 
 // FileSystem implements vfs.FileSystem for the FTP filesystem.
 type FileSystem struct {
