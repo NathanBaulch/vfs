@@ -17,7 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/c2fo/vfs/v6"
-	"github.com/c2fo/vfs/v6/mocks"
 	"github.com/c2fo/vfs/v6/options"
 	"github.com/c2fo/vfs/v6/options/delete"
 	"github.com/c2fo/vfs/v6/options/newfile"
@@ -563,7 +562,7 @@ func (f *File) getHeadObject() (*s3.HeadObjectOutput, error) {
 func (f *File) getCopyObjectInput(targetFile *File) *s3.CopyObjectInput {
 	// first we must determine if we're using the same s3 credentials for source and target before doing a native copy
 	isSameAccount := false
-	var ACL types.ObjectCannedACL
+	var acl types.ObjectCannedACL
 
 	fileOptions := f.Location().FileSystem().(*FileSystem).options
 	targetOptions := targetFile.Location().FileSystem().(*FileSystem).options
@@ -576,9 +575,9 @@ func (f *File) getCopyObjectInput(targetFile *File) *s3.CopyObjectInput {
 		targetOpts, hasTargetOptions := targetOptions.(Options)
 		if hasOptions {
 			// use source ACL (even if empty), UNLESS target ACL is set
-			ACL = opts.ACL
+			acl = opts.ACL
 			if hasTargetOptions && targetOpts.ACL != "" {
-				ACL = targetOpts.ACL
+				acl = targetOpts.ACL
 			}
 			if hasTargetOptions {
 				// since accesskey and session token are mutually exclusive, one will be nil
@@ -596,7 +595,7 @@ func (f *File) getCopyObjectInput(targetFile *File) *s3.CopyObjectInput {
 
 		copyInput := &s3.CopyObjectInput{
 			ServerSideEncryption: types.ServerSideEncryptionAes256,
-			ACL:                  ACL,
+			ACL:                  acl,
 			Key:                  aws.String(targetFile.key),
 			Bucket:               aws.String(targetFile.bucket),
 			CopySource:           aws.String(copySourceKey),
@@ -670,11 +669,6 @@ func uploadInput(f *File) *s3.PutObjectInput {
 // error is returned if the file is still not available after the specified retries.
 // nil is returned once the file is available.
 func waitUntilFileExists(file vfs.File, retries int) error {
-	// Ignore in-memory VFS files
-	if _, ok := file.(*mocks.ReadWriteFile); ok {
-		return nil
-	}
-
 	// Return as if file was found when retries is set to -1. Useful mainly for testing.
 	if retries == -1 {
 		return nil

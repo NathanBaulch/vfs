@@ -12,7 +12,7 @@ import (
 )
 
 func TestVFSSimple(t *testing.T) {
-	suite.Run(t, new(vfsSimpleSuite))
+	suite.Run(t, &vfsSimpleSuite{})
 }
 
 type vfsSimpleSuite struct {

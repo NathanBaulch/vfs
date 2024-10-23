@@ -30,7 +30,7 @@ type fileTestSuite struct {
 }
 
 func TestFile(t *testing.T) {
-	suite.Run(t, new(fileTestSuite))
+	suite.Run(t, &fileTestSuite{})
 }
 
 func (ts *fileTestSuite) SetupTest() {
@@ -1167,11 +1167,11 @@ type FakeDataConn struct {
 	closeCalledCount int
 }
 
-func (f *FakeDataConn) Delete(p string) error {
+func (f *FakeDataConn) Delete(string) error {
 	return f.singleOpErr
 }
 
-func (f *FakeDataConn) GetEntry(p string) (*_ftp.Entry, error) {
+func (f *FakeDataConn) GetEntry(string) (*_ftp.Entry, error) {
 	if f.exists {
 		return &_ftp.Entry{
 			Size: f.size,
@@ -1181,7 +1181,7 @@ func (f *FakeDataConn) GetEntry(p string) (*_ftp.Entry, error) {
 	}
 }
 
-func (f *FakeDataConn) List(p string) ([]*_ftp.Entry, error) {
+func (f *FakeDataConn) List(string) ([]*_ftp.Entry, error) {
 	if f.exists {
 		return []*_ftp.Entry{
 			{
@@ -1192,11 +1192,11 @@ func (f *FakeDataConn) List(p string) ([]*_ftp.Entry, error) {
 	return nil, errors.New("550")
 }
 
-func (f *FakeDataConn) MakeDir(p string) error {
+func (f *FakeDataConn) MakeDir(string) error {
 	return f.singleOpErr
 }
 
-func (f *FakeDataConn) Rename(from, to string) error {
+func (f *FakeDataConn) Rename(string, string) error {
 	return f.singleOpErr
 }
 
@@ -1204,7 +1204,7 @@ func (f *FakeDataConn) IsSetTimeSupported() bool {
 	return false
 }
 
-func (f *FakeDataConn) SetTime(p string, t time.Time) error {
+func (f *FakeDataConn) SetTime(string, time.Time) error {
 	return f.singleOpErr
 }
 
@@ -1292,7 +1292,7 @@ func (f *FakeDataConn) GetCloseCalledCount() int {
 	return f.closeCalledCount
 }
 
-func getFakeDataConn(_ context.Context, a utils.Authority, fileSystem *FileSystem, f *File, t types.OpenType) (types.DataConn, error) {
+func getFakeDataConn(_ context.Context, _ utils.Authority, fileSystem *FileSystem, f *File, t types.OpenType) (types.DataConn, error) {
 	if fileSystem.dataconn != nil {
 		if fileSystem.dataconn.Mode() != t {
 			// wrong session type ... close current session and unset it (so we can set a new one after)

@@ -130,6 +130,7 @@ func (dc *dataConn) Close() error {
 			dc.R = nil
 			return err
 		}
+	default:
 	}
 
 	return nil

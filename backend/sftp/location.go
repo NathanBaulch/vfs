@@ -33,8 +33,8 @@ func (l *Location) List() ([]string, error) {
 
 	fileinfos, err := client.ReadDir(l.Path())
 	if err != nil {
-		if err == os.ErrNotExist {
-			return filenames, nil
+		if errors.Is(err, os.ErrNotExist) {
+			err = nil
 		}
 		return filenames, err
 	}
@@ -123,9 +123,10 @@ func (l *Location) Exists() (bool, error) {
 	defer l.fileSystem.connTimerStart()
 
 	info, err := client.Stat(l.Path())
-	if err != nil && err == os.ErrNotExist {
-		return false, nil
-	} else if err != nil {
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			err = nil
+		}
 		return false, err
 	}
 

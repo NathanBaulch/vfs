@@ -615,27 +615,27 @@ func (s *utilsSuite) TestPathToURI() {
 
 func (s *utilsSuite) TestGetURI() {
 	// set up mocks
-	mockFs1 := new(mocks.FileSystem)
+	mockFs1 := &mocks.FileSystem{}
 	mockFs1.On("Scheme", mock.Anything).Return("file")
 
-	mockLoc1 := new(mocks.Location)
+	mockLoc1 := &mocks.Location{}
 	mockLoc1.On("Path").Return("/some/path/to/")
 	mockLoc1.On("Volume", mock.Anything).Return("")
 	mockLoc1.On("FileSystem", mock.Anything).Return(mockFs1)
 
-	mockFile1 := new(mocks.File)
+	mockFile1 := &mocks.File{}
 	mockFile1.On("Path").Return("/some/path/to/file.txt")
 	mockFile1.On("Location").Return(mockLoc1)
 
-	mockFs2 := new(mocks.FileSystem)
+	mockFs2 := &mocks.FileSystem{}
 	mockFs2.On("Scheme", mock.Anything).Return("s3")
 
-	mockLoc2 := new(mocks.Location)
+	mockLoc2 := &mocks.Location{}
 	mockLoc2.On("Path").Return("/this/path/to/")
 	mockLoc2.On("Volume", mock.Anything).Return("mybucket")
 	mockLoc2.On("FileSystem", mock.Anything).Return(mockFs2)
 
-	mockFile2 := new(mocks.File)
+	mockFile2 := &mocks.File{}
 	mockFile2.On("Path").Return("/this/path/to/file.txt")
 	mockFile2.On("Location").Return(mockLoc2)
 
@@ -927,5 +927,5 @@ func (s *utilsSuite) TestSeekTo() {
 }
 
 func TestUtils(t *testing.T) {
-	suite.Run(t, new(utilsSuite))
+	suite.Run(t, &utilsSuite{})
 }

@@ -951,8 +951,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 		{
 			name: "No options provided",
 			client: func() *mocks.Client {
-				client := mocks.NewClient(ts.T())
-				return client
+				return mocks.NewClient(ts.T())
 			}(),
 			options:       nil,
 			expectedError: false,
@@ -965,8 +964,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 				return client
 			}(),
 			options: func() vfs.Options {
-				opts := Options{FilePermissions: utils.Ptr("0644")}
-				return opts
+				return Options{FilePermissions: utils.Ptr("0644")}
 			}(),
 			expectedError: false,
 		},
@@ -978,8 +976,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 				return client
 			}(),
 			options: func() vfs.Options {
-				opts := Options{FilePermissions: utils.Ptr("0644")}
-				return opts
+				return Options{FilePermissions: utils.Ptr("0644")}
 			}(),
 			expectedError:  true,
 			expectedErrMsg: "chmod error",
@@ -1005,5 +1002,5 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 }
 
 func TestFile(t *testing.T) {
-	suite.Run(t, new(fileTestSuite))
+	suite.Run(t, &fileTestSuite{})
 }

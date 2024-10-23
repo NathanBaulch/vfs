@@ -70,5 +70,5 @@ func (o *osFileSystemTest) TestLocation() {
 }
 
 func TestOSFileSystem(t *testing.T) {
-	suite.Run(t, new(osFileSystemTest))
+	suite.Run(t, &osFileSystemTest{})
 }

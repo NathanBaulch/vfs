@@ -409,5 +409,5 @@ func (s *FileTestSuite) TestIsSameAuth_DifferentAcctKey() {
 }
 
 func TestAzureFile(t *testing.T) {
-	suite.Run(t, new(FileTestSuite))
+	suite.Run(t, &FileTestSuite{})
 }

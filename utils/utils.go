@@ -125,7 +125,6 @@ func PathToURI(p string) (string, error) {
 	if p == "" {
 		p = "/"
 	}
-	var URI string
 
 	// parse path
 	u, err := url.Parse(p)
@@ -157,9 +156,7 @@ func PathToURI(p string) (string, error) {
 		absPath = EnsureTrailingSlash(absPath)
 	}
 
-	URI = "file://" + absPath
-
-	return URI, err
+	return "file://" + absPath, nil
 }
 
 // TouchCopy is a wrapper around io.Copy which ensures that even empty source files (reader) will get written as an

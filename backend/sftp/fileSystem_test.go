@@ -161,5 +161,5 @@ func (ts *fileSystemTestSuite) TestClientWithAutoDisconnect() {
 }
 
 func TestFileSystem(t *testing.T) {
-	suite.Run(t, new(fileSystemTestSuite))
+	suite.Run(t, &fileSystemTestSuite{})
 }

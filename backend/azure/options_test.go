@@ -73,5 +73,5 @@ func (s *OptionsTestSuite) TestCredentials_Anon() {
 }
 
 func TestOptions(t *testing.T) {
-	suite.Run(t, new(OptionsTestSuite))
+	suite.Run(t, &OptionsTestSuite{})
 }

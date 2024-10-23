@@ -758,6 +758,6 @@ func (s *memFileTest) TestFileNewWrite() {
 }
 
 func TestMemFile(t *testing.T) {
-	suite.Run(t, new(memFileTest))
+	suite.Run(t, &memFileTest{})
 	_ = os.Remove("test_files/new.txt")
 }

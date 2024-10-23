@@ -1,5 +1,4 @@
 //go:build vfsintegration
-// +build vfsintegration
 
 package testsuite
 
@@ -552,5 +551,5 @@ func (s *ioTestSuite) teardownTestLocation(t *testing.T, testPath string) {
 }
 
 func TestIOTestSuite(t *testing.T) {
-	suite.Run(t, new(ioTestSuite))
+	suite.Run(t, &ioTestSuite{})
 }

@@ -10,6 +10,6 @@ import (
 type MockTokenCredentialFactory struct{}
 
 // New creates a new azblob.TokenCredential struct
-func (f *MockTokenCredentialFactory) New(tenantID, clientID, clientSecret, azureEnvName string) (azblob.TokenCredential, error) {
+func (f *MockTokenCredentialFactory) New(string, string, string, string) (azblob.TokenCredential, error) {
 	return azblob.NewTokenCredential("aaa", func(credential azblob.TokenCredential) time.Duration { return time.Second * 1 }), nil
 }

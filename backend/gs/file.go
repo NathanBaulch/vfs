@@ -735,10 +735,10 @@ func (f *File) getObjectGenerationHandles() ([]*storage.ObjectHandle, error) {
 
 	for {
 		attrs, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
 		if err != nil {
+			if errors.Is(err, iterator.Done) {
+				break
+			}
 			return nil, err
 		}
 		handle := client.Bucket(attrs.Bucket).Object(attrs.Name).Generation(attrs.Generation)

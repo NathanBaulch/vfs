@@ -164,8 +164,7 @@ func (l *Location) NewFile(relFilePath string, opts ...options.NewFileOption) (v
 		fileList := mapRef[l.volume].filesHere(relativeLocationPath)
 		for _, file := range fileList {
 			if file.name == path.Base(relFilePath) {
-				fileCopy := deepCopy(file)
-				return fileCopy, nil
+				return deepCopy(file), nil
 			}
 		}
 	}

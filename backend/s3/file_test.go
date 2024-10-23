@@ -478,7 +478,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 		bucket: "newBucket",
 		key:    "/new/file/path/hello.txt",
 	}
-	location := new(vfsmocks.Location)
+	location := &vfsmocks.Location{}
 	location.On("NewFile", mock.Anything).Return(f, nil)
 
 	s3cliMock.On("CopyObject", matchContext, mock.AnythingOfType("*s3.CopyObjectInput")).Return(&s3.CopyObjectOutput{}, nil)
@@ -496,7 +496,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	ts.NoError(err, "no error expected")
 
 	// test non-scheme MoveToLocation
-	mockLocation := new(vfsmocks.Location)
+	mockLocation := &vfsmocks.Location{}
 	mockLocation.On("NewFile", mock.Anything).
 		Return(&File{fileSystem: &FileSystem{client: s3Mock1}, bucket: "bucket", key: "/new/hello.txt"}, nil)
 
@@ -517,8 +517,8 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 
 func (ts *fileTestSuite) TestMoveToLocationFail() {
 	// If CopyToLocation fails we need to ensure DeleteObject isn't called.
-	otherFs := new(vfsmocks.FileSystem)
-	location := new(vfsmocks.Location)
+	otherFs := &vfsmocks.FileSystem{}
+	location := &vfsmocks.Location{}
 	location.On("NewFile", mock.Anything).Return(&File{fileSystem: &fs, bucket: "bucket", key: "/new/hello.txt"}, nil)
 
 	s3cliMock.On("CopyObject", matchContext, mock.AnythingOfType("*s3.CopyObjectInput")).Return(nil, errors.New("didn't copy, oh noes"))
@@ -886,7 +886,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 }
 
 func TestFile(t *testing.T) {
-	suite.Run(t, new(fileTestSuite))
+	suite.Run(t, &fileTestSuite{})
 }
 
 func ptr[T any](value T) *T {

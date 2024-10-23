@@ -212,5 +212,5 @@ func (s *FileSystemTestSuite) TestIsValidURI() {
 }
 
 func TestAzureFileSystem(t *testing.T) {
-	suite.Run(t, new(FileSystemTestSuite))
+	suite.Run(t, &FileSystemTestSuite{})
 }

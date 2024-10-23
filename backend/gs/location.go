@@ -66,7 +66,7 @@ func (l *Location) ListByPrefix(filenamePrefix string) ([]string, error) {
 	for {
 		objAttrs, err := it.Next()
 		if err != nil {
-			if err == iterator.Done {
+			if errors.Is(err, iterator.Done) {
 				break
 			}
 			return nil, err
@@ -111,8 +111,8 @@ func (l *Location) Path() string {
 func (l *Location) Exists() (bool, error) {
 	_, err := l.getBucketAttrs()
 	if err != nil {
-		if err == storage.ErrBucketNotExist {
-			return false, nil
+		if errors.Is(err, storage.ErrBucketNotExist) {
+			err = nil
 		}
 		return false, err
 	}

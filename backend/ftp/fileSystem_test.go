@@ -123,5 +123,5 @@ func (ts *fileSystemTestSuite) TestClient() {
 }
 
 func TestFileSystem(t *testing.T) {
-	suite.Run(t, new(fileSystemTestSuite))
+	suite.Run(t, &fileSystemTestSuite{})
 }

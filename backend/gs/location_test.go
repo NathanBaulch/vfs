@@ -22,8 +22,8 @@ func (lt *locationTestSuite) TestList() {
 	bucket := "fake-bucket"
 	fileCount := 3
 	dirCount := 3
-	objectNames := []string{}
-	objectPrefixes := []string{}
+	var objectNames []string
+	var objectPrefixes []string
 	objects := Objects{}
 	objectBaseNameSet := map[string]struct{}{}
 	var createObjects func(prefix string, level int, levels int)
@@ -56,7 +56,7 @@ func (lt *locationTestSuite) TestList() {
 	lt.T().Logf("objectPrefixes = %s", objectPrefixes)
 	lt.T().Logf("objectBaseNameSet = %v", objectBaseNameSet)
 
-	objectBaseNames := []string{}
+	var objectBaseNames []string
 	for name := range objectBaseNameSet {
 		objectBaseNames = append(objectBaseNames, name)
 	}
@@ -306,5 +306,5 @@ func (lt *locationTestSuite) TestDeleteFile() {
 }
 
 func TestLocation(t *testing.T) {
-	suite.Run(t, new(locationTestSuite))
+	suite.Run(t, &locationTestSuite{})
 }
