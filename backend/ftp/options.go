@@ -11,7 +11,7 @@ import (
 
 	_ftp "github.com/jlaffaye/ftp"
 
-	"github.com/c2fo/vfs/v6/backend/ftp/types"
+	"github.com/c2fo/vfs/backend/ftp/types"
 	"github.com/c2fo/vfs/v6/utils"
 )
 

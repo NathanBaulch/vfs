@@ -59,7 +59,7 @@ resolve the provided URI in NewFile() or NewLocation() to the registered file sy
 		"fmt"
 
 		"github.com/c2fo/vfs/v6/backend"
-		"github.com/c2fo/vfs/v6/backend/s3"
+		"github.com/c2fo/vfs/backend/s3"
 		"github.com/c2fo/vfs/v6/vfssimple"
 	)
 
@@ -135,7 +135,7 @@ when calling remote file systems. This adds some flexibility in how a retry on f
         "time"
 
         "github.com/c2fo/vfs/v6/backend"
-        "github.com/c2fo/vfs/v6/backend/gs"
+        "github.com/c2fo/vfs/backend/gs"
     )
 
     ...

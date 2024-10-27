@@ -7,8 +7,8 @@ import (
 	"path"
 
 	"github.com/c2fo/vfs/v6"
+	"github.com/c2fo/vfs/backend/ftp/types"
 	"github.com/c2fo/vfs/v6/backend"
-	"github.com/c2fo/vfs/v6/backend/ftp/types"
 	"github.com/c2fo/vfs/v6/options"
 	"github.com/c2fo/vfs/v6/utils"
 )

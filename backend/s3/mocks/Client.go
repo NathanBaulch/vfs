@@ -170,14 +170,14 @@ func (_c *Client_CompleteMultipartUpload_Call) RunAndReturn(run func(context.Con
 	return _c
 }
 
-// CopyObject provides a mock function with given fields: ctx, params, optFns
-func (_m *Client) CopyObject(ctx context.Context, params *s3.CopyObjectInput, optFns ...func(*s3.Options)) (*s3.CopyObjectOutput, error) {
-	_va := make([]interface{}, len(optFns))
-	for _i := range optFns {
-		_va[_i] = optFns[_i]
+// CopyObject provides a mock function with given fields: ctx, in, opts
+func (_m *Client) CopyObject(ctx context.Context, in *s3.CopyObjectInput, opts ...func(*s3.Options)) (*s3.CopyObjectOutput, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, params)
+	_ca = append(_ca, ctx, in)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -188,10 +188,10 @@ func (_m *Client) CopyObject(ctx context.Context, params *s3.CopyObjectInput, op
 	var r0 *s3.CopyObjectOutput
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.CopyObjectInput, ...func(*s3.Options)) (*s3.CopyObjectOutput, error)); ok {
-		return rf(ctx, params, optFns...)
+		return rf(ctx, in, opts...)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.CopyObjectInput, ...func(*s3.Options)) *s3.CopyObjectOutput); ok {
-		r0 = rf(ctx, params, optFns...)
+		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*s3.CopyObjectOutput)
@@ -199,7 +199,7 @@ func (_m *Client) CopyObject(ctx context.Context, params *s3.CopyObjectInput, op
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *s3.CopyObjectInput, ...func(*s3.Options)) error); ok {
-		r1 = rf(ctx, params, optFns...)
+		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -214,14 +214,14 @@ type Client_CopyObject_Call struct {
 
 // CopyObject is a helper method to define mock.On call
 //   - ctx context.Context
-//   - params *s3.CopyObjectInput
-//   - optFns ...func(*s3.Options)
-func (_e *Client_Expecter) CopyObject(ctx interface{}, params interface{}, optFns ...interface{}) *Client_CopyObject_Call {
+//   - in *s3.CopyObjectInput
+//   - opts ...func(*s3.Options)
+func (_e *Client_Expecter) CopyObject(ctx interface{}, in interface{}, opts ...interface{}) *Client_CopyObject_Call {
 	return &Client_CopyObject_Call{Call: _e.mock.On("CopyObject",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]interface{}{ctx, in}, opts...)...)}
 }
 
-func (_c *Client_CopyObject_Call) Run(run func(ctx context.Context, params *s3.CopyObjectInput, optFns ...func(*s3.Options))) *Client_CopyObject_Call {
+func (_c *Client_CopyObject_Call) Run(run func(ctx context.Context, in *s3.CopyObjectInput, opts ...func(*s3.Options))) *Client_CopyObject_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]func(*s3.Options), len(args)-2)
 		for i, a := range args[2:] {
@@ -318,14 +318,14 @@ func (_c *Client_CreateMultipartUpload_Call) RunAndReturn(run func(context.Conte
 	return _c
 }
 
-// DeleteObject provides a mock function with given fields: ctx, params, optFns
-func (_m *Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
-	_va := make([]interface{}, len(optFns))
-	for _i := range optFns {
-		_va[_i] = optFns[_i]
+// DeleteObject provides a mock function with given fields: ctx, in, opts
+func (_m *Client) DeleteObject(ctx context.Context, in *s3.DeleteObjectInput, opts ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, params)
+	_ca = append(_ca, ctx, in)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -336,10 +336,10 @@ func (_m *Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput
 	var r0 *s3.DeleteObjectOutput
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)); ok {
-		return rf(ctx, params, optFns...)
+		return rf(ctx, in, opts...)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) *s3.DeleteObjectOutput); ok {
-		r0 = rf(ctx, params, optFns...)
+		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*s3.DeleteObjectOutput)
@@ -347,7 +347,7 @@ func (_m *Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) error); ok {
-		r1 = rf(ctx, params, optFns...)
+		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -362,14 +362,14 @@ type Client_DeleteObject_Call struct {
 
 // DeleteObject is a helper method to define mock.On call
 //   - ctx context.Context
-//   - params *s3.DeleteObjectInput
-//   - optFns ...func(*s3.Options)
-func (_e *Client_Expecter) DeleteObject(ctx interface{}, params interface{}, optFns ...interface{}) *Client_DeleteObject_Call {
+//   - in *s3.DeleteObjectInput
+//   - opts ...func(*s3.Options)
+func (_e *Client_Expecter) DeleteObject(ctx interface{}, in interface{}, opts ...interface{}) *Client_DeleteObject_Call {
 	return &Client_DeleteObject_Call{Call: _e.mock.On("DeleteObject",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]interface{}{ctx, in}, opts...)...)}
 }
 
-func (_c *Client_DeleteObject_Call) Run(run func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options))) *Client_DeleteObject_Call {
+func (_c *Client_DeleteObject_Call) Run(run func(ctx context.Context, in *s3.DeleteObjectInput, opts ...func(*s3.Options))) *Client_DeleteObject_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]func(*s3.Options), len(args)-2)
 		for i, a := range args[2:] {
@@ -466,14 +466,14 @@ func (_c *Client_GetObject_Call) RunAndReturn(run func(context.Context, *s3.GetO
 	return _c
 }
 
-// HeadBucket provides a mock function with given fields: ctx, params, optFns
-func (_m *Client) HeadBucket(ctx context.Context, params *s3.HeadBucketInput, optFns ...func(*s3.Options)) (*s3.HeadBucketOutput, error) {
-	_va := make([]interface{}, len(optFns))
-	for _i := range optFns {
-		_va[_i] = optFns[_i]
+// HeadBucket provides a mock function with given fields: ctx, in, opts
+func (_m *Client) HeadBucket(ctx context.Context, in *s3.HeadBucketInput, opts ...func(*s3.Options)) (*s3.HeadBucketOutput, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, params)
+	_ca = append(_ca, ctx, in)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -484,10 +484,10 @@ func (_m *Client) HeadBucket(ctx context.Context, params *s3.HeadBucketInput, op
 	var r0 *s3.HeadBucketOutput
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.HeadBucketInput, ...func(*s3.Options)) (*s3.HeadBucketOutput, error)); ok {
-		return rf(ctx, params, optFns...)
+		return rf(ctx, in, opts...)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.HeadBucketInput, ...func(*s3.Options)) *s3.HeadBucketOutput); ok {
-		r0 = rf(ctx, params, optFns...)
+		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*s3.HeadBucketOutput)
@@ -495,7 +495,7 @@ func (_m *Client) HeadBucket(ctx context.Context, params *s3.HeadBucketInput, op
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *s3.HeadBucketInput, ...func(*s3.Options)) error); ok {
-		r1 = rf(ctx, params, optFns...)
+		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -510,14 +510,14 @@ type Client_HeadBucket_Call struct {
 
 // HeadBucket is a helper method to define mock.On call
 //   - ctx context.Context
-//   - params *s3.HeadBucketInput
-//   - optFns ...func(*s3.Options)
-func (_e *Client_Expecter) HeadBucket(ctx interface{}, params interface{}, optFns ...interface{}) *Client_HeadBucket_Call {
+//   - in *s3.HeadBucketInput
+//   - opts ...func(*s3.Options)
+func (_e *Client_Expecter) HeadBucket(ctx interface{}, in interface{}, opts ...interface{}) *Client_HeadBucket_Call {
 	return &Client_HeadBucket_Call{Call: _e.mock.On("HeadBucket",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]interface{}{ctx, in}, opts...)...)}
 }
 
-func (_c *Client_HeadBucket_Call) Run(run func(ctx context.Context, params *s3.HeadBucketInput, optFns ...func(*s3.Options))) *Client_HeadBucket_Call {
+func (_c *Client_HeadBucket_Call) Run(run func(ctx context.Context, in *s3.HeadBucketInput, opts ...func(*s3.Options))) *Client_HeadBucket_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]func(*s3.Options), len(args)-2)
 		for i, a := range args[2:] {
@@ -540,14 +540,14 @@ func (_c *Client_HeadBucket_Call) RunAndReturn(run func(context.Context, *s3.Hea
 	return _c
 }
 
-// HeadObject provides a mock function with given fields: ctx, params, optFns
-func (_m *Client) HeadObject(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
-	_va := make([]interface{}, len(optFns))
-	for _i := range optFns {
-		_va[_i] = optFns[_i]
+// HeadObject provides a mock function with given fields: ctx, in, opts
+func (_m *Client) HeadObject(ctx context.Context, in *s3.HeadObjectInput, opts ...func(*s3.Options)) (*s3.HeadObjectOutput, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, params)
+	_ca = append(_ca, ctx, in)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -558,10 +558,10 @@ func (_m *Client) HeadObject(ctx context.Context, params *s3.HeadObjectInput, op
 	var r0 *s3.HeadObjectOutput
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.HeadObjectInput, ...func(*s3.Options)) (*s3.HeadObjectOutput, error)); ok {
-		return rf(ctx, params, optFns...)
+		return rf(ctx, in, opts...)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.HeadObjectInput, ...func(*s3.Options)) *s3.HeadObjectOutput); ok {
-		r0 = rf(ctx, params, optFns...)
+		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*s3.HeadObjectOutput)
@@ -569,7 +569,7 @@ func (_m *Client) HeadObject(ctx context.Context, params *s3.HeadObjectInput, op
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *s3.HeadObjectInput, ...func(*s3.Options)) error); ok {
-		r1 = rf(ctx, params, optFns...)
+		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -584,14 +584,14 @@ type Client_HeadObject_Call struct {
 
 // HeadObject is a helper method to define mock.On call
 //   - ctx context.Context
-//   - params *s3.HeadObjectInput
-//   - optFns ...func(*s3.Options)
-func (_e *Client_Expecter) HeadObject(ctx interface{}, params interface{}, optFns ...interface{}) *Client_HeadObject_Call {
+//   - in *s3.HeadObjectInput
+//   - opts ...func(*s3.Options)
+func (_e *Client_Expecter) HeadObject(ctx interface{}, in interface{}, opts ...interface{}) *Client_HeadObject_Call {
 	return &Client_HeadObject_Call{Call: _e.mock.On("HeadObject",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]interface{}{ctx, in}, opts...)...)}
 }
 
-func (_c *Client_HeadObject_Call) Run(run func(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options))) *Client_HeadObject_Call {
+func (_c *Client_HeadObject_Call) Run(run func(ctx context.Context, in *s3.HeadObjectInput, opts ...func(*s3.Options))) *Client_HeadObject_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]func(*s3.Options), len(args)-2)
 		for i, a := range args[2:] {
@@ -614,14 +614,14 @@ func (_c *Client_HeadObject_Call) RunAndReturn(run func(context.Context, *s3.Hea
 	return _c
 }
 
-// ListObjectVersions provides a mock function with given fields: ctx, params, optFns
-func (_m *Client) ListObjectVersions(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
-	_va := make([]interface{}, len(optFns))
-	for _i := range optFns {
-		_va[_i] = optFns[_i]
+// ListObjectVersions provides a mock function with given fields: ctx, in, opts
+func (_m *Client) ListObjectVersions(ctx context.Context, in *s3.ListObjectVersionsInput, opts ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, params)
+	_ca = append(_ca, ctx, in)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -632,10 +632,10 @@ func (_m *Client) ListObjectVersions(ctx context.Context, params *s3.ListObjectV
 	var r0 *s3.ListObjectVersionsOutput
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.ListObjectVersionsInput, ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error)); ok {
-		return rf(ctx, params, optFns...)
+		return rf(ctx, in, opts...)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.ListObjectVersionsInput, ...func(*s3.Options)) *s3.ListObjectVersionsOutput); ok {
-		r0 = rf(ctx, params, optFns...)
+		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*s3.ListObjectVersionsOutput)
@@ -643,7 +643,7 @@ func (_m *Client) ListObjectVersions(ctx context.Context, params *s3.ListObjectV
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *s3.ListObjectVersionsInput, ...func(*s3.Options)) error); ok {
-		r1 = rf(ctx, params, optFns...)
+		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -658,14 +658,14 @@ type Client_ListObjectVersions_Call struct {
 
 // ListObjectVersions is a helper method to define mock.On call
 //   - ctx context.Context
-//   - params *s3.ListObjectVersionsInput
-//   - optFns ...func(*s3.Options)
-func (_e *Client_Expecter) ListObjectVersions(ctx interface{}, params interface{}, optFns ...interface{}) *Client_ListObjectVersions_Call {
+//   - in *s3.ListObjectVersionsInput
+//   - opts ...func(*s3.Options)
+func (_e *Client_Expecter) ListObjectVersions(ctx interface{}, in interface{}, opts ...interface{}) *Client_ListObjectVersions_Call {
 	return &Client_ListObjectVersions_Call{Call: _e.mock.On("ListObjectVersions",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]interface{}{ctx, in}, opts...)...)}
 }
 
-func (_c *Client_ListObjectVersions_Call) Run(run func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options))) *Client_ListObjectVersions_Call {
+func (_c *Client_ListObjectVersions_Call) Run(run func(ctx context.Context, in *s3.ListObjectVersionsInput, opts ...func(*s3.Options))) *Client_ListObjectVersions_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]func(*s3.Options), len(args)-2)
 		for i, a := range args[2:] {
@@ -688,14 +688,14 @@ func (_c *Client_ListObjectVersions_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// ListObjects provides a mock function with given fields: ctx, params, optFns
-func (_m *Client) ListObjects(ctx context.Context, params *s3.ListObjectsInput, optFns ...func(*s3.Options)) (*s3.ListObjectsOutput, error) {
-	_va := make([]interface{}, len(optFns))
-	for _i := range optFns {
-		_va[_i] = optFns[_i]
+// ListObjects provides a mock function with given fields: ctx, in, opts
+func (_m *Client) ListObjects(ctx context.Context, in *s3.ListObjectsInput, opts ...func(*s3.Options)) (*s3.ListObjectsOutput, error) {
+	_va := make([]interface{}, len(opts))
+	for _i := range opts {
+		_va[_i] = opts[_i]
 	}
 	var _ca []interface{}
-	_ca = append(_ca, ctx, params)
+	_ca = append(_ca, ctx, in)
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
@@ -706,10 +706,10 @@ func (_m *Client) ListObjects(ctx context.Context, params *s3.ListObjectsInput, 
 	var r0 *s3.ListObjectsOutput
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.ListObjectsInput, ...func(*s3.Options)) (*s3.ListObjectsOutput, error)); ok {
-		return rf(ctx, params, optFns...)
+		return rf(ctx, in, opts...)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *s3.ListObjectsInput, ...func(*s3.Options)) *s3.ListObjectsOutput); ok {
-		r0 = rf(ctx, params, optFns...)
+		r0 = rf(ctx, in, opts...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*s3.ListObjectsOutput)
@@ -717,7 +717,7 @@ func (_m *Client) ListObjects(ctx context.Context, params *s3.ListObjectsInput, 
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *s3.ListObjectsInput, ...func(*s3.Options)) error); ok {
-		r1 = rf(ctx, params, optFns...)
+		r1 = rf(ctx, in, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -732,14 +732,14 @@ type Client_ListObjects_Call struct {
 
 // ListObjects is a helper method to define mock.On call
 //   - ctx context.Context
-//   - params *s3.ListObjectsInput
-//   - optFns ...func(*s3.Options)
-func (_e *Client_Expecter) ListObjects(ctx interface{}, params interface{}, optFns ...interface{}) *Client_ListObjects_Call {
+//   - in *s3.ListObjectsInput
+//   - opts ...func(*s3.Options)
+func (_e *Client_Expecter) ListObjects(ctx interface{}, in interface{}, opts ...interface{}) *Client_ListObjects_Call {
 	return &Client_ListObjects_Call{Call: _e.mock.On("ListObjects",
-		append([]interface{}{ctx, params}, optFns...)...)}
+		append([]interface{}{ctx, in}, opts...)...)}
 }
 
-func (_c *Client_ListObjects_Call) Run(run func(ctx context.Context, params *s3.ListObjectsInput, optFns ...func(*s3.Options))) *Client_ListObjects_Call {
+func (_c *Client_ListObjects_Call) Run(run func(ctx context.Context, in *s3.ListObjectsInput, opts ...func(*s3.Options))) *Client_ListObjects_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		variadicArgs := make([]func(*s3.Options), len(args)-2)
 		for i, a := range args[2:] {

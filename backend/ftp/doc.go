@@ -7,7 +7,7 @@ Rely on github.com/c2fo/vfs/v6/backend
 
 	  import(
 		  "github.com/c2fo/vfs/v6/backend"
-		  "github.com/c2fo/vfs/v6/backend/ftp"
+		  "github.com/c2fo/vfs/backend/ftp"
 	  )
 
 	  func UseFs() error {
@@ -17,7 +17,7 @@ Rely on github.com/c2fo/vfs/v6/backend
 
 Or call directly:
 
-	  import "github.com/c2fo/vfs/v6/backend/ftp"
+	  import "github.com/c2fo/vfs/backend/ftp"
 
 	  func DoSomething() {
 		  fs := ftp.NewFileSystem()

@@ -16,7 +16,7 @@ In this way, a caller of vfs backends can simply load the backend file system
     import(
         "github.com/c2fo/vfs/v6/backend"
         "github.com/c2fo/vfs/v6/backend/os"
-        "github.com/c2fo/vfs/v6/backend/s3"
+        "github.com/c2fo/vfs/backend/s3"
     )
 
     func main() {

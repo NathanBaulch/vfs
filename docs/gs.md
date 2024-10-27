@@ -11,7 +11,7 @@ Rely on [github.com/c2fo/vfs/v6/backend](backend.md)
 ```go
     import(
         "github.com/c2fo/vfs/v6/backend"
-        "github.com/c2fo/vfs/v6/backend/gs"
+        "github.com/c2fo/vfs/backend/gs"
     )
 
     func UseFs() error {
@@ -23,7 +23,7 @@ Rely on [github.com/c2fo/vfs/v6/backend](backend.md)
 Or call directly:
 
 ```go
-    import "github.com/c2fo/vfs/v6/backend/gs"
+    import "github.com/c2fo/vfs/backend/gs"
 
     func DoSomething() {
         fs := gs.NewFileSystem()

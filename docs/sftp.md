@@ -14,7 +14,7 @@ Rely on github.com/c2fo/vfs/v6/backend
 ```go
       import(
     	  "github.com/c2fo/vfs/v6/backend"
-    	  "github.com/c2fo/vfs/v6/backend/sftp"
+    	  "github.com/c2fo/vfs/backend/sftp"
       )
 
       func UseFs() error {
@@ -26,7 +26,7 @@ Rely on github.com/c2fo/vfs/v6/backend
 Or call directly:
 
 ```go
-      import "github.com/c2fo/vfs/v6/backend/sftp"
+      import "github.com/c2fo/vfs/backend/sftp"
 
       func DoSomething() {
     	  fs := sftp.NewFileSystem()

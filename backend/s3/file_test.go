@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/c2fo/vfs/v6"
-	"github.com/c2fo/vfs/v6/backend/s3/mocks"
+	"github.com/c2fo/vfs/backend/s3/mocks"
 	vfsmocks "github.com/c2fo/vfs/v6/mocks"
 	"github.com/c2fo/vfs/v6/options/delete"
 	"github.com/c2fo/vfs/v6/options/newfile"
