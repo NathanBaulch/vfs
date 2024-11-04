@@ -588,9 +588,9 @@ func (s *osFileTest) TestCursor() {
 	s.Equal("hello", string(data))
 
 	data = make([]byte, 3)
-	sought, serr := file.Seek(-3, 2) // cursor 3 from end of tempfile
+	seeked, serr := file.Seek(-3, 2) // cursor 3 from end of tempfile
 	s.NoError(serr)
-	s.Equal(int64(2), sought) // seek returns position relative to beginning of file
+	s.Equal(int64(2), seeked) // seek returns position relative to beginning of file
 
 	rd, rerr = file.Read(data) // cursor 0 from end of tempfile - data: "llo"
 	s.NoError(rerr)
