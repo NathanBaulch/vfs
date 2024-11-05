@@ -36,7 +36,7 @@ type File struct {
 }
 
 // Delete unlinks the file returning any error or nil.
-func (f *File) Delete(_ ...options.DeleteOption) error {
+func (f *File) Delete(...options.DeleteOption) error {
 	err := os.Remove(osFilePath(f))
 	if err == nil {
 		f.file = nil

@@ -302,7 +302,7 @@ func (f *File) CopyToLocation(location vfs.Location) (vfs.File, error) {
 // CRUD Operations
 
 // Delete removes the remote file.  Error is returned, if any.
-func (f *File) Delete(_ ...options.DeleteOption) error {
+func (f *File) Delete(...options.DeleteOption) error {
 	dc, err := f.fileSystem.DataConn(context.TODO(), f.authority, types.SingleOp, f)
 	if err != nil {
 		return err

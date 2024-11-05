@@ -150,7 +150,7 @@ func (s *osFileTest) TestRead() {
 	f, err = s.tmploc.NewFile("test_files/readFileFail.txt")
 	s.NoError(err)
 	f.(*File).useTempFile = true
-	f.(*File).fileOpener = func(filePath string) (*os.File, error) { return nil, errors.New("bad opener") }
+	f.(*File).fileOpener = func(string) (*os.File, error) { return nil, errors.New("bad opener") }
 	data = make([]byte, 4)
 	b, err = f.Read(data)
 	s.Error(err)
@@ -161,7 +161,7 @@ func (s *osFileTest) TestRead() {
 	s.NoError(err)
 	s.Equal(4, b)
 	s.NoError(f.Close())
-	f.(*File).fileOpener = func(filePath string) (*os.File, error) { return nil, errors.New("bad opener") }
+	f.(*File).fileOpener = func(string) (*os.File, error) { return nil, errors.New("bad opener") }
 	data = make([]byte, 4)
 	b, err = f.Read(data)
 	s.Error(err)
@@ -504,7 +504,7 @@ func (s *osFileTest) TestWrite() {
 	s.NoError(f.Touch())
 	_, err = f.Seek(0, 0)
 	s.NoError(err)
-	f.(*File).fileOpener = func(filePath string) (*os.File, error) { return nil, errors.New("bad opener") }
+	f.(*File).fileOpener = func(string) (*os.File, error) { return nil, errors.New("bad opener") }
 	data = make([]byte, 4)
 	_, err = f.Write(data)
 	s.Error(err)
@@ -628,7 +628,7 @@ func (s *osFileTest) TestCursorErrs() {
 	b, err := noFile.Write([]byte("blah"))
 	s.NoError(err)
 	s.Equal(4, b)
-	noFile.(*File).fileOpener = func(filePath string) (*os.File, error) { return nil, errors.New("bad opener") }
+	noFile.(*File).fileOpener = func(string) (*os.File, error) { return nil, errors.New("bad opener") }
 	s.Error(noFile.Close())
 }
 

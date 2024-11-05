@@ -54,7 +54,7 @@ type fileTest func(fileName string) bool
 
 // List returns a slice of all files in the top directory of the location.
 func (l *Location) List() ([]string, error) {
-	return l.fileList(func(name string) bool { return true })
+	return l.fileList(func(string) bool { return true })
 }
 
 // ListByPrefix returns a slice of all files starting with "prefix" in the top directory of the location.

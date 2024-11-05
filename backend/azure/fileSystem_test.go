@@ -125,7 +125,7 @@ func (s *FileSystemTestSuite) TestRetry() {
 		return nil
 	}
 
-	errorRetry := func(wrapped func() error) error {
+	errorRetry := func(func() error) error {
 		return errors.New("i always error")
 	}
 

@@ -857,7 +857,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 					_, err := f.Write([]byte("Bob!"))
 					return err
 				},
-				func(f *File) error {
+				func(*File) error {
 					// sleep 1 sec
 					time.Sleep(1 * time.Second)
 					return nil

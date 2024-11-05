@@ -141,7 +141,7 @@ func (s *fileSystemSuite) TestRetry() {
 	sentinel := errors.New("sentinel")
 	fs := &FileSystem{
 		options: Options{
-			Retry: func(wrapped func() error) error {
+			Retry: func(func() error) error {
 				return sentinel
 			},
 		},
@@ -151,13 +151,13 @@ func (s *fileSystemSuite) TestRetry() {
 
 type mockClientCreatorWithError struct{}
 
-func (c *mockClientCreatorWithError) NewClient(ctx context.Context, opts ...option.ClientOption) (*storage.Client, error) {
+func (c *mockClientCreatorWithError) NewClient(context.Context, ...option.ClientOption) (*storage.Client, error) {
 	return nil, errors.New("mock error")
 }
 
 type mockClientCreator struct{}
 
-func (c *mockClientCreator) NewClient(ctx context.Context, opts ...option.ClientOption) (*storage.Client, error) {
+func (c *mockClientCreator) NewClient(context.Context, ...option.ClientOption) (*storage.Client, error) {
 	return &storage.Client{}, nil
 }
 

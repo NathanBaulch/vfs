@@ -425,7 +425,7 @@ func (f *File) MoveToFile(file vfs.File) error {
 
 // Delete removes the file from the FileSystem. Sets it path in the fsMap to nil,
 // and also nils the file's members
-func (f *File) Delete(_ ...options.DeleteOption) error {
+func (f *File) Delete(...options.DeleteOption) error {
 	if ex, _ := f.Exists(); !ex {
 		return fs.ErrNotExist
 	}

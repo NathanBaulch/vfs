@@ -110,7 +110,7 @@ func (o *OSWrapper) URI() string {
 	return o.filename
 }
 
-func (o *OSWrapper) Delete(_ ...options.DeleteOption) error {
+func (o *OSWrapper) Delete(...options.DeleteOption) error {
 	return os.Remove(o.URI())
 }
 

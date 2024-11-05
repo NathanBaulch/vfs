@@ -235,7 +235,7 @@ file's path at the given location.
 #### func (*File) Delete
 
 ```go
-func (f *File) Delete(_ ...options.DeleteOption) error
+func (f *File) Delete(...options.DeleteOption) error
 ```
 Delete removes the remote file. Error is returned, if any.
 
