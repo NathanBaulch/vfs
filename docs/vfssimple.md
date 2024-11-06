@@ -14,32 +14,32 @@ supported backend file system by using full URI's:
 Just import vfssimple.
 
 ```go
-	package main
+package main
 
-	import (
-		"fmt"
+import (
+	"fmt"
 
-		"github.com/c2fo/vfs/v6/vfssimple"
-	)
+	"github.com/c2fo/vfs/v6/vfssimple"
+)
 
-	func main() {
-		myLocalDir, err := vfssimple.NewLocation("file:///tmp/")
-		if err != nil {
-			panic(err)
-		}
-
-		myS3File, err := vfssimple.NewFile("s3://mybucket/some/path/to/key.txt")
-		if err != nil {
-			panic(err)
-		}
-
-		localFile, err := myS3File.MoveToLocation(myLocalDir)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("moved %s to %s\n", myS3File, localFile)
+func main() {
+	myLocalDir, err := vfssimple.NewLocation("file:///tmp/")
+	if err != nil {
+		panic(err)
 	}
+
+	myS3File, err := vfssimple.NewFile("s3://mybucket/some/path/to/key.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	localFile, err := myS3File.MoveToLocation(myLocalDir)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("moved %s to %s\n", myS3File, localFile)
+}
 ```
 
 ### Authentication and Options
@@ -53,39 +53,39 @@ you can register and map file system options to locations or individual objects.
 resolve the provided URI in NewFile() or NewLocation() to the registered file system.
 
 ```go
-	package main
+package main
 
-	import(
-		"fmt"
+import (
+	"fmt"
 
-		"github.com/c2fo/vfs/v6/backend"
-		"github.com/c2fo/vfs/v6/backend/s3"
-		"github.com/c2fo/vfs/v6/vfssimple"
-	)
+	"github.com/c2fo/vfs/v6/backend"
+	"github.com/c2fo/vfs/v6/backend/s3"
+	"github.com/c2fo/vfs/v6/vfssimple"
+)
 
-	func main() {
-		bucketAuth := s3.NewFileSystem().WithOptions(s3.Options{
-			AccessKeyID:     "key1",
-			SecretAccessKey: "secret1",
-			Region:          "us-west-2",
-		})
+func main() {
+	bucketAuth := s3.NewFileSystem().WithOptions(s3.Options{
+		AccessKeyID:     "key1",
+		SecretAccessKey: "secret1",
+		Region:          "us-west-2",
+	})
 
-		fileAuth := s3.NewFileSystem().WithOptions(s3.Options{
-			AccessKeyID:     "key2",
-			SecretAccessKey: "secret2",
-			Region:          "us-west-2",
-		})
+	fileAuth := s3.NewFileSystem().WithOptions(s3.Options{
+		AccessKeyID:     "key2",
+		SecretAccessKey: "secret2",
+		Region:          "us-west-2",
+	})
 
-		backend.Register("s3://bucket1/", bucketAuth)
-		backend.Register("s3://bucket2/file.txt", fileAuth)
+	backend.Register("s3://bucket1/", bucketAuth)
+	backend.Register("s3://bucket2/file.txt", fileAuth)
 
-		secureFile, _ := vfssimple.NewFile("s3://bucket2/file.txt")
-		publicLocation, _ := vfssimple.NewLocation("s3://bucket1/")
+	secureFile, _ := vfssimple.NewFile("s3://bucket2/file.txt")
+	publicLocation, _ := vfssimple.NewLocation("s3://bucket1/")
 
-		secureFile.CopyToLocation(publicLocation)
+	secureFile.CopyToLocation(publicLocation)
 
-		fmt.Printf("copied %s to %s\n", secureFile, publicLocation)
-	}
+	fmt.Printf("copied %s to %s\n", secureFile, publicLocation)
+}
 ```
 
 ### Registered Backend Resolution
@@ -129,34 +129,34 @@ This option allows you to specify a custom retry method which backend implementa
 when calling remote file systems. This adds some flexibility in how a retry on file operations should be handled.
 
 ```go
-    package main
+package main
 
-    import(
-        "time"
+import (
+	"time"
 
-        "github.com/c2fo/vfs/v6/backend"
-        "github.com/c2fo/vfs/v6/backend/gs"
-    )
+	"github.com/c2fo/vfs/v6/backend"
+	"github.com/c2fo/vfs/v6/backend/gs"
+)
 
-    ...
+...
 
-    func InitializeWithRetry() error {
-        bucketAuth := gs.NewFileSystem().WithOptions(gs.Options{
-            Retry: func(wrapper func() error) error {
-                for i := 0; i < 5; i++ {
-                    if err := wrapper(); err != nil {
-                        time.Sleep(1 * time.Second)
-                        continue
-                    }
-                }
-            },
-        })
-    }
+func InitializeWithRetry() error {
+	bucketAuth := gs.NewFileSystem().WithOptions(gs.Options{
+		Retry: func(wrapper func() error) error {
+			for i := 0; i < 5; i++ {
+				if err := wrapper(); err != nil {
+					time.Sleep(1 * time.Second)
+					continue
+				}
+			}
+		},
+	})
+}
 ```
 
 ## Functions
 
-#### func  NewFile
+#### func NewFile
 
 ```go
 func NewFile(uri string) (vfs.File, error)
@@ -165,7 +165,7 @@ NewFile is a convenience function that allows for instantiating a file based on
 a uri string. Any backend file system is supported, though some may require prior
 configuration. See the docs for specific requirements of each.
 
-#### func  NewLocation
+#### func NewLocation
 
 ```go
 func NewLocation(uri string) (vfs.Location, error)

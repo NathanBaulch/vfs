@@ -24,7 +24,7 @@ Or call directly:
 
 		  location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
 		  if err != nil {
-			 #handle error
+			 // handle error
 		  }
 		  ...
 	  }
@@ -59,16 +59,16 @@ These methods are chainable:
 		  )
 
 		  location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
-		  #handle error
+		  // handle error
 
 		  file, err := location.NewFile("myfile.txt")
-		  #handle error
+		  // handle error
 
 		  _, err = file.Write([]byte("some text"))
-		  #handle error
+		  // handle error
 
 		  err = file.Close()
-		  #handle error
+		  // handle error
 
 	  }
 

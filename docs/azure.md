@@ -1,7 +1,6 @@
 # azure
 
 ---
-    import "github.com/c2fo/vfs/backend/azure"
 
 Package azure Microsoft Azure Blob Storage VFS Implementation
 
@@ -10,26 +9,26 @@ Package azure Microsoft Azure Blob Storage VFS Implementation
 Rely on github.com/c2fo/vfs/backend
 
 ```go
-    import(
-        "github.com/c2fo/vfs/v6/backend"
-        "github.com/c2fo/vfs/v6/backend/azure"
-    )
+import (
+	"github.com/c2fo/vfs/v6/backend"
+	"github.com/c2fo/vfs/v6/backend/azure"
+)
 
-    func UseFs() error {
-        fs := backend.Backend(azure.Scheme)
-        ...
-    }
+func UseFs() error {
+	fs := backend.Backend(azure.Scheme)
+	...
+}
 ```
 
 Or call directly:
 
 ```go
-    import "github.com/c2fo/vfs/v6/backend/azure"
+import "github.com/c2fo/vfs/v6/backend/azure"
 
-    func DoSomething() {
-        fs := azure.NewFileSystem()
-        ...
-    }
+func DoSomething() {
+	fs := azure.NewFileSystem()
+	...
+}
 ```
 
 azure can be augmented with the following implementation-specific methods.
@@ -37,24 +36,24 @@ azure can be augmented with the following implementation-specific methods.
 azure.FileSystem to use the following:
 
 ```go
-    func DoSomething() {
-        ...
+func DoSomething() {
+	...
 
-        // cast if fs was created using backend.Backend().  Not necessary if created directly from azure.NewFileSystem().
-        fs = fs.(azure.FileSystem)
+	// cast if fs was created using backend.Backend().  Not necessary if created directly from azure.NewFileSystem().
+	fs = fs.(azure.FileSystem)
 
-        // to pass in client options
-        fs = fs.WithOptions(
-            azure.Options{
-                AccountName: "...",
-                AccountKey: "...
-            },
-        )
+	// to pass in client options
+	fs = fs.WithOptions(
+		azure.Options{
+			AccountName: "...",
+			AccountKey: "...",
+		},
+	)
 
-        // to pass specific client, for instance mock client
-        client, _ := azure.NewClient(MockAzureClient{...})
-        fs = fs.WithClient(client)
-    }
+	// to pass specific client, for instance mock client
+	client, _ := azure.NewClient(MockAzureClient{...})
+	fs = fs.WithClient(client)
+}
 ```
 
 ### Authentication
@@ -64,12 +63,12 @@ looks for credentials in the following places, preferring the first location
 found:
 
 1. When the ENV vars `VFS_AZURE_ENV_NAME`, `VFS_AZURE_STORAGE_ACCOUNT`, `VFS_AZURE_TENANT_ID`, `VFS_AZURE_CLIENT_ID`, and
-       `VFS_AZURE_CLIENT_SECRET`, authentication is performed using an OAuth Token Authenticator.  This will allow access
-       to containers from multiple storage accounts.
-1. The ENV vars `VFS_AZURE_STORAGE_ACCOUNT` and `VFS_AZURE_STORAGE_KEY`, a shared key authenticator is used.  This will
-       allow access to any containers owned by the designated storage account.
-1. If none of the above are present, then no credentials are used and only publicly accessible blobs
-       will be available
+   `VFS_AZURE_CLIENT_SECRET`, authentication is performed using an OAuth Token Authenticator.  This will allow access
+   to containers from multiple storage accounts.
+2. The ENV vars `VFS_AZURE_STORAGE_ACCOUNT` and `VFS_AZURE_STORAGE_KEY`, a shared key authenticator is used.  This will
+   allow access to any containers owned by the designated storage account.
+3. If none of the above are present, then no credentials are used and only publicly accessible blobs
+   will be available
 
 ## Usage
 
@@ -83,7 +82,7 @@ const Scheme = "https"
 ```
 Scheme defines the scheme for the azure implementation
 
-#### func  IsValidURI
+#### func IsValidURI
 
 ```go
 func IsValidURI(u *url.URL) bool
@@ -91,7 +90,7 @@ func IsValidURI(u *url.URL) bool
 IsValidURI us a utility function used by vfssimple to determine if the given URI
 is a valid Azure URI
 
-#### func  ParsePath
+#### func ParsePath
 
 ```go
 func ParsePath(p string) (host, pth string, err error)
@@ -117,7 +116,7 @@ type BlobProperties struct {
 
 BlobProperties holds a subset of information returned by Blob.GetProperties(..)
 
-#### func  NewBlobProperties
+#### func NewBlobProperties
 
 ```go
 func NewBlobProperties(azureProps *azblob.BlobGetPropertiesResponse) *BlobProperties
@@ -169,7 +168,7 @@ type DefaultClient struct {
 DefaultClient is the main implementation that actually makes the calls to Azure
 Blob Storage
 
-#### func  NewClient
+#### func NewClient
 
 ```go
 func NewClient(options *Options) (*DefaultClient, error)
@@ -408,7 +407,7 @@ type FileSystem struct {
 
 FileSystem implements the vfs.FileSystem interface for Azure Blob Storage
 
-#### func  NewFileSystem
+#### func NewFileSystem
 
 ```go
 func NewFileSystem() *FileSystem
@@ -697,7 +696,7 @@ type Options struct {
 
 Options contains options necessary for the azure vfs implementation
 
-#### func  NewOptions
+#### func NewOptions
 
 ```go
 func NewOptions() *Options
@@ -705,13 +704,13 @@ func NewOptions() *Options
 NewOptions creates a new Options struct by populating values from environment
 variables.
 
-    Env Vars:
-      *VFS_AZURE_STORAGE_ACCOUNT
-      *VFS_AZURE_STORAGE_ACCESS_KEY
-      *VFS_AZURE_TENANT_ID
-      *VFS_AZURE_CLIENT_ID
-      *VFS_AZURE_CLIENT_SECRET
-      *VFS_AZURE_ENV_NAME
+Env Vars:
+- `*VFS_AZURE_STORAGE_ACCOUNT`
+- `*VFS_AZURE_STORAGE_ACCESS_KEY`
+- `*VFS_AZURE_TENANT_ID`
+- `*VFS_AZURE_CLIENT_ID`
+- `*VFS_AZURE_CLIENT_SECRET`
+- `*VFS_AZURE_ENV_NAME`
 
 #### func (*Options) Credential
 
@@ -721,11 +720,11 @@ func (o *Options) Credential() (azcore.TokenCredential, error)
 Credential returns an azcore.TokenCredential interface based on how options are
 configured. Options are checked and evaluated in the following order:
 
-    1. If TenantID, ClientID, and ClientSecret are non-empty, return azcore.TokenCredential.  This form of authentication
-       is used with service accounts and can be used to access containers across multiple storage accounts.
-    2. If AccountName, and AccountKey are non-empty, return azblob.SharedKeyCredential.  This form or authentication
-       is used with storage accounts and only provides access to a single storage account.
-    3. Returns a nil credential.  This allows access only to public blobs.
+1. If TenantID, ClientID, and ClientSecret are non-empty, return azcore.TokenCredential.  This form of authentication
+   is used with service accounts and can be used to access containers across multiple storage accounts.
+2. If AccountName, and AccountKey are non-empty, return azblob.SharedKeyCredential.  This form or authentication
+   is used with storage accounts and only provides access to a single storage account.
+3. Returns a nil credential.  This allows access only to public blobs.
 
 ### func TokenCredentialFactory
 

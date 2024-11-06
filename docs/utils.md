@@ -3,7 +3,7 @@
 ---
 
 ```go
-    import "github.com/c2fo/vfs/v6/utils"
+import "github.com/c2fo/vfs/v6/utils"
 ```
 
 #### Error Constants
@@ -25,7 +25,7 @@ const (
 )
 ```
 
-#### func  EnsureLeadingSlash
+#### func EnsureLeadingSlash
 
 ```go
 func EnsureLeadingSlash(dir string) string
@@ -33,7 +33,7 @@ func EnsureLeadingSlash(dir string) string
 EnsureLeadingSlash is like EnsureTrailingSlash except that it adds the leading
 slash if needed.
 
-#### func  EnsureTrailingSlash
+#### func EnsureTrailingSlash
 
 ```go
 func EnsureTrailingSlash(dir string) string
@@ -41,21 +41,21 @@ func EnsureTrailingSlash(dir string) string
 EnsureTrailingSlash is like AddTrailingSlash but will only ever use / since it's
 use for web uri's, never a Windows OS path.
 
-#### func  GetFileURI
+#### func GetFileURI
 
 ```go
 func GetFileURI(f vfs.File) string
 ```
 GetFileURI returns a File URI
 
-#### func  GetLocationURI
+#### func GetLocationURI
 
 ```go
 func GetLocationURI(l vfs.Location) string
 ```
 GetLocationURI returns a Location URI
 
-#### func  PathToURI
+#### func PathToURI
 
 ```go
 func PathToURI(p string) (string, error)
@@ -73,21 +73,21 @@ PathToURI takes a relative or absolute path and returns an OS URI.
 | relative/path/to/file.txt | file:///absolute/path/with/relative/path/to/file.txt |
 | relative/path/ | file:///absolute/path/with/relative/path/ |
 
-#### func  RemoveLeadingSlash
+#### func RemoveLeadingSlash
 
 ```go
 func RemoveLeadingSlash(path string) string
 ```
 RemoveLeadingSlash removes leading slash, if any
 
-#### func  RemoveTrailingSlash
+#### func RemoveTrailingSlash
 
 ```go
 func RemoveTrailingSlash(path string) string
 ```
 RemoveTrailingSlash removes trailing slash, if any
 
-#### func  TouchCopy
+#### func TouchCopy
 
 ```go
 func TouchCopy(writer io.Writer, reader io.Reader) error
@@ -96,7 +96,7 @@ TouchCopy is a wrapper around [io.Copy](https://godoc.org/io#Copy) which ensures
 (reader) will get written as an empty file. It guarantees a Write() call on the
 target file. Deprecated: Use TouchCopyBuffer Instead
 
-#### func  TouchCopyBuffered
+#### func TouchCopyBuffered
 
 ```go
 func TouchCopyBuffered(writer io.Writer, reader io.Reader, bufferSize int) error
@@ -108,7 +108,7 @@ TouchCopyMinBufferSize will result in a buffer of size TouchCopyMinBufferSize
 bytes. If bufferSize is > TouchCopyMinBufferSize it will result in a buffer of
 size bufferSize bytes
 
-#### func  UpdateLastModifiedByMoving
+#### func UpdateLastModifiedByMoving
 
 ```go
 func UpdateLastModifiedByMoving(file vfs.File) error
@@ -116,7 +116,7 @@ func UpdateLastModifiedByMoving(file vfs.File) error
 UpdateLastModifiedByMoving is used by some backends' Touch() method when a file
 already exists.
 
-#### func  ValidateAbsoluteFilePath
+#### func ValidateAbsoluteFilePath
 
 ```go
 func ValidateAbsoluteFilePath(name string) error
@@ -124,7 +124,7 @@ func ValidateAbsoluteFilePath(name string) error
 ValidateAbsoluteFilePath ensures that a file path has a leading slash but not a
 trailing slash
 
-#### func  ValidateAbsoluteLocationPath
+#### func ValidateAbsoluteLocationPath
 
 ```go
 func ValidateAbsoluteLocationPath(name string) error
@@ -132,7 +132,7 @@ func ValidateAbsoluteLocationPath(name string) error
 ValidateAbsoluteLocationPath ensure that a file path has both leading and
 trailing slashes
 
-#### func  ValidatePrefix
+#### func ValidatePrefix
 
 ```go
 func ValidatePrefix(prefix string) error
@@ -140,7 +140,7 @@ func ValidatePrefix(prefix string) error
 ValidatePrefix ensures that a prefix path has neither leading nor trailing
 slashes may not be empty but unlike relative file path, *may* be simply "."
 
-#### func  ValidateRelativeFilePath
+#### func ValidateRelativeFilePath
 
 ```go
 func ValidateRelativeFilePath(name string) error
@@ -148,7 +148,7 @@ func ValidateRelativeFilePath(name string) error
 ValidateRelativeFilePath ensures that a file path has neither leading nor
 trailing slashes
 
-#### func  ValidateRelativeLocationPath
+#### func ValidateRelativeLocationPath
 
 ```go
 func ValidateRelativeLocationPath(name string) error
@@ -165,7 +165,7 @@ type Authority struct {
 
 Authority represents host, port and userinfo (user/pass) in a URI
 
-#### func  NewAuthority
+#### func NewAuthority
 
 ```go
 func NewAuthority(authority string) (Authority, error)
@@ -202,8 +202,8 @@ func (a Authority) String() string
 String() returns a string representation of authority. It does not include
 password per https://tools.ietf.org/html/rfc3986#section-3.2.1
 
-    Applications should not render as clear text any data after the first colon (":") character found within a userinfo
-    subcomponent unless the data after the colon is the empty string (indicating no password).
+Applications should not render as clear text any data after the first colon (":") character found within a userinfo
+subcomponent unless the data after the colon is the empty string (indicating no password).
 
 #### func (Authority) UserInfo
 

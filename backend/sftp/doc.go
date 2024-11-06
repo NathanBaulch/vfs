@@ -24,7 +24,7 @@ Or call directly:
 
 		  location, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
 		  if err != nil {
-			 #handle error
+			 // handle error
 		  }
 		  ...
 	  }
@@ -47,9 +47,9 @@ These methods are chainable:
 			  Auth:            []ssh.AuthMethod{ssh.Password("mypassword")},
 			  HostKeyCallback: ssh.InsecureIgnoreHostKey,
 		  })
-		  #handle error
+		  // handle error
 		  client, err := _sftp.NewClient(sshClient)
-		  #handle error
+		  // handle error
 
 		  fs = fs.WithClient(client)
 
@@ -64,16 +64,16 @@ These methods are chainable:
 		  )
 
 		  location, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
-		  #handle error
+		  // handle error
 
 		  file := location.NewFile("myfile.txt")
-		  #handle error
+		  // handle error
 
 		  _, err := file.Write([]bytes("some text")
-		  #handle error
+		  // handle error
 
 		  err := file.Close()
-		  #handle error
+		  // handle error
 
 	  }
 

@@ -9,26 +9,26 @@ Package gs - Google Cloud Storage VFS implementation.
 Rely on [github.com/c2fo/vfs/v6/backend](backend.md)
 
 ```go
-    import(
-        "github.com/c2fo/vfs/v6/backend"
-        "github.com/c2fo/vfs/v6/backend/gs"
-    )
+import (
+	"github.com/c2fo/vfs/v6/backend"
+	"github.com/c2fo/vfs/v6/backend/gs"
+)
 
-    func UseFs() error {
-        fs := backend.Backend(gs.Scheme)
-        ...
-    }
+func UseFs() error {
+	fs := backend.Backend(gs.Scheme)
+	...
+}
 ```
 
 Or call directly:
 
 ```go
-    import "github.com/c2fo/vfs/v6/backend/gs"
+import "github.com/c2fo/vfs/v6/backend/gs"
 
-    func DoSomething() {
-        fs := gs.NewFileSystem()
-        ...
-    }
+func DoSomething() {
+	fs := gs.NewFileSystem()
+	...
+}
 ```
 
 gs can be augmented with the following implementation-specific methods. [Backend](backend.md)
@@ -36,30 +36,30 @@ returns [vfs.FileSystem](../README.md#type-filesystem) interface so it would hav
 use the following:
 
 ```go
-    func DoSomething() {
-        ...
+func DoSomething() {
+	...
 
-        // cast if fs was created using backend.Backend().  Not necessary if created directly from gs.NewFileSystem().
-        fs = fs.(gs.FileSystem)
+	// cast if fs was created using backend.Backend().  Not necessary if created directly from gs.NewFileSystem().
+	fs = fs.(gs.FileSystem)
 
-        // to use your own "context"
-        ctx := context.Background()
-        fs = fs.WithContext(ctx)
+	// to use your own "context"
+	ctx := context.Background()
+	fs = fs.WithContext(ctx)
 
-        // to pass in client options
-        fs = fs.WithOptions(
-            gs.Options{
-                CredentialFile: "/root/.gcloud/account.json",
-                Scopes:         []string{"ScopeReadOnly"},
-                //default scope is "ScopeFullControl"
-            },
-        )
+	// to pass in client options
+	fs = fs.WithOptions(
+		gs.Options{
+			CredentialFile: "/root/.gcloud/account.json",
+			Scopes:         []string{"ScopeReadOnly"},
+			//default scope is "ScopeFullControl"
+		},
+	)
 
-        // to pass specific client, for instance no-auth client
-        ctx := context.Background()
-        client, _ := storage.NewClient(ctx, option.WithoutAuthentication())
-        fs = fs.WithClient(client)
-    }
+	// to pass specific client, for instance no-auth client
+	ctx := context.Background()
+	client, _ := storage.NewClient(ctx, option.WithoutAuthentication())
+	fs = fs.WithClient(client)
+}
 ```
 
 ### Authentication
@@ -69,11 +69,11 @@ looks for credentials in the following places, preferring the first location
 found:
 
 1. A JSON file whose path is specified by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
-1. A JSON file in a location known to the gcloud command-line tool.
-    * On Windows, this is `%APPDATA%/gcloud/application_default_credentials.json`.
-    * On other systems, `$HOME/.config/gcloud/application_default_credentials.json`.
-1. On Google App Engine it uses the appengine.AccessToken function.
-1. On Google Compute Engine and Google App Engine Managed VMs, it fetches credentials from the metadata server.
+2. A JSON file in a location known to the gcloud command-line tool.
+   * On Windows, this is `%APPDATA%/gcloud/application_default_credentials.json`.
+   * On other systems, `$HOME/.config/gcloud/application_default_credentials.json`.
+3. On Google App Engine it uses the appengine.AccessToken function.
+4. On Google Compute Engine and Google App Engine Managed VMs, it fetches credentials from the metadata server.
 
 See https://cloud.google.com/docs/authentication/production for more auth info
 
@@ -243,7 +243,7 @@ type FileSystem struct {
 
 FileSystem implements [vfs.FileSystem](../README.md#type-filesystem) for the GCS file system.
 
-#### func  NewFileSystem
+#### func NewFileSystem
 
 ```go
 func NewFileSystem() *FileSystem

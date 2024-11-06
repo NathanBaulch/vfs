@@ -20,13 +20,13 @@ When building our platform, initially we wrote a library that was something to
 the effect of
 
 ```go
-      if config.DISK == "S3" {
-    	  // do some s3 file system operation
-      } else if config.DISK == "mock" {
-          // fake something
-      } else {
-          // do some native os.xxx operation
-      }
+if config.DISK == "S3" {
+	// do some s3 file system operation
+} else if config.DISK == "mock" {
+	// fake something
+} else {
+	// do some native os.xxx operation
+}
 ```
 
 Not only was ugly but because the behaviors of each "file system" were
@@ -46,11 +46,11 @@ file system backends.
 * self-contained set of structs that could be passed around like a file/dir handle
 * the struct would represent an existing or nonexistent file/dir
 * provide common (and only common) functionality across all file system so that after initialization, we don't care
-      what the underlying file system is and can therefore write our code agnostically/portably
+  what the underlying file system is and can therefore write our code agnostically/portably
 * use [io.*](https://godoc.org/io) interfaces such as [io.Reader](https://godoc.org/io#Reader) and [io.Writer](https://godoc.org/io#Writer) without needing to call a separate function
 * extensibility to easily add other needed file systems like Microsoft Azure Cloud File Storage
 * prefer native atomic functions when possible (ie S3 to S3 moving would use the native move api call rather than
-      copy-delete)
+  copy-delete)
 * a uniform way of addressing files regardless of file system.  This is why we use complete URI's in vfssimple
 * [fmt.Stringer](https://godoc.org/fmt#Stringer) interface so that the file struct passed to a log message (or other Stringer use) would show the URI
 * mockable file system
@@ -73,11 +73,11 @@ go install github.com/c2fo/vfs/v6
 #### Upgrading from v5 to v6
 With v6.0.0, sftp.Options struct changed to accept an array of Key Exchange algorithms rather than a string. To update, change the syntax of the auth commands.
 ```
-  "keyExchanges":"diffie-hellman-group-a256"
+"keyExchanges":"diffie-hellman-group-a256"
 ```
 becomes
 ```
-  "keyExchanges":["diffie-hellman-group-a256"]
+"keyExchanges":["diffie-hellman-group-a256"]
 ```
 
 ### Usage
@@ -92,47 +92,47 @@ You can then use those file systems to initialize locations which you'll be
 referencing frequently, or initialize files directly
 
 ```go
-    osFile, err := vfssimple.NewFile("file:///path/to/file.txt")
-    s3File, err := vfssimple.NewFile("s3://bucket/prefix/file.txt")
+osFile, err := vfssimple.NewFile("file:///path/to/file.txt")
+s3File, err := vfssimple.NewFile("s3://bucket/prefix/file.txt")
 
-    osLocation, err := vfssimple.NewLocation("file:///tmp/")
-    s3Location, err := vfssimple.NewLocation("s3://bucket/")
+osLocation, err := vfssimple.NewLocation("file:///tmp/")
+s3Location, err := vfssimple.NewLocation("s3://bucket/")
 
-    osTmpFile, err := osLocation.NewFile("anotherFile.txt") // file at /tmp/anotherFile.txt
+osTmpFile, err := osLocation.NewFile("anotherFile.txt") // file at /tmp/anotherFile.txt
 ```
 
 You can perform a number of actions without any consideration for the system's api or implementation details.
 
 ```go
-    osFileExists, err := osFile.Exists() // true, nil
-    s3FileExists, err := s3File.Exists() // false, nil
-    err = osFile.CopyToFile(s3File) // nil
-    s3FileExists, err = s3File.Exists() // true, nil
+osFileExists, err := osFile.Exists() // true, nil
+s3FileExists, err := s3File.Exists() // false, nil
+err = osFile.CopyToFile(s3File) // nil
+s3FileExists, err = s3File.Exists() // true, nil
 
-    movedOsFile, err := osFile.MoveToLocation(osLocation)
-    osFileExists, err = osFile.Exists() // false, nil (move actions delete the original file)
-    movedOsFileExists, err := movedOsFile.Exists() // true, nil
+movedOsFile, err := osFile.MoveToLocation(osLocation)
+osFileExists, err = osFile.Exists() // false, nil (move actions delete the original file)
+movedOsFileExists, err := movedOsFile.Exists() // true, nil
 
-    s3FileUri := s3File.URI() // s3://bucket/prefix/file.txt
-    s3FileName := s3File.Name() // file.txt
-    s3FilePath := s3File.Path() // /prefix/file.txt
+s3FileUri := s3File.URI() // s3://bucket/prefix/file.txt
+s3FileName := s3File.Name() // file.txt
+s3FilePath := s3File.Path() // /prefix/file.txt
 ```
 
 File's [io.*](https://godoc.org/io) interfaces may be used directly:
 
 ```go
-    reader := strings.NewReader("Clear is better than clever")
-    gsFile, err := vfssimple.NewFile("gs://somebucket/path/to/file.txt")
+reader := strings.NewReader("Clear is better than clever")
+gsFile, err := vfssimple.NewFile("gs://somebucket/path/to/file.txt")
 
-    byteCount, err := io.Copy(gsFile, reader)
-    err := gsFile.Close()
+byteCount, err := io.Copy(gsFile, reader)
+err := gsFile.Close()
 ```
 
 Note: [io.Copy()](https://godoc.org/io#Copy) doesn't strictly define what happens if a reader is empty.  This is complicated because io.Copy
 will first delegate actual copying in the following:
-  1. if the io.Reader also implements io.WriterTo, WriteTo() will do the copy
-  2. if the io.Writer also implements io.ReaderFrom, ReadFrom() will do the copy
-  3. finally, if neither 1 or 2, io.Copy will do its own buffered copy
+1. if the io.Reader also implements io.WriterTo, WriteTo() will do the copy
+2. if the io.Writer also implements io.ReaderFrom, ReadFrom() will do the copy
+3. finally, if neither 1 or 2, io.Copy will do its own buffered copy
 
 In case 3, and most implementations of cases 1 and 2, if reader is empty, Write() never gets called. What that means for
 vfs is there is no way for us to ensure that an empty file does or doesn't get written on an io.Copy().  For instance
@@ -143,7 +143,7 @@ functions.  If you need to ensure a file gets copied/moved with io.Copy(), you m
 
 ### Third-party Backends
 
-  * none so far
+* none so far
 
 Feel free to send a pull request if you want to add your backend to the list.
 
@@ -188,11 +188,11 @@ https://github.com/c2fo/
 
 ### Contributing
 
-    1. Fork it (<https://github.com/c2fo/vfs/fork>)
-    2. Create your feature branch (`git checkout -b feature/fooBar`)
-    3. Commit your changes (`git commit -am 'Add some fooBar'`)
-    4. Push to the branch (`git push origin feature/fooBar`)
-    5. Create a new Pull Request
+1. [Fork it](https://github.com/c2fo/vfs/fork)
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Commit your changes (`git commit -am 'Add some fooBar'`)
+4. Push to the branch (`git push origin feature/fooBar`)
+5. Create a new Pull Request
 
 ### License
 
@@ -301,8 +301,8 @@ type File interface {
 	Name() string
 
 	// Touch creates a zero-length file on the vfs.File if no File exists.  Update File's last modified timestamp.
-    	// Returns error if unable to touch File.
-        Touch() error
+	// Returns error if unable to touch File.
+	Touch() error
 
 	// URI returns the fully qualified absolute URI for the File.  IE, s3://bucket/some/path/to/file.txt
 	URI() string
@@ -409,7 +409,7 @@ type Location interface {
 	NewLocation(relLocPath string) (Location, error)
 
 	// Given location:
-	// 	   loc := fs.NewLocation("file:///some/path/to/")
+	//     loc := fs.NewLocation("file:///some/path/to/")
 	// calling:
 	//     loc.ChangeDir("../../")
 	// would update the current location instance to
@@ -471,15 +471,15 @@ implementation.
 
 Ex:
 ```go
-    var retrier Retry = func(wrapped func() error) error {
-      var ret error
-      for i := 0; i < 5; i++ {
-         if err := wrapped(); err != nil { ret = err; continue }
-      }
-      return ret
-    }
+var retrier Retry = func(wrapped func() error) error {
+	var ret error
+	for i := 0; i < 5; i++ {
+		if err := wrapped(); err != nil { ret = err; continue }
+	}
+	return ret
+}
 ```
-#### func  DefaultRetryer
+#### func DefaultRetryer
 
 ```go
 func DefaultRetryer() Retry

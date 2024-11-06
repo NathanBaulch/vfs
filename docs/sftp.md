@@ -12,31 +12,31 @@ to take up a large number of a server's available connections, so better to use 
 Rely on github.com/c2fo/vfs/v6/backend
 
 ```go
-      import(
-    	  "github.com/c2fo/vfs/v6/backend"
-    	  "github.com/c2fo/vfs/v6/backend/sftp"
-      )
+import (
+	"github.com/c2fo/vfs/v6/backend"
+	"github.com/c2fo/vfs/v6/backend/sftp"
+)
 
-      func UseFs() error {
-    	  fs := backend.Backend(sftp.Scheme)
-    	  ...
-      }
+func UseFs() error {
+	fs := backend.Backend(sftp.Scheme)
+	...
+}
 ```
 
 Or call directly:
 
 ```go
-      import "github.com/c2fo/vfs/v6/backend/sftp"
+import "github.com/c2fo/vfs/v6/backend/sftp"
 
-      func DoSomething() {
-    	  fs := sftp.NewFileSystem()
+func DoSomething() {
+	fs := sftp.NewFileSystem()
 
-    	  location, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
-    	  if err != nil {
-    		 #handle error
-    	  }
-    	  ...
-      }
+	location, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
+	if err != nil {
+		// handle error
+	}
+	...
+}
 ```
 
 sftp can be augmented with some implementation-specific methods. Backend returns
@@ -49,46 +49,45 @@ These methods are chainable:
 * `(*FileSystem) WithOptions(opts vfs.Options) *FileSystem`
 
 ```go
-      func DoSomething() {
-    	  // cast if fs was created using backend.Backend().  Not necessary if created directly from sftp.NewFileSystem().
-    	  fs := backend.Backend(sftp.Scheme)
-    	  fs = fs.(*sftp.FileSystem)
+func DoSomething() {
+	// cast if fs was created using backend.Backend().  Not necessary if created directly from sftp.NewFileSystem().
+	fs := backend.Backend(sftp.Scheme)
+	fs = fs.(*sftp.FileSystem)
 
-    	  // to pass specific client
-    	  sshClient, err := ssh.Dial("tcp", "myuser@server.com:22", &ssh.ClientConfig{
-    		  User:            "someuser",
-    		  Auth:            []ssh.AuthMethod{ssh.Password("mypassword")},
-    		  HostKeyCallback: ssh.InsecureIgnoreHostKey,
-    	  })
-    	  // handle error
-    	  client, err := _sftp.NewClient(sshClient)
-    	  // handle error
+	// to pass specific client
+	sshClient, err := ssh.Dial("tcp", "myuser@server.com:22", &ssh.ClientConfig{
+		User:            "someuser",
+		Auth:            []ssh.AuthMethod{ssh.Password("mypassword")},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey,
+	})
+	// handle error
+	client, err := _sftp.NewClient(sshClient)
+	// handle error
 
-    	  fs = fs.WithClient(client)
+	fs = fs.WithClient(client)
 
-    	  // to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.
-    	  // This behavior ensures that changes to settings will get applied to a newly created client.
-    	  fs = fs.WithOptions(
-    		  sftp.Options{
-    			  KeyFilePath:   "/home/Bob/.ssh/id_rsa",
-    			  KeyPassphrase: "s3cr3t",
-    			  KnownHostsCallback: ssh.InsecureIgnoreHostKey,
-    		  },
-    	  )
+	// to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.
+	// This behavior ensures that changes to settings will get applied to a newly created client.
+	fs = fs.WithOptions(
+		sftp.Options{
+			KeyFilePath:        "/home/Bob/.ssh/id_rsa",
+			KeyPassphrase:      "s3cr3t",
+			KnownHostsCallback: ssh.InsecureIgnoreHostKey,
+		},
+	)
 
-    	  location, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
-    	  // handle error
+	location, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
+	// handle error
 
-    	  file := location.NewFile("myfile.txt")
-    	  // handle error
+	file := location.NewFile("myfile.txt")
+	// handle error
 
-    	  _, err := file.Write([]bytes("some text")
-    	  // handle error
+	_, err := file.Write([]bytes("some text")
+	// handle error
 
-    	  err := file.Close()
-    	  // handle error
-
-      }
+	err := file.Close()
+	// handle error
+}
 ```
 
 ### Authentication
@@ -147,15 +146,15 @@ testing but should not be used in production.
 Passing in multiple host key algorithms, key exchange algorithms is supported -
 these are specified as string slices. Example:
 ```go
-    fs = fs.WithOptions(
-    	sftp.Options{
-    		KeyExchanges: []string{ "diffie-hellman-group-a256", "ecdh-sha2-nistp256" },
-    		Ciphers: []string{ "aes256-ctr", "aes192-ctr", "aes128-ctr" },
-    		MACs: []string{ "hmac-sha2-256", "hmac-sha2-512" },
-    		HostKeyAlgorithms: []string{ "ssh-rsa", "ssh-ed25519" },
-    		// other settings
-    	},
-      )
+fs = fs.WithOptions(
+	sftp.Options{
+		KeyExchanges: []string{ "diffie-hellman-group-a256", "ecdh-sha2-nistp256" },
+		Ciphers: []string{ "aes256-ctr", "aes192-ctr", "aes128-ctr" },
+		MACs: []string{ "hmac-sha2-256", "hmac-sha2-512" },
+		HostKeyAlgorithms: []string{ "ssh-rsa", "ssh-ed25519" },
+		// other settings
+	},
+)
 ```
 
 ### AutoDisconnect
@@ -175,29 +174,29 @@ Any server request action using the same underlying FileSystem (and therefore sf
 should be the most desirable behavior.
 
 ```go
-    func doSFTPStuff() {
-    	fs := sftp.NewFileSystem()
-    	loc, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
-    	file1, _ := loc.NewFile("file1.txt")
-    	file2, _ := loc.NewFile("file2.txt")
-    	file1.Touch()                               // "touches" file and starts disconnect timer (default: 10sec)
-    	_, _ := loc.List()                          // stops timer, does location listing, resets timer to 10 seconds
-    	file2.Touch()                               // stops timer, "touches" file2, resets timer to 10 seconds
-    	time.Sleep(time.Duration(15) * time.Second) // pause for 15 seconds, disconnects for server after 10 seconds
-    	_, _ := loc.List()                          // reconnects, does location listing, starts new disconnect timer
-    	return
-    }
+func doSFTPStuff() {
+	fs := sftp.NewFileSystem()
+	loc, err := fs.NewLocation("myuser@server.com:22", "/some/path/")
+	file1, _ := loc.NewFile("file1.txt")
+	file2, _ := loc.NewFile("file2.txt")
+	file1.Touch()                               // "touches" file and starts disconnect timer (default: 10sec)
+	_, _ := loc.List()                          // stops timer, does location listing, resets timer to 10 seconds
+	file2.Touch()                               // stops timer, "touches" file2, resets timer to 10 seconds
+	time.Sleep(time.Duration(15) * time.Second) // pause for 15 seconds, disconnects for server after 10 seconds
+	_, _ := loc.List()                          // reconnects, does location listing, starts new disconnect timer
+	return
+}
 
-    func main {
-    	// call our sftp function
-    	doSFTPStuff()
-    	// even though the vfs sftp objects have fallen out of scope, our connection remains UNTIL the timer counts down
+func main {
+	// call our sftp function
+	doSFTPStuff()
+	// even though the vfs sftp objects have fallen out of scope, our connection remains UNTIL the timer counts down
 
-    	// do more work (that take longer than 10 seconds
-    	doOtherTimeConsumingStuff()
+	// do more work (that take longer than 10 seconds
+	doOtherTimeConsumingStuff()
 
-    	// at some point during the above, the sftp connection will have closed
-    }
+	// at some point during the above, the sftp connection will have closed
+}
 ```
 
 NOTE: AutoDisconnect has nothing to do with "keep alive".  Here we're only concerned with releasing resources, not keeping
@@ -386,7 +385,7 @@ type FileSystem struct {
 
 FileSystem implements vfs.FileSystem for the SFTP filesystem.
 
-#### func  NewFileSystem
+#### func NewFileSystem
 
 ```go
 func NewFileSystem() *FileSystem

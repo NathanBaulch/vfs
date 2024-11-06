@@ -9,31 +9,31 @@ Package ftp - FTP VFS implementation.
 Rely on [github.com/c2fo/vfs/v6/backend](backend.md)
 
 ```go
-      import(
-    	  "github.com/c2fo/vfs/v6/backend"
-    	  "github.com/c2fo/vfs/v6/backend/ftp"
-      )
+import (
+	"github.com/c2fo/vfs/v6/backend"
+	"github.com/c2fo/vfs/v6/backend/ftp"
+)
 
-      func UseFs() error {
-    	  fs := backend.Backend(ftp.Scheme)
-    	  ...
-      }
+func UseFs() error {
+	fs := backend.Backend(ftp.Scheme)
+	...
+}
 ```
 
 Or call directly:
 
 ```go
-      import "github.com/c2fo/vfs/v6/backend/ftp"
+import "github.com/c2fo/vfs/v6/backend/ftp"
 
-      func DoSomething() {
-    	  fs := ftp.NewFileSystem()
+func DoSomething() {
+	fs := ftp.NewFileSystem()
 
-    	  location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
-    	  if err != nil {
-    		 #handle error
-    	  }
-    	  ...
-      }
+	location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
+	if err != nil {
+		// handle error
+	}
+	...
+}
 ```
 
 ftp can be augmented with some implementation-specific methods. [Backend](backend.md) returns
@@ -44,40 +44,39 @@ These methods are chainable: (*FileSystem) WithClient(client any)
 *FileSystem (*FileSystem) WithOptions(opts vfs.Options) *FileSystem
 
 ```go
-      func DoSomething() {
-    	  // cast if fs was created using backend.Backend().  Not necessary if created directly from ftp.NewFileSystem().
-    	  fs := backend.Backend(ftp.Scheme)
-    	  fs = fs.(*ftp.FileSystem)
+func DoSomething() {
+	// cast if fs was created using backend.Backend().  Not necessary if created directly from ftp.NewFileSystem().
+	fs := backend.Backend(ftp.Scheme)
+	fs = fs.(*ftp.FileSystem)
 
-    	  // to pass specific client implementing types.Client interface (in this case, _ftp github.com/jlaffaye/ftp)
-    	  client, _ := _ftp.Dial("server.com:21")
-    	  fs = fs.WithClient(client)
+	// to pass specific client implementing types.Client interface (in this case, _ftp github.com/jlaffaye/ftp)
+	client, _ := _ftp.Dial("server.com:21")
+	fs = fs.WithClient(client)
 
-    	  // to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.
-    	  // This behavior ensures that changes to settings will get applied to a newly created client.
-    	  fs = fs.WithOptions(
-    		  ftp.Options{
-    			  Password: "s3cr3t",
-    			  DisableEPSV: true,
-    			  Protocol: ftp.ProtocolFTPES,
-    			  DialTimeout: 15 * time.Second,
-    			  DebugWriter: os.Stdout,
-    		  },
-    	  )
+	// to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.
+	// This behavior ensures that changes to settings will get applied to a newly created client.
+	fs = fs.WithOptions(
+		ftp.Options{
+			Password: "s3cr3t",
+			DisableEPSV: true,
+			Protocol: ftp.ProtocolFTPES,
+			DialTimeout: 15 * time.Second,
+			DebugWriter: os.Stdout,
+		},
+	)
 
-    	  location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
-    	  #handle error
+	location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
+	// handle error
 
-    	  file, err := location.NewFile("myfile.txt")
-    	  #handle error
+	file, err := location.NewFile("myfile.txt")
+	// handle error
 
-    	  _, err := file.Write([]bytes("some text")
-    	  #handle error
+	_, err := file.Write([]bytes("some text")
+	// handle error
 
-    	  err := file.Close()
-    	  #handle error
-
-      }
+	err := file.Close()
+	// handle error
+}
 ```
 
 Note - this vfs implementation can have issues conducting simultaneous reads and writes on files created from the same filesystem. This can
@@ -86,40 +85,39 @@ cause issues when attempting to use those files with functions such as io.CopyBu
 The provided CopyToFile and CopyToLocation functions should be used instead in these instances.
 
 ```go
-		func DoSomething() {
-		  // cast if fs was created using backend.Backend().  Not necessary if created directly from ftp.NewFileSystem().
-		  fs := backend.Backend(ftp.Scheme)
-		  fs = fs.(*ftp.FileSystem)
+func DoSomething() {
+	// cast if fs was created using backend.Backend().  Not necessary if created directly from ftp.NewFileSystem().
+	fs := backend.Backend(ftp.Scheme)
+	fs = fs.(*ftp.FileSystem)
 
-		  // to pass specific client implementing types.Client interface (in this case, _ftp github.com/jlaffaye/ftp)
-		  client, _ := _ftp.Dial("server.com:21")
-		  fs = fs.WithClient(client)
+	// to pass specific client implementing types.Client interface (in this case, _ftp github.com/jlaffaye/ftp)
+	client, _ := _ftp.Dial("server.com:21")
+	fs = fs.WithClient(client)
 
-		  // to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.
-		  // This behavior ensures that changes to settings will get applied to a newly created client.
-		  fs = fs.WithOptions(
-			  ftp.Options{
-				  Password: "s3cr3t",
-				  DisableEPSV: true,
-				  Protocol: ftp.ProtocolFTPES,
-				  DialTimeout: 15 * time.Second,
-				  DebugWriter: os.Stdout,
-			  },
-		  )
+	// to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.
+	// This behavior ensures that changes to settings will get applied to a newly created client.
+	fs = fs.WithOptions(
+		ftp.Options{
+			Password: "s3cr3t",
+			DisableEPSV: true,
+			Protocol: ftp.ProtocolFTPES,
+			DialTimeout: 15 * time.Second,
+			DebugWriter: os.Stdout,
+		},
+	)
 
-		  location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
-		  #handle error
+	location, err := fs.NewLocation("myuser@server.com:21", "/some/path/")
+	// handle error
 
-		  file, err := location.NewFile("myfile.txt")
-		  #handle error
+	file, err := location.NewFile("myfile.txt")
+	// handle error
 
-		  _, err = file.Write([]byte("some text"))
-		  #handle error
+	_, err = file.Write([]byte("some text"))
+	// handle error
 
-		  err = file.Close()
-		  #handle error
-
-	  }
+	err = file.Close()
+	// handle error
+}
 ```
 
 ### Authentication
@@ -165,12 +163,14 @@ env vars.
 By default, FTPS and FTPS will use the following TLS configuration but can be
 overridden(recommended) with Options.TLSConfig:
 
-    tlsConfig := &tls.Config{
-    	MinVersion:         tls.VersionTLS12,
-    	InsecureSkipVerify: true,
-    	ClientSessionCache: tls.NewLRUClientSessionCache(0),
-    	ServerName:         hostname,
-    }
+```go
+tlsConfig := &tls.Config{
+	MinVersion:         tls.VersionTLS12,
+	InsecureSkipVerify: true,
+	ClientSessionCache: tls.NewLRUClientSessionCache(0),
+	ServerName:         hostname,
+}
+```
 
 See https://pkg.go.dev/crypto/tls#Config for all TLS configuration options.
 
@@ -356,7 +356,7 @@ type FileSystem struct {
 
 FileSystem implements vfs.FileSystem for the FTP filesystem.
 
-#### func  NewFileSystem
+#### func NewFileSystem
 
 ```go
 func NewFileSystem() *FileSystem
@@ -480,11 +480,11 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error)
 ListByPrefix calls FTP ReadDir with the location's path modified relatively by
 the prefix arg passed to the function.
 
-    - Returns ([]string{}, nil) in the case of a non-existent directory/prefix/location.
-    - "relative" prefixes are allowed, ie, listByPrefix from "/some/path/" with prefix "to/somepattern" is the same as
-      location "/some/path/to/" with prefix of "somepattern"
-    - If the user cares about the distinction between an empty location and a non-existent one, Location.Exists() should
-      be checked first.
+- Returns `([]string{}, nil)` in the case of a non-existent directory/prefix/location.
+- "relative" prefixes are allowed, ie, listByPrefix from "/some/path/" with prefix "to/somepattern" is the same as
+  location "/some/path/to/" with prefix of "somepattern"
+- If the user cares about the distinction between an empty location and a non-existent one, `Location.Exists()` should
+  be checked first.
 
 #### func (*Location) ListByRegex
 

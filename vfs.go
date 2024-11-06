@@ -230,14 +230,14 @@ type Options any
 // Retry is a function that can be used to wrap any operation into a definable retry operation. The wrapped argument
 // is called by the underlying VFS implementation.
 //
-// Ex:
+// Example:
 //
 //	var retrier Retry = func(wrapped func() error) error {
-//	  var ret error
-//	  for i := 0; i < 5; i++ {
-//	     if err := wrapped(); err != nil { ret = err; continue }
-//	  }
-//	  return ret
+//		var ret error
+//		for i := 0; i < 5; i++ {
+//			if err := wrapped(); err != nil { ret = err; continue }
+//		}
+//		return ret
 //	}
 type Retry func(wrapped func() error) error
 
