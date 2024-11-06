@@ -3,7 +3,6 @@ package ftp
 import (
 	"context"
 	"errors"
-	"fmt"
 	"path"
 
 	"github.com/c2fo/vfs/v6"
@@ -118,7 +117,7 @@ func (fs *FileSystem) Client(ctx context.Context, authority utils.Authority) (ty
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("unable to create client, vfs.Options must be an ftp.Options")
+			return nil, errors.New("unable to create client, vfs.Options must be an ftp.Options")
 		}
 	}
 	return fs.ftpclient, nil

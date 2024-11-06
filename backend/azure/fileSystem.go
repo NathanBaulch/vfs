@@ -2,7 +2,6 @@ package azure
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"path"
 	"regexp"
@@ -112,7 +111,7 @@ func (fs *FileSystem) Scheme() string {
 
 // Host returns the host portion of the URI.  For azure this consists of <account_name>.blob.core.windows.net.
 func (fs *FileSystem) Host() string {
-	return fmt.Sprintf("%s.blob.core.windows.net", fs.options.AccountName)
+	return fs.options.AccountName + ".blob.core.windows.net"
 }
 
 // Retry returns the default retry function.  This is overridable via the WithOptions function.

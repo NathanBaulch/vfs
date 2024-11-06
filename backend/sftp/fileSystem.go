@@ -2,7 +2,6 @@ package sftp
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -110,7 +109,7 @@ func (fs *FileSystem) Client(authority utils.Authority) (Client, error) {
 
 		opts, ok := fs.options.(Options)
 		if !ok {
-			return nil, fmt.Errorf("unable to create client, vfs.Options must be an sftp.Options")
+			return nil, errors.New("unable to create client, vfs.Options must be an sftp.Options")
 		}
 		var err error
 		fs.sftpclient, fs.sshConn, err = defaultClientGetter(authority, opts)

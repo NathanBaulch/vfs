@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -730,7 +731,7 @@ func (s *vfsTestSuite) File(baseLoc vfs.Location) {
 		}
 
 		for i, test := range tests {
-			s.Run(fmt.Sprintf("%d", i), func() {
+			s.Run(strconv.Itoa(i), func() {
 				// setup src
 				srcSpaces, err := srcLoc.NewFile(path.Join(test.Path, test.Filename))
 				s.Require().NoError(err)

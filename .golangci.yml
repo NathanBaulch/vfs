@@ -654,6 +654,7 @@ linters:
 #    - nakedret
 #    - noctx
     - nolintlint
+    - perfsprint
 #    - rowserrcheck
     - revive
     - staticcheck
