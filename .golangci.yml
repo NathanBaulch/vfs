@@ -664,6 +664,7 @@ linters:
     - unparam
     - unused
 #    - varcheck
+    - wastedassign
 #    - whitespace
 
   # don't enable:
