@@ -768,7 +768,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 				if readErr != nil {
 					panic(readErr)
 				}
-				contents = ptr(string(b))
+				contents = utils.Ptr(string(b))
 			}).
 			Return(&s3.PutObjectOutput{}, nil)
 	}
@@ -911,8 +911,4 @@ func (ts *fileTestSuite) TestWriteOperations() {
 
 func TestFile(t *testing.T) {
 	suite.Run(t, new(fileTestSuite))
-}
-
-func ptr[T any](value T) *T {
-	return &value
 }

@@ -231,8 +231,7 @@ func (s *FileTestSuite) TestDelete_NonExistentFile() {
 }
 
 func (s *FileTestSuite) TestLastModified() {
-	now := time.Now()
-	client := MockAzureClient{PropertiesResult: &BlobProperties{LastModified: &now}}
+	client := MockAzureClient{PropertiesResult: &BlobProperties{LastModified: utils.Ptr(time.Now())}}
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")

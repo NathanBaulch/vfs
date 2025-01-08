@@ -44,8 +44,7 @@ func (f *File) LastModified() (*time.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	t := userinfo.ModTime()
-	return &t, nil
+	return utils.Ptr(userinfo.ModTime()), nil
 }
 
 // Name returns the path portion of the file's path property. IE: "file.txt" of "sftp://someuser@host.com/some/path/to/file.txt
@@ -509,8 +508,7 @@ func (f *File) setPermissions(client Client, opts vfs.Options) error {
 	// ensure we're dealing with pointer to Options
 	ptrOpts, ok := opts.(*Options)
 	if !ok {
-		p := opts.(Options)
-		ptrOpts = &p
+		ptrOpts = utils.Ptr(opts.(Options))
 	}
 
 	// if file permissions are not set, return early

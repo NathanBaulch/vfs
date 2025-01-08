@@ -47,8 +47,7 @@ func (f *File) LastModified() (*time.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	t := entry.Time
-	return &t, nil
+	return &entry.Time, nil
 }
 
 func (f *File) stat(ctx context.Context) (*_ftp.Entry, error) {
