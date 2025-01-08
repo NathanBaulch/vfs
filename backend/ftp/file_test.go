@@ -300,14 +300,14 @@ func (ts *fileTestSuite) TestSeekError() {
 
 	// whence = 1, f.dataconn.Close() error
 	dataConnGetterFunc = getFakeDataConn
-	fakedconn := newFakeDataConn(types.OpenRead)
-	ftpfile.fileSystem.dataconn = fakedconn
+	dataConn = newFakeDataConn(types.OpenRead)
+	ftpfile.fileSystem.dataconn = dataConn
 	closeErr := errors.New("some close error")
-	fakedconn.AssertCloseErr(closeErr)
+	dataConn.AssertCloseErr(closeErr)
 	pos, err := ftpfile.Seek(3, 1)
 	ts.Require().ErrorIs(err, closeErr, "should be right kind of error")
 	ts.EqualValues(0, pos, "position should be 0 on error")
-	fakedconn.AssertCloseErr(nil)
+	dataConn.AssertCloseErr(nil)
 
 	// whence = 2, f.Size() error (client.GetEntry error)
 	dataConnGetterFunc = getDataConn
@@ -327,8 +327,8 @@ func (ts *fileTestSuite) TestSeekError() {
 	ts.EqualValues(0, pos, "position should be 0 on error")
 
 	// whence = 2, f.dataconn.Close() error
-	ftpfile.fileSystem.dataconn = fakedconn
-	fakedconn.AssertCloseErr(closeErr)
+	ftpfile.fileSystem.dataconn = dataConn
+	dataConn.AssertCloseErr(closeErr)
 	pos, err = ftpfile.Seek(3, 2)
 	ts.Require().ErrorIs(err, closeErr, "should be right kind of error")
 	ts.EqualValues(0, pos, "position should be 0 on error")

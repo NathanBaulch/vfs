@@ -209,7 +209,7 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 			"some text",
 		},
 		{
-			"Read, CLose, file does not exist",
+			"Read, Close, file does not exist",
 			"R(all);C()",
 			false,
 			true,

@@ -117,7 +117,7 @@ func getClient(authority utils.Authority, opts *Options) (Client, io.Closer, err
 	}
 
 	// Define the Client Config
-	config := getSShConfig(opts)
+	config := getSSHConfig(opts)
 	config.User = authority.UserInfo().Username()
 	config.Auth = authMethods
 	config.HostKeyCallback = hostKeyCallback
@@ -142,8 +142,8 @@ func getClient(authority utils.Authority, opts *Options) (Client, io.Closer, err
 	return sftpClient, sshConn, nil
 }
 
-// getSShConfig gets ssh config from Options
-func getSShConfig(opts *Options) *ssh.ClientConfig {
+// getSSHConfig gets ssh config from Options
+func getSSHConfig(opts *Options) *ssh.ClientConfig {
 	// copy default config
 	config := *defaultSSHConfig
 

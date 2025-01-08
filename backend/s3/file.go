@@ -456,7 +456,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	return f.cursorPos, nil
 }
 
-// Write implements the standard for io.Writer.  Note that writes are not committed to S3 until CLose() is called.
+// Write implements the standard for io.Writer.  Note that writes are not committed to S3 until Close() is called.
 func (f *File) Write(data []byte) (int, error) {
 	// check/initialize for writer
 	err := f.initWriters()

@@ -556,7 +556,7 @@ func (o *optionsSuite) TestGetSSHConfig() {
 
 	for _, tc := range testCases {
 		o.Run(tc.name, func() {
-			result := getSShConfig(tc.options)
+			result := getSSHConfig(tc.options)
 			o.Equal(tc.expect, result)
 		})
 	}

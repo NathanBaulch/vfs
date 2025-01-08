@@ -87,7 +87,7 @@ Scheme defines the scheme for the azure implementation
 ```go
 func IsValidURI(u *url.URL) bool
 ```
-IsValidURI us a utility function used by vfssimple to determine if the given URI
+IsValidURI is a utility function used by vfssimple to determine if the given URI
 is a valid Azure URI
 
 #### func ParsePath

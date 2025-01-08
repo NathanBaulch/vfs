@@ -160,7 +160,7 @@ func ParsePath(p string) (host, pth string, err error) {
 	return l[1], p, nil
 }
 
-// IsValidURI us a utility function used by vfssimple to determine if the given URI is a valid Azure URI
+// IsValidURI is a utility function used by vfssimple to determine if the given URI is a valid Azure URI
 func IsValidURI(u *url.URL) bool {
 	r := regexp.MustCompile(`.*\.blob\.core\.windows\.net`)
 
