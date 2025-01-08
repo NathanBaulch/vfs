@@ -188,7 +188,6 @@ func (s *memLocationTest) TestNewFile() {
 func (s *memLocationTest) TestNewFileSameName() {
 	sharedPath := "/path/to/file.txt"
 	firstFile, err := s.fileSystem.NewFile("", sharedPath)
-
 	s.NoError(err, "unexpected error creating a file")
 	location := firstFile.Location()
 

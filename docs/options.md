@@ -42,4 +42,3 @@ func (f *File) Delete(opts ...options.DeleteOption) error {
 	...
 }
 ```
-

@@ -445,7 +445,6 @@ func (f *File) openFile(flags int) (ReadWriteSeekCloser, error) { //nolint:gocyc
 
 			f.flagsUsed = flags
 			f.sftpfile = file
-
 		}
 		return f.sftpfile, nil
 	}

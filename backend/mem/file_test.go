@@ -457,7 +457,6 @@ func (s *memFileTest) TestEmptyCopyToFile() {
 	expectedText := ""
 	expectedSlice := make([]byte, 0)
 	otherFile, err := s.fileSystem.NewFile("", "/some/path/otherfile.txt")
-
 	s.NoError(err, "unexpected error creating a file")
 
 	_, err = otherFile.Write([]byte("yooooooooooo"))
