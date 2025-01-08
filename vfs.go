@@ -225,7 +225,7 @@ type File interface {
 }
 
 // Options are structs that contain various options specific to the file system
-type Options interface{}
+type Options any
 
 // Retry is a function that can be used to wrap any operation into a definable retry operation. The wrapped argument
 // is called by the underlying VFS implementation.

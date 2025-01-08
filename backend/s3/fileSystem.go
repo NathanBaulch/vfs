@@ -114,7 +114,7 @@ func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 }
 
 // WithClient passes in an s3 client and returns the file system (chainable)
-func (fs *FileSystem) WithClient(client interface{}) *FileSystem {
+func (fs *FileSystem) WithClient(client any) *FileSystem {
 	if c, ok := client.(Client); ok {
 		fs.client = c
 		fs.options = nil

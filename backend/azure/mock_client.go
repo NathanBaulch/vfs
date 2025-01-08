@@ -14,7 +14,7 @@ type MockAzureClient struct {
 	PropertiesError   error
 	PropertiesResult  *BlobProperties
 	ExpectedError     error
-	ExpectedResult    interface{}
+	ExpectedResult    any
 	UploadContentType string
 }
 

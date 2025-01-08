@@ -167,7 +167,7 @@ func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 }
 
 // WithClient passes in an sftp client and returns the filesystem (chainable)
-func (fs *FileSystem) WithClient(client interface{}) *FileSystem {
+func (fs *FileSystem) WithClient(client any) *FileSystem {
 	switch client.(type) {
 	case Client, *ssh.Client:
 		fs.sftpclient = client.(Client)

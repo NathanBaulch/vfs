@@ -18,7 +18,7 @@ const (
 
 type fsObject struct {
 	isFile bool
-	i      interface{}
+	i      any
 }
 type objMap map[string]*fsObject
 

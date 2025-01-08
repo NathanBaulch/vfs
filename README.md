@@ -454,7 +454,7 @@ file system.
 #### type Options
 
 ```go
-type Options interface{}
+type Options any
 ```
 
 Options are structs that contain various options specific to the file system
