@@ -171,5 +171,5 @@ func (s *osLocationTest) TestDeleteFile() {
 }
 
 func TestOSLocation(t *testing.T) {
-	suite.Run(t, new(osLocationTest))
+	suite.Run(t, &osLocationTest{})
 }

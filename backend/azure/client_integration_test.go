@@ -252,5 +252,5 @@ func (s *ClientIntegrationTestSuite) TestTouch_FileAlreadyExists() {
 }
 
 func TestAzureClient(t *testing.T) {
-	suite.Run(t, new(ClientIntegrationTestSuite))
+	suite.Run(t, &ClientIntegrationTestSuite{})
 }

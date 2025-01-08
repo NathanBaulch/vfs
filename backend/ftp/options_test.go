@@ -18,7 +18,7 @@ type optionsSuite struct {
 }
 
 func TestOptions(t *testing.T) {
-	suite.Run(t, new(optionsSuite))
+	suite.Run(t, &optionsSuite{})
 }
 
 func (s *optionsSuite) TestFetchUsername() {

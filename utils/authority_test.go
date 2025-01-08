@@ -367,5 +367,5 @@ func (a *authoritySuite) TestEncodeAuthority() {
 }
 
 func TestAuthority(t *testing.T) {
-	suite.Run(t, new(authoritySuite))
+	suite.Run(t, &authoritySuite{})
 }

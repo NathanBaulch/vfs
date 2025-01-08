@@ -629,7 +629,7 @@ func (o *optionsSuite) TestGetFileMode() {
 }
 
 func TestUtils(t *testing.T) {
-	suite.Run(t, new(optionsSuite))
+	suite.Run(t, &optionsSuite{})
 }
 
 type keyFiles struct {

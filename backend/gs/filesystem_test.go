@@ -15,7 +15,7 @@ type fileSystemSuite struct {
 }
 
 func TestFileSystemSuite(t *testing.T) {
-	suite.Run(t, new(fileSystemSuite))
+	suite.Run(t, &fileSystemSuite{})
 }
 
 func (s *fileSystemSuite) TestNewFile() {

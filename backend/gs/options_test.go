@@ -11,7 +11,7 @@ type optionsSuite struct {
 }
 
 func TestOptionsSuite(t *testing.T) {
-	suite.Run(t, new(optionsSuite))
+	suite.Run(t, &optionsSuite{})
 }
 
 func (s *optionsSuite) TestParseClientOptions() {

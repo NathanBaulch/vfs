@@ -46,5 +46,5 @@ func (s *testSuite) TestBackend() {
 }
 
 func TestBackend(t *testing.T) {
-	suite.Run(t, new(testSuite))
+	suite.Run(t, &testSuite{})
 }

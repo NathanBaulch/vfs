@@ -542,5 +542,5 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 }
 
 func TestFile(t *testing.T) {
-	suite.Run(t, new(fileTestSuite))
+	suite.Run(t, &fileTestSuite{})
 }

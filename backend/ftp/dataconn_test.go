@@ -24,7 +24,7 @@ type dataConnSuite struct {
 }
 
 func TestDataConn(t *testing.T) {
-	suite.Run(t, new(dataConnSuite))
+	suite.Run(t, &dataConnSuite{})
 }
 
 // test setup

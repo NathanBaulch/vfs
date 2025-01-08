@@ -30,7 +30,7 @@ type fileTestSuite struct {
 }
 
 func TestFile(t *testing.T) {
-	suite.Run(t, new(fileTestSuite))
+	suite.Run(t, &fileTestSuite{})
 }
 
 func (ts *fileTestSuite) SetupTest() {
