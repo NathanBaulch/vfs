@@ -61,7 +61,7 @@ func (ts *fileTestSuite) TestRead() {
 		sftpfile:  &nopWriteCloser{strings.NewReader(contents)},
 	}
 	// perform test
-	var localFile = bytes.NewBuffer([]byte{})
+	localFile := bytes.NewBuffer([]byte{})
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
 	b, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
@@ -95,7 +95,7 @@ func (ts *fileTestSuite) TestSeek() {
 	_, seekErr := sftpfile.Seek(6, 0)
 	ts.NoError(seekErr, "no error expected")
 
-	var localFile = bytes.NewBuffer([]byte{})
+	localFile := bytes.NewBuffer([]byte{})
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
 	_, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
@@ -140,7 +140,7 @@ func (ts *fileTestSuite) Test_openFile() {
 			flags: os.O_WRONLY | os.O_CREATE,
 			setupMocks: func(client *mocks.Client) {
 				client.EXPECT().MkdirAll("/some").Return(nil)
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0644)).Return(nil)
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(nil)
 				client.EXPECT().OpenFile("/some/path.txt", os.O_WRONLY|os.O_CREATE).Return(&sftp.File{}, nil)
 			},
 			expectedError: false,
@@ -168,7 +168,7 @@ func (ts *fileTestSuite) Test_openFile() {
 			flags: os.O_WRONLY,
 			setupMocks: func(client *mocks.Client) {
 				client.EXPECT().OpenFile("/some/path.txt", os.O_WRONLY).Return(&sftp.File{}, nil)
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0644)).Return(nil)
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -177,7 +177,7 @@ func (ts *fileTestSuite) Test_openFile() {
 			flags: os.O_WRONLY,
 			setupMocks: func(client *mocks.Client) {
 				client.EXPECT().OpenFile("/some/path.txt", os.O_WRONLY).Return(&sftp.File{}, nil)
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0644)).Return(errors.New("chmod error"))
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(errors.New("chmod error"))
 			},
 			expectedError:  true,
 			expectedErrMsg: "chmod error",
@@ -776,7 +776,7 @@ func (ts *fileTestSuite) TestTouch() {
 			setPermissions: true,
 			setupMocks: func(client *mocks.Client, sftpFile *mocks.ReadWriteSeekCloser, fileInfo *mocks.FileInfo) {
 				client.EXPECT().Stat("/some/path.txt").Return(fileInfo, nil).Once()
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0666)).Return(nil).Once()
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o666)).Return(nil).Once()
 				client.EXPECT().Chtimes("/some/path.txt", mock.Anything, mock.Anything).Return(nil).Once()
 			},
 		},
@@ -803,7 +803,7 @@ func (ts *fileTestSuite) TestTouch() {
 			filePath: "/some/path.txt",
 			setupMocks: func(client *mocks.Client, sftpFile *mocks.ReadWriteSeekCloser, fileInfo *mocks.FileInfo) {
 				client.EXPECT().Stat("/some/path.txt").Return(fileInfo, nil).Once()
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0666)).Return(err).Once()
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o666)).Return(err).Once()
 			},
 			expectedError:  err,
 			setPermissions: true,
@@ -961,7 +961,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 			name: "Default permissions set",
 			client: func() *mocks.Client {
 				client := mocks.NewClient(ts.T())
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0644)).Return(nil)
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(nil)
 				return client
 			}(),
 			options: func() vfs.Options {
@@ -974,7 +974,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 			name: "Chmod returns error",
 			client: func() *mocks.Client {
 				client := mocks.NewClient(ts.T())
-				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0644)).Return(errors.New("chmod error"))
+				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(errors.New("chmod error"))
 				return client
 			}(),
 			options: func() vfs.Options {

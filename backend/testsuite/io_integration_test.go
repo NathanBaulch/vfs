@@ -49,7 +49,7 @@ func (o *OSWrapper) Read(b []byte) (int, error) {
 		return 0, errors.New("file not found")
 	}
 	if o.file == nil {
-		file, err := os.OpenFile(o.filename, os.O_RDWR, 0600)
+		file, err := os.OpenFile(o.filename, os.O_RDWR, 0o600)
 		if err != nil {
 			return 0, err
 		}
@@ -64,7 +64,7 @@ func (o *OSWrapper) Write(b []byte) (int, error) {
 		if o.seekCalled {
 			flags = os.O_RDWR | os.O_CREATE
 		}
-		file, err := os.OpenFile(o.filename, flags, 0600) //nolint:gosec
+		file, err := os.OpenFile(o.filename, flags, 0o600) //nolint:gosec
 		if err != nil {
 			return 0, err
 		}
@@ -81,7 +81,7 @@ func (o *OSWrapper) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	if o.file == nil {
-		file, err := os.OpenFile(o.filename, os.O_RDWR, 0600)
+		file, err := os.OpenFile(o.filename, os.O_RDWR, 0o600)
 		if err != nil {
 			return 0, err
 		}

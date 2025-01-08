@@ -38,7 +38,7 @@ type Client interface {
 	Delete(path string) error
 	GetEntry(p string) (*_ftp.Entry, error)
 	List(p string) ([]*_ftp.Entry, error) // NLST for just names
-	Login(user string, password string) error
+	Login(user, password string) error
 	MakeDir(path string) error
 	Quit() error
 	Rename(from, to string) error

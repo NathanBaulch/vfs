@@ -12,8 +12,10 @@ import (
 )
 
 // Scheme defines the file system type.
-const Scheme = "file"
-const name = "os"
+const (
+	Scheme = "file"
+	name   = "os"
+)
 
 // FileSystem implements vfs.FileSystem for the OS file system.
 type FileSystem struct{}

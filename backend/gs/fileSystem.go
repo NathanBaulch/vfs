@@ -15,8 +15,10 @@ import (
 )
 
 // Scheme defines the file system type.
-const Scheme = "gs"
-const name = "Google Cloud Storage"
+const (
+	Scheme = "gs"
+	name   = "Google Cloud Storage"
+)
 
 // FileSystem implements vfs.FileSystem for the GCS file system.
 type FileSystem struct {

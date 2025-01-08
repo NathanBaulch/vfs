@@ -7,8 +7,10 @@ import (
 	"github.com/c2fo/vfs/v6"
 )
 
-var mmu sync.RWMutex
-var m map[string]vfs.FileSystem
+var (
+	mmu sync.RWMutex
+	m   map[string]vfs.FileSystem
+)
 
 // Register a new file system in backend map
 func Register(name string, v vfs.FileSystem) {

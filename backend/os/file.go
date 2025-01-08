@@ -407,8 +407,8 @@ func (f *File) openFile() (*os.File, error) {
 
 func openOSFile(filePath string) (*os.File, error) {
 	// Ensure the path exists before opening the file, NoOp if dir already exists.
-	var fileMode os.FileMode = 0666
-	if err := os.MkdirAll(filepath.Dir(filePath), os.ModeDir|0750); err != nil {
+	var fileMode os.FileMode = 0o666
+	if err := os.MkdirAll(filepath.Dir(filePath), os.ModeDir|0o750); err != nil {
 		return nil, err
 	}
 
@@ -420,7 +420,7 @@ func ensureDir(location vfs.Location) error {
 	if exists, err := location.Exists(); err != nil {
 		return err
 	} else if !exists {
-		if err := os.MkdirAll(location.Path(), os.ModeDir|0777); err != nil {
+		if err := os.MkdirAll(location.Path(), os.ModeDir|0o777); err != nil {
 			return err
 		}
 	}

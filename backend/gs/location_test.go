@@ -26,8 +26,8 @@ func (lt *locationTestSuite) TestList() {
 	objectPrefixes := []string{}
 	objects := Objects{}
 	objectBaseNameSet := map[string]struct{}{}
-	var createObjects func(prefix string, level int, levels int)
-	createObjects = func(prefix string, level int, levels int) {
+	var createObjects func(prefix string, level, levels int)
+	createObjects = func(prefix string, level, levels int) {
 		objectPrefixes = append(objectPrefixes, prefix)
 		for idx := 0; idx < fileCount; idx++ {
 			objectBaseName := fmt.Sprintf("f%d.txt", idx)
@@ -180,7 +180,8 @@ func (lt *locationTestSuite) TestExists_true() {
 				ContentEncoding: "utf8",
 			},
 			Content: []byte("content"),
-		}})
+		},
+	})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 	loc, err := fs.NewLocation(bucket, "/")
@@ -285,7 +286,8 @@ func (lt *locationTestSuite) TestDeleteFile() {
 				ContentEncoding: "utf8",
 			},
 			Content: []byte("content"),
-		}})
+		},
+	})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 

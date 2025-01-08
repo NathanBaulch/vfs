@@ -36,7 +36,7 @@ type Client interface {
 	Download(file vfs.File) (io.ReadCloser, error)
 
 	// Copy should copy the file specified by srcFile to the file specified by tgtFile
-	Copy(srcFile vfs.File, tgtFile vfs.File) error
+	Copy(srcFile, tgtFile vfs.File) error
 
 	// List should return a listing for the specified location. Listings should include the full path for the file.
 	List(l vfs.Location) ([]string, error)
