@@ -576,13 +576,11 @@ func (ts *fileTestSuite) TestDeleteError() {
 }
 
 func (ts *fileTestSuite) TestDeleteWithAllVersionsOption() {
-	var versions []types.ObjectVersion
-	verIds := [...]string{"ver1", "ver2"}
-	for i := range verIds {
-		versions = append(versions, types.ObjectVersion{VersionId: &verIds[i]})
-	}
 	versOutput := s3.ListObjectVersionsOutput{
-		Versions: versions,
+		Versions: []types.ObjectVersion{
+			{VersionId: aws.String("ver1")},
+			{VersionId: aws.String("ver2")},
+		},
 	}
 	s3cliMock.On("ListObjectVersions", matchContext, mock.AnythingOfType("*s3.ListObjectVersionsInput")).Return(&versOutput, nil)
 	s3cliMock.On("DeleteObject", matchContext, mock.AnythingOfType("*s3.DeleteObjectInput")).Return(&s3.DeleteObjectOutput{}, nil)
@@ -594,20 +592,18 @@ func (ts *fileTestSuite) TestDeleteWithAllVersionsOption() {
 }
 
 func (ts *fileTestSuite) TestDeleteWithAllVersionsOptionError() {
-	var versions []types.ObjectVersion
-	verIds := [...]string{"ver1", "ver2"}
-	for i := range verIds {
-		versions = append(versions, types.ObjectVersion{VersionId: &verIds[i]})
-	}
 	versOutput := s3.ListObjectVersionsOutput{
-		Versions: versions,
+		Versions: []types.ObjectVersion{
+			{VersionId: aws.String("ver1")},
+			{VersionId: aws.String("ver2")},
+		},
 	}
 	s3cliMock.On("ListObjectVersions", matchContext, mock.AnythingOfType("*s3.ListObjectVersionsInput")).
 		Return(&versOutput, nil)
 	key := utils.Ptr(utils.RemoveLeadingSlash(testFileName))
 	s3cliMock.On("DeleteObject", matchContext, &s3.DeleteObjectInput{Key: key, Bucket: &bucket}).
 		Return(&s3.DeleteObjectOutput{}, nil)
-	s3cliMock.On("DeleteObject", matchContext, &s3.DeleteObjectInput{Key: key, Bucket: &bucket, VersionId: &verIds[0]}).
+	s3cliMock.On("DeleteObject", matchContext, &s3.DeleteObjectInput{Key: key, Bucket: &bucket, VersionId: aws.String("ver1")}).
 		Return(nil, errors.New("something went wrong"))
 
 	err := testFile.Delete(delete.WithAllVersions())

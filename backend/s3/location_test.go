@@ -302,13 +302,11 @@ func (lt *locationTestSuite) TestDeleteFile() {
 }
 
 func (lt *locationTestSuite) TestDeleteFileWithAllVersionsOption() {
-	var versions []types.ObjectVersion
-	verIds := [...]string{"ver1", "ver2"}
-	for i := range verIds {
-		versions = append(versions, types.ObjectVersion{VersionId: &verIds[i]})
-	}
 	versOutput := s3.ListObjectVersionsOutput{
-		Versions: versions,
+		Versions: []types.ObjectVersion{
+			{VersionId: aws.String("ver1")},
+			{VersionId: aws.String("ver2")},
+		},
 	}
 	lt.s3cliMock.On("ListObjectVersions", matchContext, mock.AnythingOfType("*s3.ListObjectVersionsInput")).Return(&versOutput, nil)
 	lt.s3cliMock.On("DeleteObject", matchContext, mock.AnythingOfType("*s3.DeleteObjectInput")).Return(&s3.DeleteObjectOutput{}, nil)
@@ -329,10 +327,9 @@ func TestLocation(t *testing.T) {
 Helpers
 */
 func convertKeysToS3Objects(keys []string) []types.Object {
-	var objects []types.Object
-	for _, key := range keys {
-		object := types.Object{Key: aws.String(key)}
-		objects = append(objects, object)
+	objects := make([]types.Object, len(keys))
+	for i, key := range keys {
+		objects[i].Key = aws.String(key)
 	}
 	return objects
 }
