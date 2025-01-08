@@ -806,7 +806,7 @@ func (s *vfsTestSuite) File(baseLoc vfs.Location) {
 	s.NoError(err)
 	newModified, err := touchedFile.LastModified()
 	s.NoError(err)
-	s.True(newModified.UnixNano() > modifiedDeRef.UnixNano(), "touch updated modified date for %s", touchedFile)
+	s.Greater(newModified.UnixNano(), modifiedDeRef.UnixNano(), "touch updated modified date for %s", touchedFile)
 
 	/*
 		Delete unlinks the File on the file system.

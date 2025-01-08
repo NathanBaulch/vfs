@@ -536,7 +536,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	// copy to location success
 	newFile, err := sourceFile.CopyToLocation(targetLocation)
 	ts.NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
-	ts.Equal(newFile.URI(), "ftp://user@host.com:22/targ/hello.txt", "new file uri check")
+	ts.Equal("ftp://user@host.com:22/targ/hello.txt", newFile.URI(), "new file uri check")
 	ts.Equal(contents, newFile.(*File).fileSystem.dataconn.(*FakeDataConn).GetWriteContents(), "contents match")
 
 	// copy to location newfile failure
@@ -737,7 +737,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	// successful MoveToLocation
 	newFile, err := sourceFile.MoveToLocation(targetLocation)
 	ts.NoError(err, "error shouldn't be returned from successful call to MoveToFile")
-	ts.Equal(newFile.URI(), "ftp://user@host.com:22/targ/hello.txt", "new file uri check")
+	ts.Equal("ftp://user@host.com:22/targ/hello.txt", newFile.URI(), "new file uri check")
 
 	// failed to MoveToLocation (read error while copying)
 	sourceFile.path = ""

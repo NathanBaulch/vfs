@@ -667,7 +667,7 @@ func (s *memFileTest) TestLastModified() {
 
 	secondTime := *t
 
-	s.True(secondTime.UnixNano() > firstTime.UnixNano())
+	s.Greater(secondTime.UnixNano(), firstTime.UnixNano())
 }
 
 // TestName creates a file and names it and then asserts that the given name and the return of Name() match.
@@ -694,7 +694,7 @@ func (s *memFileTest) TestSize() {
 	s.NoError(err, "unexpected error retrieving size")
 	size2, err := otherFile.Size()
 	s.NoError(err, "unexpected error retrieving size")
-	s.True(size1 > size2)
+	s.Greater(size1, size2)
 }
 
 // TestPath makes sure that locations return the correct paths, along with leading and trailing slashes

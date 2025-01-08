@@ -66,7 +66,7 @@ func (ts *fileTestSuite) TestRead() {
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
 	b, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
 	ts.NoError(copyErr, "no error expected")
-	ts.Equal(b, int64(12), "byte count after copy")
+	ts.Equal(int64(12), b, "byte count after copy")
 	ts.NoError(sftpfile.Close(), "no error expected")
 	ts.Equal(localFile.String(), contents, "Copying an sftp file to a buffer should fill buffer with localfile's contents")
 
@@ -515,7 +515,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	newFile, err := sourceFile.CopyToLocation(targetMockLocation)
 	ts.NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 
-	ts.Equal(newFile.URI(), "sftp://user@host2.com:22/some/path.txt", "new file uri check")
+	ts.Equal("sftp://user@host2.com:22/some/path.txt", newFile.URI(), "new file uri check")
 
 	sourceClient.AssertExpectations(ts.T())
 	sourceSftpFile.AssertExpectations(ts.T())
@@ -731,7 +731,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	newFile, err := sourceFile.MoveToLocation(targetMockLocation)
 	ts.NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 
-	ts.Equal(newFile.URI(), "sftp://user@host2.com:22/some/other/path.txt", "new file uri check")
+	ts.Equal("sftp://user@host2.com:22/some/other/path.txt", newFile.URI(), "new file uri check")
 
 	sourceClient.AssertExpectations(ts.T())
 	sourceSftpFile.AssertExpectations(ts.T())

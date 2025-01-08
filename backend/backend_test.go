@@ -42,7 +42,7 @@ func (s *testSuite) TestBackend() {
 
 	// Unregister all backends
 	UnregisterAll()
-	s.Len(RegisteredBackends(), 0, "found 0 backends")
+	s.Empty(RegisteredBackends(), "found 0 backends")
 }
 
 func TestBackend(t *testing.T) {

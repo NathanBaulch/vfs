@@ -372,17 +372,13 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 				actualContents, err := executeSequence(s.T(), file, tc.sequence) // Implement this function
 
 				// Assert expected outcomes
-				if tc.expectFailure && err == nil {
-					s.Failf("%s: expected failure but got success", tc.description)
+				if tc.expectFailure {
+					s.Error(err, "%s: expected failure but got success", tc.description)
+				} else {
+					s.Require().NoError(err, "%s: expected success but got failure", tc.description)
 				}
 
-				if err != nil && !tc.expectFailure {
-					s.Failf("%s: expected success but got failure: %v", tc.description, err)
-				}
-
-				if tc.expectedResults != actualContents {
-					s.Failf("%s: expected results %s but got %s", tc.description, tc.expectedResults, actualContents)
-				}
+				s.Equal(tc.expectedResults, actualContents, "%s: expected results %s but got %s", tc.description, tc.expectedResults, actualContents)
 			}()
 		})
 	}
@@ -530,22 +526,16 @@ func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (Re
 func (s *ioTestSuite) teardownTestLocation(t *testing.T, testPath string) {
 	if strings.HasPrefix(testPath, "/") {
 		err := os.RemoveAll(testPath)
-		if err != nil {
-			t.Fatal(err)
-		}
+		s.Require().NoError(err)
 	} else {
 		scheme := strings.Split(testPath, ":")[0]
 		// Write something to the file
 		loc := s.testLocations[scheme]
 		files, err := loc.List()
-		if err != nil {
-			t.Fatal(err)
-		}
+		s.Require().NoError(err)
 		for _, file := range files {
 			err := loc.DeleteFile(file)
-			if err != nil {
-				t.Fatal(err)
-			}
+			s.Require().NoError(err)
 		}
 	}
 }
