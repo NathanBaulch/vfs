@@ -229,13 +229,3 @@ func (s *dataConnSuite) TestRead() {
 	s.Len(contents, int(written), "byte count should equal contents of reader")
 	s.Equal(contents, w.String(), "read contents equals original contents")
 }
-
-type writeNopCloser struct {
-	io.Writer
-}
-
-func (writeNopCloser) Close() error { return nil }
-
-func WriteNopCloser(w io.Writer) io.WriteCloser {
-	return writeNopCloser{w}
-}
