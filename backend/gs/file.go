@@ -372,11 +372,11 @@ func (f *File) Exists() (bool, error) {
 
 // Location returns a Location instance for the file's current location.
 func (f *File) Location() vfs.Location {
-	return vfs.Location(&Location{
+	return &Location{
 		fileSystem: f.fileSystem,
 		prefix:     utils.EnsureTrailingSlash(utils.EnsureLeadingSlash(path.Clean(path.Dir(f.key)))),
 		bucket:     f.bucket,
-	})
+	}
 }
 
 // CopyToLocation creates a copy of *File, using the file's current name as the new file's
@@ -426,7 +426,7 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 			tf.opts = f.opts
 		}
 
-		opts, ok := tf.Location().FileSystem().(*FileSystem).options.(Options)
+		opts, ok := tf.fileSystem.options.(Options)
 		if ok {
 			if f.isSameAuth(&opts) {
 				return f.copyWithinGCSToFile(tf)
@@ -437,7 +437,7 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	// Otherwise, use TouchCopyBuffered using io.CopyBuffer
 	fileBufferSize := 0
 
-	if opts, ok := f.Location().FileSystem().(*FileSystem).options.(Options); ok {
+	if opts, ok := f.fileSystem.options.(Options); ok {
 		fileBufferSize = opts.FileBufferSize
 	}
 
@@ -683,7 +683,7 @@ func (f *File) Name() string {
 
 // URI returns a full GCS URI string of the file.
 func (f *File) URI() string {
-	return utils.GetFileURI(vfs.File(f))
+	return utils.GetFileURI(f)
 }
 
 func (f *File) copyToLocalTempReader(tmpFile *os.File) error {

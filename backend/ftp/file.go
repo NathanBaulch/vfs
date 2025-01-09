@@ -434,11 +434,10 @@ func (f *File) Write(data []byte) (res int, err error) {
 
 // URI returns the File's URI as a string.
 func (f *File) URI() string {
-	loc := f.Location().(*Location)
 	return utils.EncodeURI(
 		f.fileSystem.Scheme(),
-		loc.Authority.UserInfo().Username(),
-		loc.Authority.HostPortStr(),
+		f.authority.UserInfo().Username(),
+		f.authority.HostPortStr(),
 		f.Path(),
 	)
 }

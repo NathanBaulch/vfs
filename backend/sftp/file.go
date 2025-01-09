@@ -223,7 +223,7 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 
 	fileBufferSize := 0
 
-	if opts, ok := f.Location().FileSystem().(*FileSystem).options.(Options); ok {
+	if opts, ok := f.fileSystem.options.(Options); ok {
 		fileBufferSize = opts.FileBufferSize
 	}
 
@@ -359,11 +359,10 @@ func (f *File) Write(data []byte) (res int, err error) {
 
 // URI returns the File's URI as a string.
 func (f *File) URI() string {
-	loc := f.Location().(*Location)
 	return utils.EncodeURI(
 		f.fileSystem.Scheme(),
-		loc.Authority.UserInfo().Username(),
-		loc.Authority.HostPortStr(),
+		f.Authority.UserInfo().Username(),
+		f.Authority.HostPortStr(),
 		f.Path(),
 	)
 }

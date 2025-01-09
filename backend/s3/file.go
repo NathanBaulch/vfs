@@ -145,7 +145,7 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	// Otherwise, use TouchCopyBuffered using io.CopyBuffer
 	fileBufferSize := 0
 
-	if opts, ok := f.Location().FileSystem().(*FileSystem).options.(Options); ok {
+	if opts, ok := f.fileSystem.options.(Options); ok {
 		fileBufferSize = opts.FileBufferSize
 	}
 
@@ -603,8 +603,8 @@ func (f *File) getCopyObjectInput(targetFile *File) *s3.CopyObjectInput {
 }
 
 func (f *File) isSameAuth(targetFile *File) (bool, types.ObjectCannedACL) {
-	fileOptions := f.Location().FileSystem().(*FileSystem).options
-	targetOptions := targetFile.Location().FileSystem().(*FileSystem).options
+	fileOptions := f.fileSystem.options
+	targetOptions := targetFile.fileSystem.options
 
 	if fileOptions == nil && targetOptions == nil {
 		// if both opts are nil, we must be using the default credentials

@@ -142,11 +142,11 @@ func (f *File) Exists() (bool, error) {
 
 // Location returns a Location instance for the files current location
 func (f *File) Location() vfs.Location {
-	return vfs.Location(&Location{
+	return &Location{
 		fileSystem: f.fileSystem,
 		container:  f.container,
 		path:       path.Dir(f.name),
-	})
+	}
 }
 
 // CopyToLocation creates a copy of *File, using the file's current name as the new file's
@@ -200,11 +200,7 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	}
 
 	// Otherwise, use TouchCopyBuffered using io.CopyBuffer
-	fileBufferSize := 0
-
-	if fs, ok := f.Location().FileSystem().(*FileSystem); ok {
-		fileBufferSize = fs.options.FileBufferSize
-	}
+	fileBufferSize := f.fileSystem.options.FileBufferSize
 
 	if terr := utils.TouchCopyBuffered(file, f, fileBufferSize); terr != nil {
 		return terr

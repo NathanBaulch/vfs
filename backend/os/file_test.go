@@ -209,7 +209,7 @@ func (s *osFileTest) TestCopyToFile() {
 	otherFile.On("Write", mock.Anything).Return(len(expectedText), nil)
 	otherFile.On("Close").Return(nil)
 	otherFile.On("Name").Return("other.txt")
-	otherFile.On("Location").Return(vfs.Location(&location))
+	otherFile.On("Location").Return(&location)
 
 	otherFs.On("NewFile", mock.Anything, mock.Anything).Return(otherFile, nil)
 
@@ -232,7 +232,7 @@ func (s *osFileTest) TestEmptyCopyToFile() {
 	otherFile.On("Write", mock.Anything).Return(len(expectedText), nil)
 	otherFile.On("Close").Return(nil)
 	otherFile.On("Name").Return("other.txt")
-	otherFile.On("Location").Return(vfs.Location(&location))
+	otherFile.On("Location").Return(&location)
 
 	otherFs.On("NewFile", mock.Anything, mock.Anything).Return(otherFile, nil)
 
