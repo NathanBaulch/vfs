@@ -38,7 +38,7 @@ func (ts *fileSystemTestSuite) TestNewFileSystem() {
 func (ts *fileSystemTestSuite) TestNewFile() {
 	filePath := "/path/to/file.txt"
 	file, err := s3fs.NewFile("bucketName", filePath)
-	ts.NoError(err, "No errors returned by NewFile(%s)", filePath)
+	ts.Require().NoError(err, "No errors returned by NewFile(%s)", filePath)
 	ts.NotNil(file, "fs.NewFile(%s) should assign all but first name component to key", filePath)
 }
 
@@ -46,23 +46,23 @@ func (ts *fileSystemTestSuite) TestNewFile_Error() {
 	// test nil pointer
 	var nils3fs *FileSystem
 	_, err := nils3fs.NewFile("", "/path/to/file.txt")
-	ts.EqualError(err, "non-nil s3.FileSystem pointer is required", "errors returned by NewFile")
+	ts.Require().EqualError(err, "non-nil s3.FileSystem pointer is required", "errors returned by NewFile")
 
 	// test validation error
 	file, err := s3fs.NewFile("bucketName", "relative/path/to/file.txt")
-	ts.EqualError(err, utils.ErrBadAbsFilePath, "errors returned by NewFile")
+	ts.Require().EqualError(err, utils.ErrBadAbsFilePath, "errors returned by NewFile")
 	ts.Nil(file, "NewFile shouldn't return a file")
 
 	filePath := ""
 	file, err = s3fs.NewFile("", filePath)
-	ts.Error(err, "NewFile(%s)", filePath)
+	ts.Require().Error(err, "NewFile(%s)", filePath)
 	ts.Nil(file, "NewFile(%s) shouldn't return a file", filePath)
 }
 
 func (ts *fileSystemTestSuite) TestNewLocation() {
 	locPath := "/path/to/"
 	loc, err := s3fs.NewLocation("bucketName", locPath)
-	ts.NoError(err, "No errors returned by NewLocation(%s)", locPath)
+	ts.Require().NoError(err, "No errors returned by NewLocation(%s)", locPath)
 	ts.NotNil(loc, "fs.NewLocation(%s) should assign all but first name component to key", locPath)
 }
 
@@ -70,16 +70,16 @@ func (ts *fileSystemTestSuite) TestNewLocation_Error() {
 	// test nil pointer
 	var nils3fs *FileSystem
 	_, err := nils3fs.NewLocation("", "/path/to/")
-	ts.EqualError(err, "non-nil s3.FileSystem pointer is required", "errors returned by NewLocation")
+	ts.Require().EqualError(err, "non-nil s3.FileSystem pointer is required", "errors returned by NewLocation")
 
 	// test validation error
 	file, err := s3fs.NewLocation("bucketName", "relative/path/to/")
-	ts.EqualError(err, utils.ErrBadAbsLocationPath, "errors returned by NewLocation")
+	ts.Require().EqualError(err, utils.ErrBadAbsLocationPath, "errors returned by NewLocation")
 	ts.Nil(file, "NewFile shouldn't return a file")
 
 	locPath := ""
 	file, err = s3fs.NewLocation("", locPath)
-	ts.EqualError(err, "non-empty strings for bucket and key are required", "NewLocation(%s)", locPath)
+	ts.Require().EqualError(err, "non-empty strings for bucket and key are required", "NewLocation(%s)", locPath)
 	ts.Nil(file, "NewLocation(%s) shouldn't return a file", locPath)
 }
 
@@ -102,7 +102,7 @@ func (ts *fileSystemTestSuite) TestWithOptions() {
 func (ts *fileSystemTestSuite) TestClient() {
 	// client already set
 	client, err := s3fs.Client()
-	ts.NoError(err, "no error")
+	ts.Require().NoError(err, "no error")
 	ts.Equal(s3fs.client, client, "client was already set")
 
 	// bad options
@@ -110,11 +110,11 @@ func (ts *fileSystemTestSuite) TestClient() {
 	s3fs.client = nil
 	s3fs.options = badOpt
 	_, err = s3fs.Client()
-	ts.EqualError(err, "unable to create client, vfs.Options must be an s3.Options", "client was already set")
+	ts.Require().EqualError(err, "unable to create client, vfs.Options must be an s3.Options", "client was already set")
 
 	s3fs = &FileSystem{}
 	client, err = s3fs.Client()
-	ts.NoError(err, "no error")
+	ts.Require().NoError(err, "no error")
 	ts.NotNil(client, "client was set")
 	ts.NotNil(s3fs.client, "client was set")
 }

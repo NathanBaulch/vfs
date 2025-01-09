@@ -171,15 +171,15 @@ func (s *vfsSimpleSuite) TestParseURI() {
 		s.Run(test.message, func() {
 			scheme, authority, path, err := parseURI(test.uri)
 			if test.err != nil {
-				s.Error(err, test.message)
+				s.Require().Error(err, test.message)
 				if errors.Is(err, test.err) {
-					s.ErrorIs(err, test.err, test.message)
+					s.Require().ErrorIs(err, test.err, test.message)
 				} else {
 					// this is necessary since we can't recreate sentinel errors from url.Parse() to do errors.Is() comparison
 					s.Contains(err.Error(), test.err.Error(), test.message)
 				}
 			} else {
-				s.NoError(err, test.message)
+				s.Require().NoError(err, test.message)
 				s.Equal(test.scheme, scheme, test.message)
 				s.Equal(test.authority, authority, test.message)
 				s.Equal(test.path, path, test.message)
@@ -278,15 +278,15 @@ func (s *vfsSimpleSuite) TestParseSupportedURI() {
 		s.Run(test.message, func() {
 			fs, authority, path, err := parseSupportedURI(test.uri)
 			if test.err != nil {
-				s.Error(err, test.message)
+				s.Require().Error(err, test.message)
 				if errors.Is(err, test.err) {
-					s.ErrorIs(err, test.err, test.message)
+					s.Require().ErrorIs(err, test.err, test.message)
 				} else {
 					// this is necessary since we can't recreate sentinel errors from url.Parse() to do errors.Is() comparison
 					s.Contains(err.Error(), test.err.Error(), test.message)
 				}
 			} else {
-				s.NoError(err, test.message)
+				s.Require().NoError(err, test.message)
 				s.Equal(test.scheme, fs.Scheme(), test.message)
 				s.Equal(test.authority, authority, test.message)
 				s.Equal(test.path, path, test.message)
@@ -294,7 +294,7 @@ func (s *vfsSimpleSuite) TestParseSupportedURI() {
 				switch fs.Scheme() {
 				case "s3":
 					s3cli, err := fs.(*s3.FileSystem).Client()
-					s.NoError(err, test.message)
+					s.Require().NoError(err, test.message)
 					if c, ok := s3cli.(*namedS3ClientMock); ok {
 						s.Equal(c.RegName, test.regFS, test.message)
 					} else {
@@ -315,11 +315,11 @@ func (s *vfsSimpleSuite) TestNewFile() {
 	// success
 	goodURI := "s3://filetest/path/file.txt"
 	file, err := NewFile(goodURI)
-	s.NoError(err, "no error expected for NewFile")
+	s.Require().NoError(err, "no error expected for NewFile")
 	s.IsType(&s3.File{}, file, "should be an s3.File")
 	s.Equal(file.URI(), goodURI)
 	s3cli, err := file.Location().FileSystem().(*s3.FileSystem).Client()
-	s.NoError(err, "no error expected")
+	s.Require().NoError(err, "no error expected")
 	if c, ok := s3cli.(*namedS3ClientMock); ok {
 		s.Equal("filetest-path", c.RegName, "should be 'filetest-path', not 'filetest-bucket' or 's3'")
 	} else {
@@ -329,15 +329,15 @@ func (s *vfsSimpleSuite) TestNewFile() {
 	// failure
 	badURI := "unknown://filetest/path/file.txt"
 	file, err = NewFile(badURI)
-	s.Error(err, "error expected for NewFile")
+	s.Require().Error(err, "error expected for NewFile")
 	s.Nil(file, "file should be nil")
-	s.ErrorIs(err, ErrRegFsNotFound)
+	s.Require().ErrorIs(err, ErrRegFsNotFound)
 
 	badURI = ""
 	file, err = NewFile(badURI)
-	s.Error(err, "error expected for NewFile")
+	s.Require().Error(err, "error expected for NewFile")
 	s.Nil(file, "file should be nil")
-	s.ErrorIs(err, ErrBlankURI)
+	s.Require().ErrorIs(err, ErrBlankURI)
 }
 
 func (s *vfsSimpleSuite) TestNewLocation() {
@@ -347,11 +347,11 @@ func (s *vfsSimpleSuite) TestNewLocation() {
 	// success
 	goodURI := "s3://loctest/path/to/here/"
 	loc, err := NewLocation(goodURI)
-	s.NoError(err, "no error expected for NewLocation")
+	s.Require().NoError(err, "no error expected for NewLocation")
 	s.IsType(&s3.Location{}, loc, "should be an s3.Location")
 	s.Equal(loc.URI(), goodURI)
 	s3cli, err := loc.FileSystem().(*s3.FileSystem).Client()
-	s.NoError(err, "no error expected")
+	s.Require().NoError(err, "no error expected")
 	if c, ok := s3cli.(*namedS3ClientMock); ok {
 		s.Equal("loctest-path", c.RegName, "should be 'loctest-path', not 'loctest-bucket' or 's3'")
 	} else {
@@ -361,15 +361,15 @@ func (s *vfsSimpleSuite) TestNewLocation() {
 	// failure
 	badURI := "unknown://filetest/path/to/here/"
 	loc, err = NewLocation(badURI)
-	s.Error(err, "error expected for NewLocation")
+	s.Require().Error(err, "error expected for NewLocation")
 	s.Nil(loc, "location should be nil")
-	s.ErrorIs(err, ErrRegFsNotFound)
+	s.Require().ErrorIs(err, ErrRegFsNotFound)
 
 	badURI = ""
 	loc, err = NewLocation(badURI)
-	s.Error(err, "error expected for NewLocation")
+	s.Require().Error(err, "error expected for NewLocation")
 	s.Nil(loc, "location should be nil")
-	s.ErrorIs(err, ErrBlankURI)
+	s.Require().ErrorIs(err, ErrBlankURI)
 }
 
 type namedS3ClientMock struct {

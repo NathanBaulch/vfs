@@ -20,7 +20,7 @@ func (o *optionsTestSuite) TestGetClient() {
 	// no options
 	opts := Options{}
 	client, err := getClient(opts)
-	o.NoError(err)
+	o.Require().NoError(err)
 	o.NotNil(client, "client is set")
 	o.Empty(client.(*s3.Client).Options().Region, "config is empty")
 
@@ -32,7 +32,7 @@ func (o *optionsTestSuite) TestGetClient() {
 		ForcePathStyle:  true,
 	}
 	client, err = getClient(opts)
-	o.NoError(err)
+	o.Require().NoError(err)
 	o.NotNil(client, "client is set")
 	o.Equal("some-region", client.(*s3.Client).Options().Region, "region is set")
 	o.Truef(client.(*s3.Client).Options().UsePathStyle, "region is set")
@@ -41,7 +41,7 @@ func (o *optionsTestSuite) TestGetClient() {
 	_ = os.Setenv("AWS_DEFAULT_REGION", "set-by-envvar")
 	opts = Options{}
 	client, err = getClient(opts)
-	o.NoError(err)
+	o.Require().NoError(err)
 	o.NotNil(client, "client is set")
 	o.Equal("set-by-envvar", client.(*s3.Client).Options().Region, "region is set by env var")
 }

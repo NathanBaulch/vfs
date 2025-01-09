@@ -29,7 +29,7 @@ func (s *FileTestSuite) TestClose() {
 	client := MockAzureClient{}
 	fs := NewFileSystem().WithClient(&client)
 	f, _ := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(f.Close())
+	s.Require().NoError(f.Close())
 }
 
 func (s *FileTestSuite) TestClose_FlushTempFile() {
@@ -39,7 +39,7 @@ func (s *FileTestSuite) TestClose_FlushTempFile() {
 
 	_, err := f.Write([]byte("Hello, World!"))
 	s.Require().NoError(err)
-	s.NoError(f.Close())
+	s.Require().NoError(f.Close())
 }
 
 func (s *FileTestSuite) TestRead() {
@@ -47,10 +47,10 @@ func (s *FileTestSuite) TestRead() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The file should exist so no error should be returned")
+	s.Require().NoError(err, "The file should exist so no error should be returned")
 	contents := make([]byte, 12)
 	n, err := f.Read(contents)
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal(12, n)
 	s.Equal("Hello World!", string(contents))
 }
@@ -60,13 +60,13 @@ func (s *FileTestSuite) TestSeek() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The file should exist so no error should be returned")
+	s.Require().NoError(err, "The file should exist so no error should be returned")
 	newOffset, err := f.Seek(6, io.SeekStart)
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal(int64(6), newOffset)
 	contents := make([]byte, 6)
 	n, err := f.Read(contents)
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal(6, n)
 	s.Equal("World!", string(contents))
 }
@@ -77,9 +77,9 @@ func (s *FileTestSuite) TestWrite() {
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
 	s.NotNil(f)
-	s.NoError(err)
+	s.Require().NoError(err)
 	n, err := f.Write([]byte(" Aaaaand, Goodbye!"))
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal(18, n)
 }
 
@@ -100,9 +100,9 @@ func (s *FileTestSuite) TestExists() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The file should exist so no error should be returned")
+	s.Require().NoError(err, "The file should exist so no error should be returned")
 	exists, err := f.Exists()
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.True(exists)
 }
 
@@ -111,9 +111,9 @@ func (s *FileTestSuite) TestExists_NonExistentFile() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
 	exists, err := f.Exists()
-	s.NoError(err, "no error is returned when the file does not exist")
+	s.Require().NoError(err, "no error is returned when the file does not exist")
 	s.False(exists)
 }
 
@@ -122,7 +122,7 @@ func (s *FileTestSuite) TestCloseWithContentType() {
 	fs := NewFileSystem().WithClient(&client)
 	f, _ := fs.NewFile("test-container", "/foo.txt", newfile.WithContentType("text/plain"))
 	_, _ = f.Write([]byte("Hello, World!"))
-	s.NoError(f.Close())
+	s.Require().NoError(f.Close())
 	s.Equal("text/plain", client.UploadContentType)
 }
 
@@ -141,7 +141,7 @@ func (s *FileTestSuite) TestCopyToLocation() {
 	source, _ := fs.NewFile("test-container", "/foo.txt")
 	targetLoc, _ := fs.NewLocation("test-container", "/new/folder/")
 	copiedFile, err := source.CopyToLocation(targetLoc)
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.NotNil(copiedFile)
 	s.Equal("/new/folder/foo.txt", copiedFile.Path())
 }
@@ -154,7 +154,7 @@ func (s *FileTestSuite) TestCopyToFile() {
 	target, _ := fs.NewFile("test-container", "/bar.txt")
 
 	err := source.CopyToFile(target)
-	s.NoError(err)
+	s.Require().NoError(err)
 }
 
 func (s *FileTestSuite) TestCopyToFileBuffered() {
@@ -166,7 +166,7 @@ func (s *FileTestSuite) TestCopyToFileBuffered() {
 	target, _ := fs.NewFile("test-container", "/bar.txt")
 
 	err := source.CopyToFile(target)
-	s.NoError(err)
+	s.Require().NoError(err)
 }
 
 func (s *FileTestSuite) TestMoveToLocation() {
@@ -177,7 +177,7 @@ func (s *FileTestSuite) TestMoveToLocation() {
 	target, _ := fs.NewLocation("test-container", "/new/folder/")
 
 	movedFile, err := source.MoveToLocation(target)
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.NotNil(movedFile)
 	s.Equal("/new/folder/foo.txt", movedFile.Path())
 }
@@ -189,7 +189,7 @@ func (s *FileTestSuite) TestMoveToFile() {
 	source, _ := fs.NewFile("test-container", "/foo.txt")
 	target, _ := fs.NewFile("test-container", "/bar.txt")
 	err := source.MoveToFile(target)
-	s.NoError(err)
+	s.Require().NoError(err)
 }
 
 func (s *FileTestSuite) TestDelete() {
@@ -197,8 +197,8 @@ func (s *FileTestSuite) TestDelete() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
-	s.NoError(f.Delete(), "The delete should succeed so there should be no error")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(f.Delete(), "The delete should succeed so there should be no error")
 }
 
 func (s *FileTestSuite) TestDeleteWithAllVersionsOption() {
@@ -206,8 +206,8 @@ func (s *FileTestSuite) TestDeleteWithAllVersionsOption() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
-	s.NoError(f.Delete(delete.WithAllVersions()), "The delete should succeed so there should be no error")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(f.Delete(delete.WithAllVersions()), "The delete should succeed so there should be no error")
 }
 
 func (s *FileTestSuite) TestDeleteWithAllVersionsOption_Error() {
@@ -215,9 +215,9 @@ func (s *FileTestSuite) TestDeleteWithAllVersionsOption_Error() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
 	err = f.Delete(delete.WithAllVersions())
-	s.Error(err, "If the file does not exist we get an error")
+	s.Require().Error(err, "If the file does not exist we get an error")
 }
 
 func (s *FileTestSuite) TestDelete_NonExistentFile() {
@@ -225,9 +225,9 @@ func (s *FileTestSuite) TestDelete_NonExistentFile() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
 	err = f.Delete()
-	s.Error(err, "If the file does not exist we get an error")
+	s.Require().Error(err, "If the file does not exist we get an error")
 }
 
 func (s *FileTestSuite) TestLastModified() {
@@ -235,9 +235,9 @@ func (s *FileTestSuite) TestLastModified() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
 	t, err := f.LastModified()
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.NotNil(t)
 }
 
@@ -246,9 +246,9 @@ func (s *FileTestSuite) TestSize() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
 	size, err := f.Size()
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal(uint64(5), size, "The size should be 5")
 }
 
@@ -257,9 +257,9 @@ func (s *FileTestSuite) TestSize_NonExistentFile() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
 	size, err := f.Size()
-	s.Error(err, "If the file does not exist we get an error")
+	s.Require().Error(err, "If the file does not exist we get an error")
 	s.Zero(size, "the file does not exist so the size is 0")
 }
 
@@ -285,8 +285,8 @@ func (s *FileTestSuite) TestTouch() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
-	s.NoError(f.Touch())
+	s.Require().NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(f.Touch())
 }
 
 func (s *FileTestSuite) TestTouch_NonexistentContainer() {
@@ -294,8 +294,8 @@ func (s *FileTestSuite) TestTouch_NonexistentContainer() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("nosuchcontainer", "/foo.txt")
-	s.NoError(err, "The path is valid so no error should be returned")
-	s.Error(f.Touch(), "The container does not exist so creating the new file should error")
+	s.Require().NoError(err, "The path is valid so no error should be returned")
+	s.Require().Error(f.Touch(), "The container does not exist so creating the new file should error")
 }
 
 func (s *FileTestSuite) TestTouchWithContentType() {
@@ -303,8 +303,8 @@ func (s *FileTestSuite) TestTouchWithContentType() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt", newfile.WithContentType("text/plain"))
-	s.NoError(err, "The path is valid so no error should be returned")
-	s.NoError(f.Touch())
+	s.Require().NoError(err, "The path is valid so no error should be returned")
+	s.Require().NoError(f.Touch())
 	s.Equal("text/plain", client.UploadContentType)
 }
 
@@ -323,7 +323,7 @@ func (s *FileTestSuite) TestCheckTempFile() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The file should exist so no error should be returned")
+	s.Require().NoError(err, "The file should exist so no error should be returned")
 
 	azureFile, ok := f.(*File)
 	s.True(ok, "Type assertion should succeed so we expect ok to be true")
@@ -331,11 +331,11 @@ func (s *FileTestSuite) TestCheckTempFile() {
 
 	s.Nil(azureFile.tempFile, "No calls to checkTempFile have occurred so we expect tempFile to be nil")
 	err = azureFile.checkTempFile()
-	s.NoError(err, "Check temp file should create a local temp file so no error is expected")
+	s.Require().NoError(err, "Check temp file should create a local temp file so no error is expected")
 	s.NotNil(azureFile.tempFile, "After the call to checkTempFile we should have a non-nil tempFile")
 
 	contents, err := io.ReadAll(azureFile.tempFile)
-	s.NoError(err, "No error should occur while reading the tempFile")
+	s.Require().NoError(err, "No error should occur while reading the tempFile")
 	s.Equal("Hello World!", string(contents))
 }
 
@@ -344,7 +344,7 @@ func (s *FileTestSuite) TestCheckTempFile_FileDoesNotExist() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The file should exist so no error should be returned")
+	s.Require().NoError(err, "The file should exist so no error should be returned")
 
 	azureFile, ok := f.(*File)
 	s.True(ok, "Type assertion should succeed so we expect ok to be true")
@@ -352,11 +352,11 @@ func (s *FileTestSuite) TestCheckTempFile_FileDoesNotExist() {
 
 	s.Nil(azureFile.tempFile, "No calls to checkTempFile have occurred so we expect tempFile to be nil")
 	err = azureFile.checkTempFile()
-	s.NoError(err, "Check temp file should create a local temp file so no error is expected")
+	s.Require().NoError(err, "Check temp file should create a local temp file so no error is expected")
 	s.NotNil(azureFile.tempFile, "After the call to checkTempFile we should have a non-nil tempFile")
 
 	contents, err := io.ReadAll(azureFile.tempFile)
-	s.NoError(err, "No error should occur while reading the tempFile")
+	s.Require().NoError(err, "No error should occur while reading the tempFile")
 	s.Empty(contents)
 }
 
@@ -365,7 +365,7 @@ func (s *FileTestSuite) TestCheckTempFile_DownloadError() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NoError(err, "The file should exist so no error should be returned")
+	s.Require().NoError(err, "The file should exist so no error should be returned")
 
 	azureFile, ok := f.(*File)
 	s.True(ok, "Type assertion should succeed so we expect ok to be true")
@@ -373,7 +373,7 @@ func (s *FileTestSuite) TestCheckTempFile_DownloadError() {
 
 	s.Nil(azureFile.tempFile, "No calls to checkTempFile have occurred so we expect tempFile to be nil")
 	err = azureFile.checkTempFile()
-	s.Error(err, "The call to client.Download() errors so we expect to get an error")
+	s.Require().Error(err, "The call to client.Download() errors so we expect to get an error")
 }
 
 func (s *FileTestSuite) TestIsSameAuth_SameAcctKey() {

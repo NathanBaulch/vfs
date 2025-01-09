@@ -31,24 +31,23 @@ type optionsSuite struct {
 
 func (o *optionsSuite) SetupSuite() {
 	dir, err := os.MkdirTemp("", "sftp_options_test")
-	o.NoError(err, "setting up sftp_options_test temp dir")
+	o.Require().NoError(err, "setting up sftp_options_test temp dir")
 	o.tmpdir = dir
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	o.NoError(err)
+	o.Require().NoError(err)
 	publicKey, err := ssh.NewPublicKey(&privateKey.PublicKey)
-	o.NoError(err)
+	o.Require().NoError(err)
 	o.publicKey = publicKey
 
 	keyFiles, err := setupKeyFiles(o.tmpdir)
-	if !o.NoError(err) {
-		panic("couldn't setup key files")
-	}
+	o.Require().NoError(err, "couldn't setup key files")
+
 	o.keyFiles = *keyFiles
 }
 
 func (o *optionsSuite) TearDownSuite() {
-	o.NoError(os.RemoveAll(o.tmpdir), "cleaning up after test")
+	o.Require().NoError(os.RemoveAll(o.tmpdir), "cleaning up after test")
 }
 
 type foundFileTest struct {
@@ -63,11 +62,11 @@ func (o *optionsSuite) TestFoundFile() {
 	// test file
 	filename := filepath.Join(o.tmpdir, "some.key")
 	f, err := os.Create(filename) //nolint:gosec
-	o.NoError(err, "create file for foundfile test")
+	o.Require().NoError(err, "create file for foundfile test")
 	_, err = f.WriteString("blah")
-	o.NoError(err, "writing to file for foundfile test")
-	o.NoError(f.Close(), "closing file for foundfile test")
-	defer func() { o.NoError(os.Remove(filename), "clean up file for foundfile test") }()
+	o.Require().NoError(err, "writing to file for foundfile test")
+	o.Require().NoError(f.Close(), "closing file for foundfile test")
+	defer func() { o.Require().NoError(os.Remove(filename), "clean up file for foundfile test") }()
 
 	tests := []foundFileTest{
 		{
@@ -90,9 +89,9 @@ func (o *optionsSuite) TestFoundFile() {
 		o.Run(t.message, func() {
 			actual, err := foundFile(t.file)
 			if t.hasError {
-				o.EqualError(err, t.errMessage, t.message)
+				o.Require().EqualError(err, t.errMessage, t.message)
 			} else {
-				o.NoError(err, t.message)
+				o.Require().NoError(err, t.message)
 				o.Equal(t.expected, actual, t.message)
 			}
 		})
@@ -155,12 +154,12 @@ func (o *optionsSuite) TestGetKeyFile() {
 			_, err := getKeyFile(t.keyfile, t.passphrase)
 			if t.hasError {
 				if t.err != nil {
-					o.ErrorIs(err, t.err, t.message)
+					o.Require().ErrorIs(err, t.err, t.message)
 				} else {
-					o.EqualError(err, t.errMessage, t.message)
+					o.Require().EqualError(err, t.errMessage, t.message)
 				}
 			} else {
-				o.NoError(err, t.message)
+				o.Require().NoError(err, t.message)
 			}
 		})
 	}
@@ -177,11 +176,11 @@ type hostkeyTest struct {
 func (o *optionsSuite) TestGetHostKeyCallback() {
 	knownHosts := filepath.Join(o.tmpdir, "known_hosts")
 	f, err := os.Create(knownHosts) //nolint:gosec
-	o.NoError(err, "create file for getHostKeyCallback test")
+	o.Require().NoError(err, "create file for getHostKeyCallback test")
 	_, err = f.WriteString("127.0.0.1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMkEmvHLSa43yoLA8QBqTfwgXgNCfd0DKs20NlBVbMoo21+Bs0fUpemyy6U0nnGHiOJVhiL7lNG/lB1fF1ymouM=") //nolint:lll // long line
-	o.NoError(err, "writing to file for getHostKeyCallback test")
-	o.NoError(f.Close(), "closing file for getHostKeyCallback test")
-	defer func() { o.NoError(os.Remove(knownHosts), "clean up file for getHostKeyCallback test") }()
+	o.Require().NoError(err, "writing to file for getHostKeyCallback test")
+	o.Require().NoError(f.Close(), "closing file for getHostKeyCallback test")
+	defer func() { o.Require().NoError(os.Remove(knownHosts), "clean up file for getHostKeyCallback test") }()
 
 	tests := []hostkeyTest{
 		{
@@ -249,20 +248,20 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 			tmpMap := make(map[string]string)
 			for k, v := range t.envVars {
 				tmpMap[k] = os.Getenv(k)
-				o.NoError(os.Setenv(k, v))
+				o.Require().NoError(os.Setenv(k, v))
 			}
 
 			// apply test
 			_, err := getHostKeyCallback(t.options)
 			if t.hasError {
-				o.EqualError(err, t.errMessage, t.message)
+				o.Require().EqualError(err, t.errMessage, t.message)
 			} else {
-				o.NoError(err, t.message)
+				o.Require().NoError(err, t.message)
 			}
 
 			// return env vars to original value
 			for k, v := range tmpMap {
-				o.NoError(os.Setenv(k, v))
+				o.Require().NoError(os.Setenv(k, v))
 			}
 		})
 	}
@@ -391,25 +390,25 @@ func (o *optionsSuite) TestGetAuthMethods() {
 			tmpMap := make(map[string]string)
 			for k, v := range t.envVars {
 				tmpMap[k] = os.Getenv(k)
-				o.NoError(os.Setenv(k, v))
+				o.Require().NoError(os.Setenv(k, v))
 			}
 
 			// apply test
 			auth, err := getAuthMethods(t.options)
 			if t.hasError {
 				if t.err != nil {
-					o.ErrorIs(err, t.err, t.message)
+					o.Require().ErrorIs(err, t.err, t.message)
 				} else {
-					o.EqualError(err, t.errMessage, t.message)
+					o.Require().EqualError(err, t.errMessage, t.message)
 				}
 			} else {
-				o.NoError(err, t.message)
+				o.Require().NoError(err, t.message)
 				o.Len(auth, t.returnCount, "auth count")
 			}
 
 			// return env vars to original value
 			for k, v := range tmpMap {
-				o.NoError(os.Setenv(k, v))
+				o.Require().NoError(os.Setenv(k, v))
 			}
 		})
 	}
@@ -426,7 +425,7 @@ type getClientTest struct {
 
 func (o *optionsSuite) TestGetClient() {
 	auth, err := utils.NewAuthority("someuser@badhost")
-	o.NoError(err)
+	o.Require().NoError(err)
 
 	tests := []getClientTest{
 		{
@@ -467,14 +466,14 @@ func (o *optionsSuite) TestGetClient() {
 			if t.hasError {
 				if o.Error(err, "error found") {
 					if t.err != nil {
-						o.ErrorIs(err, t.err, t.message)
+						o.Require().ErrorIs(err, t.err, t.message)
 					} else {
 						re := regexp.MustCompile(t.errRegex)
 						o.Regexp(re, err.Error(), "error matches")
 					}
 				}
 			} else {
-				o.NoError(err, t.message)
+				o.Require().NoError(err, t.message)
 			}
 		})
 	}
@@ -491,10 +490,10 @@ func (o *optionsSuite) TestMarshalOptions() {
 	}
 
 	raw, err := json.Marshal(opts)
-	o.NoError(err)
+	o.Require().NoError(err)
 	optStruct := &Options{}
 	err = json.Unmarshal(raw, optStruct)
-	o.NoError(err)
+	o.Require().NoError(err)
 
 	o.Equal(kh, optStruct.KeyFilePath, "KeyFilePath check")
 	o.Equal(pw, optStruct.Password, "Password check")
@@ -621,7 +620,7 @@ func (o *optionsSuite) TestGetFileMode() {
 			if tt.expectError {
 				o.Error(err)
 			} else {
-				o.NoError(err)
+				o.Require().NoError(err)
 				o.Equal(tt.expectedMode, mode)
 			}
 		})

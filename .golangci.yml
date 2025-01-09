@@ -659,6 +659,7 @@ linters:
     - staticcheck
 #    - structcheck
     - stylecheck
+    - testifylint
 #    - typecheck
     - unconvert
     - unparam
