@@ -11,7 +11,7 @@ type Options struct {
 	APIKey         string   `json:"apiKey,omitempty"`
 	CredentialFile string   `json:"credentialFilePath,omitempty"`
 	Endpoint       string   `json:"endpoint,omitempty"`
-	Scopes         []string `json:"WithoutAuthentication,omitempty"`
+	Scopes         []string `json:"withoutAuthentication,omitempty"`
 	Retry          vfs.Retry
 	FileBufferSize int // Buffer Size In Bytes Used with utils.TouchCopyBuffered
 }
