@@ -134,8 +134,8 @@ func (o objMap) getKeys() []string {
 func (o objMap) filesHere(absLocPath string) []*memFile {
 	paths := o.getKeys()
 	fileList := make([]*memFile, 0)
-	for i := range paths {
-		object := o[paths[i]]                         // retrieve the object
+	for _, p := range paths {
+		object := o[p]                                // retrieve the object
 		if ok := object != nil && object.isFile; ok { // if the object is a file, cast its interface, i, to a file and append to the slice
 			file := object.i.(*memFile)
 			if file.location.Path() == absLocPath {
@@ -151,8 +151,8 @@ func (o objMap) filesHere(absLocPath string) []*memFile {
 func (o objMap) fileNamesHere(absLocPath string) []string {
 	paths := o.getKeys()
 	fileList := make([]string, 0)
-	for i := range paths {
-		object := o[paths[i]]               // retrieve the object
+	for _, p := range paths {
+		object := o[p]                      // retrieve the object
 		if object != nil && object.isFile { // if the object is a file, cast its interface, i, to a file and append the name to the slice
 			file := object.i.(*memFile)
 			if utils.EnsureTrailingSlash(file.location.Path()) == absLocPath {

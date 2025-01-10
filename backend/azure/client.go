@@ -190,8 +190,8 @@ func (a *DefaultClient) List(l vfs.Location) ([]string, error) {
 			return []string{}, err
 		}
 
-		for i := range listBlob.ListBlobsHierarchySegmentResponse.Segment.BlobItems {
-			list = append(list, *listBlob.ListBlobsHierarchySegmentResponse.Segment.BlobItems[i].Name)
+		for _, item := range listBlob.ListBlobsHierarchySegmentResponse.Segment.BlobItems {
+			list = append(list, *item.Name)
 		}
 	}
 	return list, nil
@@ -252,8 +252,8 @@ func (a *DefaultClient) getBlobVersions(cli *container.Client, blobName string) 
 			return []*string{}, err
 		}
 
-		for i := range listBlob.ListBlobsFlatSegmentResponse.Segment.BlobItems {
-			versions = append(versions, listBlob.ListBlobsFlatSegmentResponse.Segment.BlobItems[i].VersionID)
+		for _, item := range listBlob.ListBlobsFlatSegmentResponse.Segment.BlobItems {
+			versions = append(versions, item.VersionID)
 		}
 	}
 	return versions, nil

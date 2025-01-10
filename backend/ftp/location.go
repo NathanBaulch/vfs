@@ -157,8 +157,8 @@ func (l *Location) Exists() (bool, error) {
 		return false, err
 	}
 
-	for i := range entries {
-		if entries[i].Name == locBasename && entries[i].Type == _ftp.EntryTypeFolder {
+	for _, entry := range entries {
+		if entry.Name == locBasename && entry.Type == _ftp.EntryTypeFolder {
 			return true, nil
 		}
 	}

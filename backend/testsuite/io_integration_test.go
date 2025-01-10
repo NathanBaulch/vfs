@@ -153,11 +153,11 @@ func (s *ioTestSuite) SetupSuite() {
 	uris = append(uris, strings.Split(locs, ";")...)
 
 	s.testLocations = make(map[string]vfs.Location)
-	for idx := range uris {
-		if strings.HasPrefix(uris[idx], "/") {
-			s.localDir = uris[idx]
+	for _, u := range uris {
+		if strings.HasPrefix(u, "/") {
+			s.localDir = u
 		} else {
-			l, err := vfssimple.NewLocation(uris[idx])
+			l, err := vfssimple.NewLocation(u)
 			s.Require().NoError(err)
 			switch l.FileSystem().Scheme() {
 			case "file":

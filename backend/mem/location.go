@@ -53,10 +53,10 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	mapRef := l.fileSystem.fsMap
 	if om, ok := mapRef[l.volume]; ok {
 		paths := om.getKeys()
-		for i := range paths {
-			if strings.Contains(paths[i], str) {
-				if path.Ext(paths[i]) != "" && strings.Contains(str, utils.EnsureTrailingSlash(path.Dir(paths[i]))) {
-					list = append(list, path.Base(paths[i]))
+		for _, p := range paths {
+			if strings.Contains(p, str) {
+				if path.Ext(p) != "" && strings.Contains(str, utils.EnsureTrailingSlash(path.Dir(p))) {
+					list = append(list, path.Base(p))
 					sort.Strings(list)
 				}
 			}
@@ -76,9 +76,9 @@ func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 	mapRef := l.fileSystem.fsMap
 	if om, ok := mapRef[l.Volume()]; ok {
 		namesHere := om.fileNamesHere(str)
-		for i := range namesHere {
-			if regex.MatchString(namesHere[i]) {
-				list = append(list, namesHere[i])
+		for _, fileName := range namesHere {
+			if regex.MatchString(fileName) {
+				list = append(list, fileName)
 			}
 		}
 	}
