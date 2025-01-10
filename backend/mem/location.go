@@ -34,9 +34,9 @@ func (l *Location) List() ([]string, error) {
 	// setting mapRef to this value for code readability
 	mapRef := l.fileSystem.fsMap
 	// are there paths on this volume?
-	if _, ok := mapRef[l.Volume()]; ok {
+	if om, ok := mapRef[l.Volume()]; ok {
 		// getting a list of the file names on this location
-		list := mapRef[l.Volume()].fileNamesHere(locPath)
+		list := om.fileNamesHere(locPath)
 		// fileNamesHere() returns an empty list if no files were found
 		return list, nil
 	}
@@ -51,8 +51,8 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	list := make([]string, 0)
 	str := path.Join(l.Path(), prefix)
 	mapRef := l.fileSystem.fsMap
-	if _, ok := mapRef[l.volume]; ok {
-		paths := mapRef[l.volume].getKeys()
+	if om, ok := mapRef[l.volume]; ok {
+		paths := om.getKeys()
 		for i := range paths {
 			if strings.Contains(paths[i], str) {
 				if path.Ext(paths[i]) != "" && strings.Contains(str, utils.EnsureTrailingSlash(path.Dir(paths[i]))) {
@@ -74,8 +74,8 @@ func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 	list := make([]string, 0)
 	str := l.Path()
 	mapRef := l.fileSystem.fsMap
-	if _, ok := mapRef[l.Volume()]; ok {
-		namesHere := mapRef[l.Volume()].fileNamesHere(str)
+	if om, ok := mapRef[l.Volume()]; ok {
+		namesHere := om.fileNamesHere(str)
 		for i := range namesHere {
 			if regex.MatchString(namesHere[i]) {
 				list = append(list, namesHere[i])
@@ -114,11 +114,11 @@ func (l *Location) NewLocation(relLocPath string) (vfs.Location, error) {
 	str = utils.EnsureTrailingSlash(path.Clean(str))
 	mapRef := l.fileSystem.fsMap
 	// if the location already exists on the map, just return that one
-	if object, ok := mapRef[l.volume]; ok {
-		paths := object.getKeys()
+	if om, ok := mapRef[l.volume]; ok {
+		paths := om.getKeys()
 		for _, potentialPath := range paths {
 			if ok := potentialPath == str; ok {
-				return mapRef[l.volume][potentialPath].i.(*Location), nil
+				return om[potentialPath].i.(*Location), nil
 			}
 		}
 	}
@@ -159,8 +159,8 @@ func (l *Location) NewFile(relFilePath string, opts ...options.NewFileOption) (v
 	// file already exists. if it does, return a reference to it
 	mapRef := l.fileSystem.fsMap
 	relativeLocationPath := utils.EnsureTrailingSlash(path.Dir(path.Join(l.Path(), relFilePath)))
-	if _, ok := mapRef[l.volume]; ok {
-		fileList := mapRef[l.volume].filesHere(relativeLocationPath)
+	if om, ok := mapRef[l.volume]; ok {
+		fileList := om.filesHere(relativeLocationPath)
 		for _, file := range fileList {
 			if file.name == path.Base(relFilePath) {
 				fileCopy := deepCopy(file)
@@ -197,13 +197,13 @@ func (l *Location) DeleteFile(relFilePath string, _ ...options.DeleteOption) err
 	l.fileSystem.mu.Lock()
 	defer l.fileSystem.mu.Unlock()
 	mapRef := l.fileSystem.fsMap
-	if _, ok := mapRef[vol]; ok {
-		if thisObj, ok2 := mapRef[vol][fullPath]; ok2 {
+	if om, ok := mapRef[vol]; ok {
+		if thisObj, ok := om[fullPath]; ok {
 			file := thisObj.i.(*memFile)
 			file.exists = false
 			thisObj.i = nil
-			mapRef[vol][fullPath] = nil // setting that key to nil so it truly no longer lives on this system
-			delete(mapRef[vol], fullPath)
+			om[fullPath] = nil // setting that key to nil so it truly no longer lives on this system
+			delete(om, fullPath)
 			return nil
 		}
 	}

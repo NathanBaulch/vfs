@@ -78,8 +78,8 @@ func fetchPassword(opts Options) string {
 	password := defaultPassword
 
 	// override with env var, if any
-	if _, ok := os.LookupEnv(envPassword); ok {
-		password = os.Getenv(envPassword)
+	if setting, ok := os.LookupEnv(envPassword); ok {
+		password = setting
 	}
 
 	// override with options, if any
@@ -139,8 +139,7 @@ func isDisableOption(opts Options) bool {
 	disableEpsv := false
 
 	// override with env var, if any
-	if _, ok := os.LookupEnv(envDisableEPSV); ok {
-		setting := os.Getenv(envDisableEPSV)
+	if setting, ok := os.LookupEnv(envDisableEPSV); ok {
 		if strings.EqualFold(setting, "true") || setting == "1" {
 			disableEpsv = true
 		}
@@ -194,8 +193,8 @@ func fetchProtocol(opts Options) string {
 	protocol := ProtocolFTP
 
 	// override with env var
-	if _, ok := os.LookupEnv(envProtocol); ok {
-		protocol = os.Getenv(envProtocol)
+	if setting, ok := os.LookupEnv(envProtocol); ok {
+		protocol = setting
 	}
 
 	// override with options value
