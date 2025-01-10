@@ -6,17 +6,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-
-	"github.com/c2fo/vfs/v6"
 )
 
 type FileSystemTestSuite struct {
 	suite.Suite
-}
-
-func (s *FileSystemTestSuite) TestVFSFileSystemImplementor() {
-	fs := FileSystem{}
-	s.Implements((*vfs.FileSystem)(nil), &fs, "Does not implement the vfs.FileSystem interface")
 }
 
 func (s *FileSystemTestSuite) TestNewFile() {

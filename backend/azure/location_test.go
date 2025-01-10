@@ -6,17 +6,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-
-	"github.com/c2fo/vfs/v6"
 )
 
 type LocationTestSuite struct {
 	suite.Suite
-}
-
-func (s *LocationTestSuite) TestVFSLocationImplementor() {
-	l := Location{}
-	s.Implements((*vfs.Location)(nil), &l, "Does not implement the vfs.Location interface")
 }
 
 func (s *LocationTestSuite) TestString() {

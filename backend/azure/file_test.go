@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/c2fo/vfs/v6"
 	"github.com/c2fo/vfs/v6/options/delete"
 	"github.com/c2fo/vfs/v6/options/newfile"
 	"github.com/c2fo/vfs/v6/utils"
@@ -18,11 +17,6 @@ import (
 
 type FileTestSuite struct {
 	suite.Suite
-}
-
-func (s *FileTestSuite) TestVFSFileImplementor() {
-	f := File{}
-	s.Implements((*vfs.File)(nil), &f, "Does not implement the vfs.File interface")
 }
 
 func (s *FileTestSuite) TestClose() {
