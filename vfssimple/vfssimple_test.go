@@ -20,7 +20,7 @@ type vfsSimpleSuite struct {
 }
 
 func (s *vfsSimpleSuite) TestParseURI() {
-	tests := []struct {
+	testCases := []struct {
 		uri, message, scheme, authority, path string
 		err                                   error
 	}{
@@ -167,22 +167,22 @@ func (s *vfsSimpleSuite) TestParseURI() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.message, func() {
-			scheme, authority, path, err := parseURI(test.uri)
-			if test.err != nil {
-				s.Require().Error(err, test.message)
-				if errors.Is(err, test.err) {
-					s.Require().ErrorIs(err, test.err, test.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			scheme, authority, path, err := parseURI(tc.uri)
+			if tc.err != nil {
+				s.Require().Error(err, tc.message)
+				if errors.Is(err, tc.err) {
+					s.Require().ErrorIs(err, tc.err, tc.message)
 				} else {
 					// this is necessary since we can't recreate sentinel errors from url.Parse() to do errors.Is() comparison
-					s.Contains(err.Error(), test.err.Error(), test.message)
+					s.Contains(err.Error(), tc.err.Error(), tc.message)
 				}
 			} else {
-				s.Require().NoError(err, test.message)
-				s.Equal(test.scheme, scheme, test.message)
-				s.Equal(test.authority, authority, test.message)
-				s.Equal(test.path, path, test.message)
+				s.Require().NoError(err, tc.message)
+				s.Equal(tc.scheme, scheme, tc.message)
+				s.Equal(tc.authority, authority, tc.message)
+				s.Equal(tc.path, path, tc.message)
 			}
 		})
 	}
@@ -196,7 +196,7 @@ func (s *vfsSimpleSuite) TestParseSupportedURI() {
 	backend.Register("s3://mybucket/path/file.txt", s3.NewFileSystem().WithClient(getS3NamedClientMock("file1")))
 	backend.Register("s3://mybucket/path/file.txt.pgp", s3.NewFileSystem().WithClient(getS3NamedClientMock("file2")))
 
-	tests := []struct {
+	testCases := []struct {
 		uri, message, scheme, authority, path, regFS string
 		err                                          error
 	}{
@@ -274,34 +274,34 @@ func (s *vfsSimpleSuite) TestParseSupportedURI() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.message, func() {
-			fs, authority, path, err := parseSupportedURI(test.uri)
-			if test.err != nil {
-				s.Require().Error(err, test.message)
-				if errors.Is(err, test.err) {
-					s.Require().ErrorIs(err, test.err, test.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			fs, authority, path, err := parseSupportedURI(tc.uri)
+			if tc.err != nil {
+				s.Require().Error(err, tc.message)
+				if errors.Is(err, tc.err) {
+					s.Require().ErrorIs(err, tc.err, tc.message)
 				} else {
 					// this is necessary since we can't recreate sentinel errors from url.Parse() to do errors.Is() comparison
-					s.Contains(err.Error(), test.err.Error(), test.message)
+					s.Contains(err.Error(), tc.err.Error(), tc.message)
 				}
 			} else {
-				s.Require().NoError(err, test.message)
-				s.Equal(test.scheme, fs.Scheme(), test.message)
-				s.Equal(test.authority, authority, test.message)
-				s.Equal(test.path, path, test.message)
+				s.Require().NoError(err, tc.message)
+				s.Equal(tc.scheme, fs.Scheme(), tc.message)
+				s.Equal(tc.authority, authority, tc.message)
+				s.Equal(tc.path, path, tc.message)
 				// check client for named registered mock
 				switch fs.Scheme() {
 				case "s3":
 					s3cli, err := fs.(*s3.FileSystem).Client()
-					s.Require().NoError(err, test.message)
+					s.Require().NoError(err, tc.message)
 					if c, ok := s3cli.(*namedS3ClientMock); ok {
-						s.Equal(c.RegName, test.regFS, test.message)
+						s.Equal(c.RegName, tc.regFS, tc.message)
 					} else {
-						s.Fail("should have returned mock", test.message)
+						s.Fail("should have returned mock", tc.message)
 					}
 				default:
-					s.Fail("we should have a case for returned fs type", test.message)
+					s.Fail("we should have a case for returned fs type", tc.message)
 				}
 			}
 		})

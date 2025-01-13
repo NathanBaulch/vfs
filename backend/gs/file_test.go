@@ -331,30 +331,28 @@ func (ts *fileTestSuite) TestNotExists() {
 }
 
 func (ts *fileTestSuite) TestMoveAndCopy() {
-	type TestCase struct {
+	type testCase struct {
 		move       bool
 		readFirst  bool
 		sameBucket bool
 	}
-	type TestCases []TestCase
-
-	testCases := TestCases{}
+	var testCases []testCase
 
 	for idx := 0; idx <= (1<<3)-1; idx++ {
-		testCases = append(testCases, TestCase{
+		testCases = append(testCases, testCase{
 			move:       (idx & (1 << 0)) != 0,
 			readFirst:  (idx & (1 << 1)) != 0,
 			sameBucket: (idx & (1 << 2)) != 0,
 		})
 	}
 
-	for _, testCase := range testCases {
-		ts.Run(fmt.Sprintf("%#v", testCase), func() {
+	for _, tc := range testCases {
+		ts.Run(fmt.Sprintf("%#v", tc), func() {
 			sourceName := "source.txt"
 			targetName := "target.txt"
 			sourceBucketName := "bucket-source"
 			var targetBucketName string
-			if testCase.sameBucket {
+			if tc.sameBucket {
 				targetBucketName = sourceBucketName
 			} else {
 				targetBucketName = "bucket-target"
@@ -401,23 +399,23 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 			targetFile, err := fs.NewFile(targetBucketName, "/"+targetName)
 			ts.Require().NoError(err)
 
-			if testCase.readFirst {
+			if tc.readFirst {
 				_, err := io.ReadAll(sourceFile)
 				ts.Require().NoError(err)
 			}
 
-			if testCase.move {
+			if tc.move {
 				err = sourceFile.MoveToFile(targetFile)
 			} else {
 				err = sourceFile.CopyToFile(targetFile)
 			}
 
-			if testCase.readFirst {
+			if tc.readFirst {
 				ts.Require().Error(err, "Error should be returned for operation on file that has been read (i.e. has non 0 cursor position)")
 			} else {
 				ts.Require().NoError(err, "Error shouldn't be returned from successful operation")
 
-				if testCase.move {
+				if tc.move {
 					ts.False(objectExists(sourceBucket, sourceName), "source should not exist")
 					ts.False(fsFileNameExists(fs, sourceBucketName, sourceName), "source should not exist")
 				} else {
@@ -437,29 +435,28 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 }
 
 func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
-	type TestCase struct {
+	type testCase struct {
 		move       bool
 		readFirst  bool
 		sameBucket bool
 	}
-	type TestCases []TestCase
-	testCases := TestCases{}
+	var testCases []testCase
 
 	for idx := 0; idx <= (1<<3)-1; idx++ {
-		testCases = append(testCases, TestCase{
+		testCases = append(testCases, testCase{
 			move:       (idx & (1 << 0)) != 0,
 			readFirst:  (idx & (1 << 1)) != 0,
 			sameBucket: (idx & (1 << 2)) != 0,
 		})
 	}
 
-	for _, testCase := range testCases {
-		ts.Run(fmt.Sprintf("%#v", testCase), func() {
+	for _, tc := range testCases {
+		ts.Run(fmt.Sprintf("%#v", tc), func() {
 			sourceName := "source.txt"
 			targetName := "target.txt"
 			sourceBucketName := "bucket-source"
 			var targetBucketName string
-			if testCase.sameBucket {
+			if tc.sameBucket {
 				targetBucketName = sourceBucketName
 			} else {
 				targetBucketName = "bucket-target"
@@ -507,23 +504,23 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 			targetFile, err := fs.NewFile(targetBucketName, "/"+targetName)
 			ts.Require().NoError(err)
 
-			if testCase.readFirst {
+			if tc.readFirst {
 				_, err := io.ReadAll(sourceFile)
 				ts.Require().NoError(err)
 			}
 
-			if testCase.move {
+			if tc.move {
 				err = sourceFile.MoveToFile(targetFile)
 			} else {
 				err = sourceFile.CopyToFile(targetFile)
 			}
 
-			if testCase.readFirst {
+			if tc.readFirst {
 				ts.Require().Error(err, "Error should be returned for operation on file that has been read (i.e. has non 0 cursor position)")
 			} else {
 				ts.Require().NoError(err, "Error shouldn't be returned from successful operation")
 
-				if testCase.move {
+				if tc.move {
 					ts.False(objectExists(sourceBucket, sourceName), "source should not exist")
 					ts.False(fsFileNameExists(fs, sourceBucketName, sourceName), "source should not exist")
 				} else {

@@ -24,14 +24,12 @@ type utilsSuite struct {
 	suite.Suite
 }
 
-type slashTest struct {
-	path     string
-	expected string
-	message  string
-}
-
 func (s *utilsSuite) TestEnsureTrailingSlash() {
-	tests := []slashTest{
+	testCases := []struct {
+		path     string
+		expected string
+		message  string
+	}{
 		{
 			path:     "/some/path",
 			expected: "/some/path/",
@@ -59,15 +57,19 @@ func (s *utilsSuite) TestEnsureTrailingSlash() {
 		},
 	}
 
-	for _, slashtest := range tests {
-		s.Run(slashtest.message, func() {
-			s.Equal(slashtest.expected, utils.EnsureTrailingSlash(slashtest.path), slashtest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			s.Equal(tc.expected, utils.EnsureTrailingSlash(tc.path), tc.message)
 		})
 	}
 }
 
 func (s *utilsSuite) TestEnsureLeadingSlash() {
-	tests := []slashTest{
+	testCases := []struct {
+		path     string
+		expected string
+		message  string
+	}{
 		{
 			path:     "some/path/",
 			expected: "/some/path/",
@@ -90,15 +92,19 @@ func (s *utilsSuite) TestEnsureLeadingSlash() {
 		},
 	}
 
-	for _, slashtest := range tests {
-		s.Run(slashtest.message, func() {
-			s.Equal(slashtest.expected, utils.EnsureLeadingSlash(slashtest.path), slashtest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			s.Equal(tc.expected, utils.EnsureLeadingSlash(tc.path), tc.message)
 		})
 	}
 }
 
 func (s *utilsSuite) TestRemoveTrailingSlash() {
-	tests := []slashTest{
+	testCases := []struct {
+		path     string
+		expected string
+		message  string
+	}{
 		{
 			path:     "/some/path",
 			expected: "/some/path",
@@ -126,15 +132,19 @@ func (s *utilsSuite) TestRemoveTrailingSlash() {
 		},
 	}
 
-	for _, slashtest := range tests {
-		s.Run(slashtest.message, func() {
-			s.Equal(slashtest.expected, utils.RemoveTrailingSlash(slashtest.path), slashtest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			s.Equal(tc.expected, utils.RemoveTrailingSlash(tc.path), tc.message)
 		})
 	}
 }
 
 func (s *utilsSuite) TestRemoveLeadingSlash() {
-	tests := []slashTest{
+	testCases := []struct {
+		path     string
+		expected string
+		message  string
+	}{
 		{
 			path:     "some/path/",
 			expected: "some/path/",
@@ -162,21 +172,19 @@ func (s *utilsSuite) TestRemoveLeadingSlash() {
 		},
 	}
 
-	for _, slashtest := range tests {
-		s.Run(slashtest.message, func() {
-			s.Equal(slashtest.expected, utils.RemoveLeadingSlash(slashtest.path), slashtest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			s.Equal(tc.expected, utils.RemoveLeadingSlash(tc.path), tc.message)
 		})
 	}
 }
 
-type pathValidationTest struct {
-	path         string
-	passExpected bool
-	message      string
-}
-
 func (s *utilsSuite) TestValidateAbsFilePath() {
-	tests := []pathValidationTest{
+	testCases := []struct {
+		path         string
+		passExpected bool
+		message      string
+	}{
 		{
 			path:         "/some/path/",
 			passExpected: false,
@@ -229,20 +237,24 @@ func (s *utilsSuite) TestValidateAbsFilePath() {
 		},
 	}
 
-	for _, validationTest := range tests {
-		s.Run(validationTest.message, func() {
-			err := utils.ValidateAbsoluteFilePath(validationTest.path)
-			if !validationTest.passExpected {
-				s.Require().EqualError(err, utils.ErrBadAbsFilePath, validationTest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			err := utils.ValidateAbsoluteFilePath(tc.path)
+			if !tc.passExpected {
+				s.Require().EqualError(err, utils.ErrBadAbsFilePath, tc.message)
 			} else {
-				s.Require().NoError(err, validationTest.message)
+				s.Require().NoError(err, tc.message)
 			}
 		})
 	}
 }
 
 func (s *utilsSuite) TestValidateAbsLocationPath() {
-	tests := []pathValidationTest{
+	testCases := []struct {
+		path         string
+		passExpected bool
+		message      string
+	}{
 		{
 			path:         "/some/path/",
 			passExpected: true,
@@ -295,20 +307,24 @@ func (s *utilsSuite) TestValidateAbsLocationPath() {
 		},
 	}
 
-	for _, validationTest := range tests {
-		s.Run(validationTest.message, func() {
-			err := utils.ValidateAbsoluteLocationPath(validationTest.path)
-			if !validationTest.passExpected {
-				s.Require().EqualError(err, utils.ErrBadAbsLocationPath, validationTest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			err := utils.ValidateAbsoluteLocationPath(tc.path)
+			if !tc.passExpected {
+				s.Require().EqualError(err, utils.ErrBadAbsLocationPath, tc.message)
 			} else {
-				s.Require().NoError(err, validationTest.message)
+				s.Require().NoError(err, tc.message)
 			}
 		})
 	}
 }
 
 func (s *utilsSuite) TestValidateRelFilePath() {
-	tests := []pathValidationTest{
+	testCases := []struct {
+		path         string
+		passExpected bool
+		message      string
+	}{
 		{
 			path:         "/some/path/",
 			passExpected: false,
@@ -361,20 +377,24 @@ func (s *utilsSuite) TestValidateRelFilePath() {
 		},
 	}
 
-	for _, validationTest := range tests {
-		s.Run(validationTest.message, func() {
-			err := utils.ValidateRelativeFilePath(validationTest.path)
-			if !validationTest.passExpected {
-				s.Require().EqualError(err, utils.ErrBadRelFilePath, validationTest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			err := utils.ValidateRelativeFilePath(tc.path)
+			if !tc.passExpected {
+				s.Require().EqualError(err, utils.ErrBadRelFilePath, tc.message)
 			} else {
-				s.Require().NoError(err, validationTest.message)
+				s.Require().NoError(err, tc.message)
 			}
 		})
 	}
 }
 
 func (s *utilsSuite) TestValidateRelLocationPath() {
-	tests := []pathValidationTest{
+	testCases := []struct {
+		path         string
+		passExpected bool
+		message      string
+	}{
 		{
 			path:         "/some/path/",
 			passExpected: false,
@@ -427,20 +447,20 @@ func (s *utilsSuite) TestValidateRelLocationPath() {
 		},
 	}
 
-	for _, validationTest := range tests {
-		s.Run(validationTest.message, func() {
-			err := utils.ValidateRelativeLocationPath(validationTest.path)
-			if !validationTest.passExpected {
-				s.Require().EqualError(err, utils.ErrBadRelLocationPath, validationTest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			err := utils.ValidateRelativeLocationPath(tc.path)
+			if !tc.passExpected {
+				s.Require().EqualError(err, utils.ErrBadRelLocationPath, tc.message)
 			} else {
-				s.Require().NoError(err, validationTest.message)
+				s.Require().NoError(err, tc.message)
 			}
 		})
 	}
 }
 
 func (s *utilsSuite) TestValidatePrefix() {
-	tests := []struct {
+	testCases := []struct {
 		prefix       string
 		passExpected bool
 		message      string
@@ -517,27 +537,25 @@ func (s *utilsSuite) TestValidatePrefix() {
 		},
 	}
 
-	for _, validationTest := range tests {
-		s.Run(validationTest.message, func() {
-			err := utils.ValidatePrefix(validationTest.prefix)
-			if !validationTest.passExpected {
-				s.Require().EqualError(err, utils.ErrBadPrefix, validationTest.message)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			err := utils.ValidatePrefix(tc.prefix)
+			if !tc.passExpected {
+				s.Require().EqualError(err, utils.ErrBadPrefix, tc.message)
 			} else {
-				s.Require().NoError(err, validationTest.message)
+				s.Require().NoError(err, tc.message)
 			}
 		})
 	}
 }
 
-type URITest struct {
-	path     string
-	expected string
-	message  string
-	isRegex  bool
-}
-
 func (s *utilsSuite) TestPathToURI() {
-	tests := []URITest{
+	testCases := []struct {
+		path     string
+		expected string
+		message  string
+		isRegex  bool
+	}{
 		{
 			path:     "/absolute/path/",
 			expected: "file:///absolute/path/",
@@ -593,14 +611,14 @@ func (s *utilsSuite) TestPathToURI() {
 		},
 	}
 
-	for _, slashtest := range tests {
-		s.Run(slashtest.message, func() {
-			uri, err := utils.PathToURI(slashtest.path)
+	for _, tc := range testCases {
+		s.Run(tc.message, func() {
+			uri, err := utils.PathToURI(tc.path)
 			s.Require().NoError(err, "no error expected")
-			if slashtest.isRegex {
-				s.Regexp(slashtest.expected, uri, slashtest.message)
+			if tc.isRegex {
+				s.Regexp(tc.expected, uri, tc.message)
 			} else {
-				s.Equal(slashtest.expected, uri, slashtest.message)
+				s.Equal(tc.expected, uri, tc.message)
 			}
 		})
 	}

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -300,10 +299,9 @@ func (ts *fileTestSuite) TestMoveToFile() {
 }
 
 func (ts *fileTestSuite) TestGetCopyObject() {
-	type getCopyObjectTest struct {
+	testCases := []struct {
 		key, expectedCopySource string
-	}
-	tests := []getCopyObjectTest{
+	}{
 		{
 			key:                "/path/to/nospace.txt",
 			expectedCopySource: "%2Fpath%2Fto%2Fnospace.txt",
@@ -327,8 +325,8 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 	}
 
 	// ensure spaces are properly encoded (or not)
-	for i, t := range tests {
-		ts.Run(strconv.Itoa(i), func() {
+	for _, tc := range testCases {
+		ts.Run(tc.key, func() {
 			sourceFile := &File{
 				fileSystem: &FileSystem{
 					client: s3cliMock,
@@ -338,7 +336,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 					},
 				},
 				bucket: "TestBucket",
-				key:    t.key,
+				key:    tc.key,
 			}
 
 			targetFile := &File{
@@ -354,7 +352,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 
 			// copy from t.key to /source.txt
 			actual := sourceFile.getCopyObjectInput(targetFile)
-			ts.Equal("TestBucket"+t.expectedCopySource, *actual.CopySource)
+			ts.Equal("TestBucket"+tc.expectedCopySource, *actual.CopySource)
 			ts.Empty(actual.ServerSideEncryption, "sse is disabled")
 		})
 	}
@@ -742,15 +740,6 @@ func (ts *fileTestSuite) TestCloseWithWrite() {
 	s3Mock.AssertExpectations(ts.T())
 }
 
-type fileTestCase struct {
-	name             string
-	setup            func(*mocks.Client) *File // Function to set up each test case
-	actions          []func(*File) error       // Actions to perform on the file (Write, Seek, etc.)
-	wantErr          bool
-	validate         func(*File) error // Additional validations if needed
-	expectedContents string
-}
-
 func (ts *fileTestSuite) TestWriteOperations() {
 	var contents *string
 	setup := func(s3Mock *mocks.Client) {
@@ -767,7 +756,14 @@ func (ts *fileTestSuite) TestWriteOperations() {
 			Return(&s3.PutObjectOutput{}, nil)
 	}
 
-	testCases := []fileTestCase{
+	testCases := []struct {
+		name             string
+		setup            func(*mocks.Client) *File // Function to set up each test case
+		actions          []func(*File) error       // Actions to perform on the file (Write, Seek, etc.)
+		wantErr          bool
+		validate         func(*File) error // Additional validations if needed
+		expectedContents string
+	}{
 		{
 			name: "Write and Close - Close failure",
 			setup: func(s3Mock *mocks.Client) *File {

@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -720,20 +719,19 @@ func (s *vfsTestSuite) File(baseLoc vfs.Location) {
 		s.Require().NoError(err)
 
 		// ensure that MoveToFile() works for files with spaces
-		type moveSpaceTest struct {
-			Path, Filename string
-		}
-		tests := []moveSpaceTest{
-			{Path: "file/", Filename: "has space.txt"},
-			{Path: "file/", Filename: "has%20encodedSpace.txt"},
-			{Path: "path has/", Filename: "space.txt"},
-			{Path: "path%20has/", Filename: "encodedSpace.txt"},
+		testCases := []struct {
+			path, fileName string
+		}{
+			{path: "file/", fileName: "has space.txt"},
+			{path: "file/", fileName: "has%20encodedSpace.txt"},
+			{path: "path has/", fileName: "space.txt"},
+			{path: "path%20has/", fileName: "encodedSpace.txt"},
 		}
 
-		for i, test := range tests {
-			s.Run(strconv.Itoa(i), func() {
+		for _, tc := range testCases {
+			s.Run(tc.path+tc.fileName, func() {
 				// setup src
-				srcSpaces, err := srcLoc.NewFile(path.Join(test.Path, test.Filename))
+				srcSpaces, err := srcLoc.NewFile(path.Join(tc.path, tc.fileName))
 				s.Require().NoError(err)
 				b, err := srcSpaces.Write([]byte("something"))
 				s.Require().NoError(err)
@@ -741,7 +739,7 @@ func (s *vfsTestSuite) File(baseLoc vfs.Location) {
 				err = srcSpaces.Close()
 				s.Require().NoError(err)
 
-				testDestLoc, err := dstLoc.NewLocation(test.Path)
+				testDestLoc, err := dstLoc.NewLocation(tc.path)
 				s.Require().NoError(err)
 
 				dstSpaces, err := srcSpaces.MoveToLocation(testDestLoc)
@@ -753,8 +751,8 @@ func (s *vfsTestSuite) File(baseLoc vfs.Location) {
 				s.Require().NoError(err)
 				s.False(exists, "srcSpaces should no longer exist")
 				s.True(
-					strings.HasSuffix(dstSpaces.URI(), path.Join(test.Path, test.Filename)),
-					"destination file %s ends with source string for %s", dstSpaces.URI(), path.Join(test.Path, test.Filename),
+					strings.HasSuffix(dstSpaces.URI(), path.Join(tc.path, tc.fileName)),
+					"destination file %s ends with source string for %s", dstSpaces.URI(), path.Join(tc.path, tc.fileName),
 				)
 
 				newSrcSpaces, err := dstSpaces.MoveToLocation(srcSpaces.Location())
@@ -765,8 +763,8 @@ func (s *vfsTestSuite) File(baseLoc vfs.Location) {
 				exists, err = dstSpaces.Exists()
 				s.Require().NoError(err)
 				s.False(exists, "dstSpaces should no longer exist")
-				hasSuffix := strings.HasSuffix(newSrcSpaces.URI(), path.Join(test.Path, test.Filename))
-				s.True(hasSuffix, "destination file %s ends with source string for %s", dstSpaces.URI(), path.Join(test.Path, test.Filename))
+				hasSuffix := strings.HasSuffix(newSrcSpaces.URI(), path.Join(tc.path, tc.fileName))
+				s.True(hasSuffix, "destination file %s ends with source string for %s", dstSpaces.URI(), path.Join(tc.path, tc.fileName))
 
 				err = newSrcSpaces.Delete()
 				s.Require().NoError(err)

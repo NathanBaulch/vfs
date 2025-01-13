@@ -22,7 +22,7 @@ func TestOptions(t *testing.T) {
 }
 
 func (s *optionsSuite) TestFetchUsername() {
-	tests := []*struct {
+	testCases := []struct {
 		description string
 		authority   string
 		options     Options
@@ -40,19 +40,19 @@ func (s *optionsSuite) TestFetchUsername() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
-			auth, err := utils.NewAuthority(test.authority)
-			s.Require().NoError(err, test.description)
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
+			auth, err := utils.NewAuthority(tc.authority)
+			s.Require().NoError(err, tc.description)
 
 			username := fetchUsername(auth)
-			s.Equal(test.expected, username, test.description)
+			s.Equal(tc.expected, username, tc.description)
 		})
 	}
 }
 
 func (s *optionsSuite) TestFetchPassword() {
-	tests := []struct {
+	testCases := []struct {
 		description string
 		options     Options
 		envVar      *string
@@ -82,21 +82,21 @@ func (s *optionsSuite) TestFetchPassword() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
-			if test.envVar != nil {
-				err := os.Setenv(envPassword, *test.envVar)
-				s.Require().NoError(err, test.description)
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
+			if tc.envVar != nil {
+				err := os.Setenv(envPassword, *tc.envVar)
+				s.Require().NoError(err, tc.description)
 			}
 
-			password := fetchPassword(test.options)
-			s.Equal(test.expected, password, test.description)
+			password := fetchPassword(tc.options)
+			s.Equal(tc.expected, password, tc.description)
 		})
 	}
 }
 
 func (s *optionsSuite) TestFetchHostPortString() {
-	tests := []struct {
+	testCases := []struct {
 		description string
 		authority   string
 		envVar      *string
@@ -114,18 +114,18 @@ func (s *optionsSuite) TestFetchHostPortString() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
-			auth, err := utils.NewAuthority(test.authority)
-			s.Require().NoError(err, test.description)
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
+			auth, err := utils.NewAuthority(tc.authority)
+			s.Require().NoError(err, tc.description)
 
-			if test.envVar != nil {
-				err := os.Setenv(envPassword, *test.envVar)
-				s.Require().NoError(err, test.description)
+			if tc.envVar != nil {
+				err := os.Setenv(envPassword, *tc.envVar)
+				s.Require().NoError(err, tc.description)
 			}
 
 			hostPortString := fetchHostPortString(auth)
-			s.Equal(test.expected, hostPortString, test.description)
+			s.Equal(tc.expected, hostPortString, tc.description)
 		})
 	}
 }
@@ -133,7 +133,7 @@ func (s *optionsSuite) TestFetchHostPortString() {
 func (s *optionsSuite) TestIsDisableEPSV() {
 	trueVal := true
 	falseVal := false
-	tests := []struct {
+	testCases := []struct {
 		description string
 		options     Options
 		envVar      *string
@@ -200,15 +200,15 @@ func (s *optionsSuite) TestIsDisableEPSV() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
-			if test.envVar != nil {
-				err := os.Setenv(envDisableEPSV, *test.envVar)
-				s.Require().NoError(err, test.description)
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
+			if tc.envVar != nil {
+				err := os.Setenv(envDisableEPSV, *tc.envVar)
+				s.Require().NoError(err, tc.description)
 			}
 
-			disabled := isDisableOption(test.options)
-			s.Equal(test.expected, disabled, test.description)
+			disabled := isDisableOption(tc.options)
+			s.Equal(tc.expected, disabled, tc.description)
 		})
 	}
 }
@@ -222,7 +222,7 @@ func (s *optionsSuite) TestFetchTLSConfig() {
 		SessionTicketsDisabled: true,
 	}
 
-	tests := []*struct {
+	testCases := []struct {
 		description                string
 		authority                  string
 		options                    Options
@@ -264,21 +264,21 @@ func (s *optionsSuite) TestFetchTLSConfig() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
-			auth, err := utils.NewAuthority(test.authority)
-			s.Require().NoError(err, test.description)
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
+			auth, err := utils.NewAuthority(tc.authority)
+			s.Require().NoError(err, tc.description)
 
-			tlsCfg := fetchTLSConfig(auth, test.options)
-			s.Equal(test.expected.MinVersion, tlsCfg.MinVersion, test.description)
-			s.Equal(test.expected.InsecureSkipVerify, tlsCfg.InsecureSkipVerify, test.description)
-			s.Equal(test.expected.ClientSessionCache, tlsCfg.ClientSessionCache, test.description)
-			s.Equal(test.expected.ServerName, tlsCfg.ServerName, test.description)
-			s.Equal(test.expected.SessionTicketsDisabled, tlsCfg.SessionTicketsDisabled, test.description)
+			tlsCfg := fetchTLSConfig(auth, tc.options)
+			s.Equal(tc.expected.MinVersion, tlsCfg.MinVersion, tc.description)
+			s.Equal(tc.expected.InsecureSkipVerify, tlsCfg.InsecureSkipVerify, tc.description)
+			s.Equal(tc.expected.ClientSessionCache, tlsCfg.ClientSessionCache, tc.description)
+			s.Equal(tc.expected.ServerName, tlsCfg.ServerName, tc.description)
+			s.Equal(tc.expected.SessionTicketsDisabled, tlsCfg.SessionTicketsDisabled, tc.description)
 
-			if test.expectInsecureCipherSuites {
-				s.NotEmpty(tlsCfg.CipherSuites, test.description)
-				s.True(containsInsecureCipherSuites(tlsCfg.CipherSuites), test.description)
+			if tc.expectInsecureCipherSuites {
+				s.NotEmpty(tlsCfg.CipherSuites, tc.description)
+				s.True(containsInsecureCipherSuites(tlsCfg.CipherSuites), tc.description)
 			}
 		})
 	}
@@ -297,7 +297,7 @@ func containsInsecureCipherSuites(suites []uint16) bool {
 }
 
 func (s *optionsSuite) TestFetchProtocol() {
-	tests := []struct {
+	testCases := []struct {
 		description string
 		options     Options
 		envVar      *string
@@ -344,22 +344,22 @@ func (s *optionsSuite) TestFetchProtocol() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
 			s.Require().NoError(os.Unsetenv(envProtocol))
-			if test.envVar != nil {
-				err := os.Setenv(envProtocol, *test.envVar)
-				s.Require().NoError(err, test.description)
+			if tc.envVar != nil {
+				err := os.Setenv(envProtocol, *tc.envVar)
+				s.Require().NoError(err, tc.description)
 			}
 
-			protocol := fetchProtocol(test.options)
-			s.Equal(test.expected, protocol, test.description)
+			protocol := fetchProtocol(tc.options)
+			s.Equal(tc.expected, protocol, tc.description)
 		})
 	}
 }
 
 func (s *optionsSuite) TestFetchDialOptions() {
-	tests := []*struct {
+	testCases := []struct {
 		description string
 		authority   string
 		options     Options
@@ -433,18 +433,18 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		},
 	}
 
-	for _, test := range tests {
-		s.Run(test.description, func() {
-			if test.envVar != nil {
-				err := os.Setenv(envProtocol, *test.envVar)
-				s.Require().NoError(err, test.description)
+	for _, tc := range testCases {
+		s.Run(tc.description, func() {
+			if tc.envVar != nil {
+				err := os.Setenv(envProtocol, *tc.envVar)
+				s.Require().NoError(err, tc.description)
 			}
 
-			auth, err := utils.NewAuthority(test.authority)
-			s.Require().NoError(err, test.description)
+			auth, err := utils.NewAuthority(tc.authority)
+			s.Require().NoError(err, tc.description)
 
-			dialOpts := fetchDialOptions(context.Background(), auth, test.options)
-			s.Len(dialOpts, test.expected, test.description)
+			dialOpts := fetchDialOptions(context.Background(), auth, tc.options)
+			s.Len(dialOpts, tc.expected, tc.description)
 		})
 	}
 }

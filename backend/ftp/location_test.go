@@ -120,7 +120,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 			Type: _ftp.EntryTypeFolder,
 		},
 	}
-	tests := []struct {
+	testCases := []struct {
 		description   string
 		path          string
 		prefix        string
@@ -188,22 +188,22 @@ func (lt *locationTestSuite) TestListByPrefix() {
 		},
 	}
 
-	for _, test := range tests {
-		lt.Run(test.description, func() {
+	for _, tc := range testCases {
+		lt.Run(tc.description, func() {
 			// setup location
-			loc, err := lt.ftpfs.NewLocation("host.com", test.path)
-			lt.Require().NoError(err, test.description)
+			loc, err := lt.ftpfs.NewLocation("host.com", tc.path)
+			lt.Require().NoError(err, tc.description)
 
 			// setup mock List
 			lt.client.EXPECT().
-				List(test.resolvedPath).
-				Return(test.allEntries, nil).
+				List(tc.resolvedPath).
+				Return(tc.allEntries, nil).
 				Once()
 
 			// perform ListByPrefix
-			fileList, err := loc.ListByPrefix(test.prefix)
-			lt.Require().NoError(err, test.description)
-			lt.Equal(test.expectedFiles, fileList, test.description)
+			fileList, err := loc.ListByPrefix(tc.prefix)
+			lt.Require().NoError(err, tc.description)
+			lt.Equal(tc.expectedFiles, fileList, tc.description)
 		})
 	}
 

@@ -50,14 +50,6 @@ func (o *optionsSuite) TearDownSuite() {
 	o.Require().NoError(os.RemoveAll(o.tmpdir), "cleaning up after test")
 }
 
-type foundFileTest struct {
-	file       string
-	expected   bool
-	hasError   bool
-	errMessage string
-	message    string
-}
-
 func (o *optionsSuite) TestFoundFile() {
 	// test file
 	filename := filepath.Join(o.tmpdir, "some.key")
@@ -68,7 +60,13 @@ func (o *optionsSuite) TestFoundFile() {
 	o.Require().NoError(f.Close(), "closing file for foundfile test")
 	defer func() { o.Require().NoError(os.Remove(filename), "clean up file for foundfile test") }()
 
-	tests := []foundFileTest{
+	testCases := []struct {
+		file       string
+		expected   bool
+		hasError   bool
+		errMessage string
+		message    string
+	}{
 		{
 			file:       filename,
 			expected:   true,
@@ -85,30 +83,28 @@ func (o *optionsSuite) TestFoundFile() {
 		},
 	}
 
-	for _, t := range tests {
-		o.Run(t.message, func() {
-			actual, err := foundFile(t.file)
-			if t.hasError {
-				o.Require().EqualError(err, t.errMessage, t.message)
+	for _, tc := range testCases {
+		o.Run(tc.message, func() {
+			actual, err := foundFile(tc.file)
+			if tc.hasError {
+				o.Require().EqualError(err, tc.errMessage, tc.message)
 			} else {
-				o.Require().NoError(err, t.message)
-				o.Equal(t.expected, actual, t.message)
+				o.Require().NoError(err, tc.message)
+				o.Equal(tc.expected, actual, tc.message)
 			}
 		})
 	}
 }
 
-type getFileTest struct {
-	keyfile    string
-	passphrase string
-	hasError   bool
-	err        error
-	errMessage string
-	message    string
-}
-
 func (o *optionsSuite) TestGetKeyFile() {
-	tests := []getFileTest{
+	testCases := []struct {
+		keyfile    string
+		passphrase string
+		hasError   bool
+		err        error
+		errMessage string
+		message    string
+	}{
 		{
 			keyfile:    o.keyFiles.SSHPrivateKey,
 			passphrase: o.keyFiles.passphrase,
@@ -149,28 +145,20 @@ func (o *optionsSuite) TestGetKeyFile() {
 		},
 	}
 
-	for _, t := range tests {
-		o.Run(t.message, func() {
-			_, err := getKeyFile(t.keyfile, t.passphrase)
-			if t.hasError {
-				if t.err != nil {
-					o.Require().ErrorIs(err, t.err, t.message)
+	for _, tc := range testCases {
+		o.Run(tc.message, func() {
+			_, err := getKeyFile(tc.keyfile, tc.passphrase)
+			if tc.hasError {
+				if tc.err != nil {
+					o.Require().ErrorIs(err, tc.err, tc.message)
 				} else {
-					o.Require().EqualError(err, t.errMessage, t.message)
+					o.Require().EqualError(err, tc.errMessage, tc.message)
 				}
 			} else {
-				o.Require().NoError(err, t.message)
+				o.Require().NoError(err, tc.message)
 			}
 		})
 	}
-}
-
-type hostkeyTest struct {
-	options    Options
-	envVars    map[string]string
-	hasError   bool
-	errMessage string
-	message    string
 }
 
 func (o *optionsSuite) TestGetHostKeyCallback() {
@@ -182,7 +170,13 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 	o.Require().NoError(f.Close(), "closing file for getHostKeyCallback test")
 	defer func() { o.Require().NoError(os.Remove(knownHosts), "clean up file for getHostKeyCallback test") }()
 
-	tests := []hostkeyTest{
+	testCases := []struct {
+		options    Options
+		envVars    map[string]string
+		hasError   bool
+		errMessage string
+		message    string
+	}{
 		{
 			options: Options{
 				KnownHostsCallback: ssh.FixedHostKey(o.publicKey),
@@ -242,21 +236,21 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 		},
 	} // #nosec - InsecureIgnoreHostKey only used for testing
 
-	for _, t := range tests { //nolint:gocritic // rangeValCopy
-		o.Run(t.message, func() {
+	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+		o.Run(tc.message, func() {
 			// setup env vars, if any
 			tmpMap := make(map[string]string)
-			for k, v := range t.envVars {
+			for k, v := range tc.envVars {
 				tmpMap[k] = os.Getenv(k)
 				o.Require().NoError(os.Setenv(k, v))
 			}
 
 			// apply test
-			_, err := getHostKeyCallback(t.options)
-			if t.hasError {
-				o.Require().EqualError(err, t.errMessage, t.message)
+			_, err := getHostKeyCallback(tc.options)
+			if tc.hasError {
+				o.Require().EqualError(err, tc.errMessage, tc.message)
 			} else {
-				o.Require().NoError(err, t.message)
+				o.Require().NoError(err, tc.message)
 			}
 
 			// return env vars to original value
@@ -267,18 +261,16 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 	}
 }
 
-type authTest struct {
-	options     Options
-	envVars     map[string]string
-	returnCount int
-	hasError    bool
-	errMessage  string
-	err         error
-	message     string
-}
-
 func (o *optionsSuite) TestGetAuthMethods() {
-	tests := []authTest{
+	testCases := []struct {
+		options     Options
+		envVars     map[string]string
+		returnCount int
+		hasError    bool
+		errMessage  string
+		err         error
+		message     string
+	}{
 		{
 			options: Options{
 				Password: "somepassword",
@@ -384,26 +376,26 @@ func (o *optionsSuite) TestGetAuthMethods() {
 		},
 	}
 
-	for _, t := range tests { //nolint:gocritic // rangeValCopy
-		o.Run(t.message, func() {
+	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+		o.Run(tc.message, func() {
 			// setup env vars, if any
 			tmpMap := make(map[string]string)
-			for k, v := range t.envVars {
+			for k, v := range tc.envVars {
 				tmpMap[k] = os.Getenv(k)
 				o.Require().NoError(os.Setenv(k, v))
 			}
 
 			// apply test
-			auth, err := getAuthMethods(t.options)
-			if t.hasError {
-				if t.err != nil {
-					o.Require().ErrorIs(err, t.err, t.message)
+			auth, err := getAuthMethods(tc.options)
+			if tc.hasError {
+				if tc.err != nil {
+					o.Require().ErrorIs(err, tc.err, tc.message)
 				} else {
-					o.Require().EqualError(err, t.errMessage, t.message)
+					o.Require().EqualError(err, tc.errMessage, tc.message)
 				}
 			} else {
-				o.Require().NoError(err, t.message)
-				o.Len(auth, t.returnCount, "auth count")
+				o.Require().NoError(err, tc.message)
+				o.Len(auth, tc.returnCount, "auth count")
 			}
 
 			// return env vars to original value
@@ -414,20 +406,18 @@ func (o *optionsSuite) TestGetAuthMethods() {
 	}
 }
 
-type getClientTest struct {
-	options   Options
-	authority utils.Authority
-	hasError  bool
-	err       error
-	errRegex  string
-	message   string
-}
-
 func (o *optionsSuite) TestGetClient() {
 	auth, err := utils.NewAuthority("someuser@badhost")
 	o.Require().NoError(err)
 
-	tests := []getClientTest{
+	testCases := []struct {
+		options   Options
+		authority utils.Authority
+		hasError  bool
+		err       error
+		errRegex  string
+		message   string
+	}{
 		{
 			authority: auth,
 			options: Options{
@@ -460,20 +450,20 @@ func (o *optionsSuite) TestGetClient() {
 		},
 	} // #nosec - InsecureIgnoreHostKey only used for testing
 
-	for _, t := range tests { //nolint:gocritic // rangeValCopy
-		o.Run(t.message, func() {
-			_, _, err := getClient(t.authority, t.options)
-			if t.hasError {
+	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+		o.Run(tc.message, func() {
+			_, _, err := getClient(tc.authority, tc.options)
+			if tc.hasError {
 				if o.Error(err, "error found") {
-					if t.err != nil {
-						o.Require().ErrorIs(err, t.err, t.message)
+					if tc.err != nil {
+						o.Require().ErrorIs(err, tc.err, tc.message)
 					} else {
-						re := regexp.MustCompile(t.errRegex)
+						re := regexp.MustCompile(tc.errRegex)
 						o.Regexp(re, err.Error(), "error matches")
 					}
 				}
 			} else {
-				o.Require().NoError(err, t.message)
+				o.Require().NoError(err, tc.message)
 			}
 		})
 	}
@@ -500,7 +490,7 @@ func (o *optionsSuite) TestMarshalOptions() {
 }
 
 func (o *optionsSuite) TestGetSSHConfig() {
-	tests := []struct {
+	testCases := []struct {
 		name   string
 		opts   Options
 		expect *ssh.ClientConfig
@@ -564,7 +554,7 @@ func (o *optionsSuite) TestGetSSHConfig() {
 		},
 	}
 
-	for _, tc := range tests { //nolint:gocritic // rangeValCopy
+	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
 		o.Run(tc.name, func() {
 			result := getSShConfig(tc.opts)
 			o.Equal(tc.expect, result)
@@ -573,7 +563,7 @@ func (o *optionsSuite) TestGetSSHConfig() {
 }
 
 func (o *optionsSuite) TestGetFileMode() {
-	tests := []struct {
+	testCases := []struct {
 		name            string
 		filePermissions *string
 		expectedMode    *os.FileMode
@@ -611,17 +601,17 @@ func (o *optionsSuite) TestGetFileMode() {
 		},
 	}
 
-	for _, tt := range tests {
-		o.Run(tt.name, func() {
+	for _, tc := range testCases {
+		o.Run(tc.name, func() {
 			opts := &Options{
-				FilePermissions: tt.filePermissions,
+				FilePermissions: tc.filePermissions,
 			}
 			mode, err := opts.GetFileMode()
-			if tt.expectError {
+			if tc.expectError {
 				o.Error(err)
 			} else {
 				o.Require().NoError(err)
-				o.Equal(tt.expectedMode, mode)
+				o.Equal(tc.expectedMode, mode)
 			}
 		})
 	}

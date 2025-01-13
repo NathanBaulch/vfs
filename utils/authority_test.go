@@ -14,17 +14,15 @@ type authoritySuite struct {
 	suite.Suite
 }
 
-type authorityTest struct {
-	authorityString                    string
-	host, user, pass, str, hostPortStr string
-	port                               uint16
-	hasError                           bool
-	errMessage                         string
-	message                            string
-}
-
 func (a *authoritySuite) TestAuthority() {
-	tests := []authorityTest{
+	testCases := []struct {
+		authorityString                    string
+		host, user, pass, str, hostPortStr string
+		port                               uint16
+		hasError                           bool
+		errMessage                         string
+		message                            string
+	}{
 		{
 			authorityString: "",
 			host:            "",
@@ -291,31 +289,29 @@ func (a *authoritySuite) TestAuthority() {
 		},
 	}
 
-	for _, t := range tests { //nolint:gocritic // rangeValCopy
-		a.Run(t.message, func() {
-			actual, err := NewAuthority(t.authorityString)
-			if t.hasError {
-				a.Require().ErrorContains(err, t.errMessage, t.message)
+	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+		a.Run(tc.message, func() {
+			actual, err := NewAuthority(tc.authorityString)
+			if tc.hasError {
+				a.Require().ErrorContains(err, tc.errMessage, tc.message)
 			} else {
-				a.Require().NoError(err, t.message)
-				a.Equal(t.host, actual.Host(), t.message)
-				a.Equal(int(t.port), int(actual.Port()), t.message)
-				a.Equal(t.user, actual.UserInfo().Username(), t.message)
-				a.Equal(t.pass, actual.UserInfo().Password(), t.message)
-				a.Equal(t.str, actual.String(), t.message)
+				a.Require().NoError(err, tc.message)
+				a.Equal(tc.host, actual.Host(), tc.message)
+				a.Equal(int(tc.port), int(actual.Port()), tc.message)
+				a.Equal(tc.user, actual.UserInfo().Username(), tc.message)
+				a.Equal(tc.pass, actual.UserInfo().Password(), tc.message)
+				a.Equal(tc.str, actual.String(), tc.message)
 			}
 		})
 	}
 }
 
-type encodeAuthorityTest struct {
-	rawAuthority    string
-	expectedEncoded string
-	message         string
-}
-
 func (a *authoritySuite) TestEncodeAuthority() {
-	tests := []encodeAuthorityTest{
+	testCases := []struct {
+		rawAuthority    string
+		expectedEncoded string
+		message         string
+	}{
 		{
 			rawAuthority:    "user@someserver.com:22",
 			expectedEncoded: "user@someserver.com:22",
@@ -358,10 +354,10 @@ func (a *authoritySuite) TestEncodeAuthority() {
 		},
 	}
 
-	for _, t := range tests {
-		a.Run(t.message, func() {
-			actual := EncodeAuthority(t.rawAuthority)
-			a.Equal(t.expectedEncoded, actual, t.message)
+	for _, tc := range testCases {
+		a.Run(tc.message, func() {
+			actual := EncodeAuthority(tc.rawAuthority)
+			a.Equal(tc.expectedEncoded, actual, tc.message)
 		})
 	}
 }

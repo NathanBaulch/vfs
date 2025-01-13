@@ -118,15 +118,13 @@ func (ts *fileTestSuite) TestSeek() {
 }
 
 func (ts *fileTestSuite) Test_openFile() {
-	type testCase struct {
+	testCases := []struct {
 		name           string
 		flags          int
 		setupMocks     func(client *mocks.Client)
 		expectedError  bool
 		expectedErrMsg string
-	}
-
-	tests := []testCase{
+	}{
 		{
 			name:  "Open file for read",
 			flags: os.O_RDONLY,
@@ -184,10 +182,10 @@ func (ts *fileTestSuite) Test_openFile() {
 		},
 	}
 
-	for _, tt := range tests {
-		ts.Run(tt.name, func() {
+	for _, tc := range testCases {
+		ts.Run(tc.name, func() {
 			client := mocks.NewClient(ts.T())
-			tt.setupMocks(client)
+			tc.setupMocks(client)
 
 			authority, err := utils.NewAuthority("sftp://user@host:22")
 			ts.Require().NoError(err)
@@ -200,10 +198,10 @@ func (ts *fileTestSuite) Test_openFile() {
 				},
 			}
 
-			_, err = file._open(tt.flags)
-			if tt.expectedError {
+			_, err = file._open(tc.flags)
+			if tc.expectedError {
 				ts.Require().Error(err)
-				ts.Contains(err.Error(), tt.expectedErrMsg)
+				ts.Contains(err.Error(), tc.expectedErrMsg)
 			} else {
 				ts.Require().NoError(err)
 			}
@@ -741,16 +739,15 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 }
 
 func (ts *fileTestSuite) TestTouch() {
-	type testCase struct {
+	err := errors.New("some error")
+	testCases := []struct {
 		name           string
 		filePath       string
 		fileExists     bool
 		setPermissions bool
 		expectedError  error
 		setupMocks     func(client *mocks.Client, sftpFile *mocks.ReadWriteSeekCloser, fileInfo *mocks.FileInfo)
-	}
-	err := errors.New("some error")
-	testCases := []testCase{
+	}{
 		{
 			name:       "file exists",
 			filePath:   "/some/path.txt",
@@ -939,15 +936,13 @@ func (ts *fileTestSuite) TestNewFile() {
 }
 
 func (ts *fileTestSuite) TestSetDefaultPermissions() {
-	type testCase struct {
+	testCases := []struct {
 		name           string
 		client         *mocks.Client
 		options        vfs.Options
 		expectedError  bool
 		expectedErrMsg string
-	}
-
-	tests := []testCase{
+	}{
 		{
 			name: "No options provided",
 			client: func() *mocks.Client {
@@ -986,17 +981,17 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 		},
 	}
 
-	for _, tt := range tests {
-		ts.Run(tt.name, func() {
+	for _, tc := range testCases {
+		ts.Run(tc.name, func() {
 			file := &File{
 				path:       "/some/path.txt",
-				fileSystem: &FileSystem{options: tt.options},
+				fileSystem: &FileSystem{options: tc.options},
 			}
 
-			err := file.setPermissions(tt.client, tt.options)
-			if tt.expectedError {
+			err := file.setPermissions(tc.client, tc.options)
+			if tc.expectedError {
 				ts.Require().Error(err)
-				ts.Contains(err.Error(), tt.expectedErrMsg)
+				ts.Contains(err.Error(), tc.expectedErrMsg)
 			} else {
 				ts.Require().NoError(err)
 			}
