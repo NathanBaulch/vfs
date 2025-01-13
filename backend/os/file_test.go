@@ -125,7 +125,7 @@ func (s *osFileTest) TestRead() {
 	// fail on nonexistent file
 	noFile, err := s.tmploc.NewFile("test_files/nonexistent.txt")
 	s.Require().NoError(err)
-	data := make([]byte, 0)
+	var data []byte
 	_, err = noFile.Read(data)
 	s.Require().Error(err, "error trying to read nonexistent file")
 

@@ -145,7 +145,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 			prefix:        "blah",
 			resolvedPath:  "/some/path/",
 			allEntries:    entries,
-			expectedFiles: []string{},
+			expectedFiles: nil,
 		},
 		{
 			description:  "relative prefix",
@@ -184,7 +184,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 			prefix:        "other",
 			resolvedPath:  "/some/path/",
 			allEntries:    entries,
-			expectedFiles: []string{},
+			expectedFiles: nil,
 		},
 	}
 
@@ -216,16 +216,15 @@ func (lt *locationTestSuite) TestListByPrefix() {
 		List(locPath).
 		Return(nil, errors.New("550")).
 		Once()
-	expectedEmptyStringSlice := make([]string, 0)
 	fileList, err := loc.ListByPrefix(prefix)
 	lt.Require().NoError(err, "no error expected expected")
-	lt.Equal(expectedEmptyStringSlice, fileList, "fileList should be empty string slice")
+	lt.Empty(fileList, "fileList should be empty string slice")
 
 	// validation error
 	badprefix := ""
 	fileList, err = loc.ListByPrefix(badprefix)
 	lt.Require().ErrorContains(err, utils.ErrBadPrefix, "err should be correct type")
-	lt.Equal(expectedEmptyStringSlice, fileList, "fileList should be empty string slice")
+	lt.Empty(fileList, "fileList should be empty string slice")
 
 	// error getting client
 	defaultClientGetter = clientGetterReturnsError
@@ -233,7 +232,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 	loc.(*Location).fileSystem.dataconn = nil
 	fileList, err = loc.ListByPrefix(prefix)
 	lt.Require().ErrorIs(err, errClientGetter, "err should be correct type")
-	lt.Equal(expectedEmptyStringSlice, fileList, "fileList should be empty string slice")
+	lt.Empty(fileList, "fileList should be empty string slice")
 	lt.client.AssertExpectations(lt.T())
 
 	// error calling client.List()
@@ -245,7 +244,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 		Once()
 	fileList, err = loc.ListByPrefix(prefix)
 	lt.Require().ErrorIs(err, listErr, "err should be correct type")
-	lt.Equal(expectedEmptyStringSlice, fileList, "fileList should be empty string slice")
+	lt.Empty(fileList, "fileList should be empty string slice")
 
 	lt.client.AssertExpectations(lt.T())
 }

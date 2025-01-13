@@ -622,7 +622,7 @@ func (f *File) createEmptyFile() error {
 	}
 
 	defer func() { _ = w.Close() }()
-	if _, err := w.Write(make([]byte, 0)); err != nil {
+	if _, err := w.Write([]byte{}); err != nil {
 		return err
 	}
 

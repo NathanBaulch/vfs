@@ -150,7 +150,7 @@ func (o objMap) filesHere(absLocPath string) []*memFile {
 // If none are there, returns an empty slice
 func (o objMap) fileNamesHere(absLocPath string) []string {
 	paths := o.getKeys()
-	fileList := make([]string, 0)
+	var fileList []string
 	for _, p := range paths {
 		object := o[p]                      // retrieve the object
 		if object != nil && object.isFile { // if the object is a file, cast its interface, i, to a file and append the name to the slice

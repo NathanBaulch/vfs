@@ -330,7 +330,7 @@ func (f *File) CopyToFile(target vfs.File) (err error) {
 	}
 
 	if target.Location().FileSystem().Scheme() == "mem" {
-		target.(*File).memFile.contents = make([]byte, 0)
+		target.(*File).memFile.contents = []byte{}
 	}
 
 	if _, err := target.Write(f.memFile.contents); err != nil {
@@ -452,7 +452,7 @@ func (f *File) Delete(...options.DeleteOption) error {
 
 func newMemFile(file *File, location *Location) *memFile {
 	return &memFile{
-		contents: make([]byte, 0),
+		contents: []byte{},
 		location: location,
 		name:     file.name,
 		filepath: path.Join(location.Path(), file.Name()),

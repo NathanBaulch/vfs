@@ -88,7 +88,7 @@ func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 }
 
 func (l *Location) fileList(testEval fileTest) ([]string, error) {
-	files := make([]string, 0)
+	var files []string
 	exists, err := l.Exists()
 	if err != nil {
 		return files, err

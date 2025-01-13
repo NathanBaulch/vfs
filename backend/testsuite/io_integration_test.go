@@ -146,11 +146,9 @@ uris = append(uris, loc)
 */
 
 func (s *ioTestSuite) SetupSuite() {
-	uris := make([]string, 0)
-
 	// add VFS_INTEGRATION_LOCATIONS tests
 	locs := os.Getenv("VFS_INTEGRATION_LOCATIONS")
-	uris = append(uris, strings.Split(locs, ";")...)
+	uris := strings.Split(locs, ";")
 
 	s.testLocations = make(map[string]vfs.Location)
 	for _, u := range uris {

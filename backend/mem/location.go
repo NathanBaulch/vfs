@@ -41,14 +41,14 @@ func (l *Location) List() ([]string, error) {
 		return list, nil
 	}
 	// if the volume has nothing on it, return an empty list as well
-	return make([]string, 0), nil
+	return []string{}, nil
 }
 
 // ListByPrefix tags a prefix onto the current path and in a slice,
 // returns all file base names whose full paths contain that substring
 // Returns empty slice if nothing found
 func (l *Location) ListByPrefix(prefix string) ([]string, error) {
-	list := make([]string, 0)
+	var list []string
 	str := path.Join(l.Path(), prefix)
 	mapRef := l.fileSystem.fsMap
 	if om, ok := mapRef[l.volume]; ok {
@@ -71,7 +71,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 // found that matched the regular expression.  Returns an
 // empty slice upon nothing found
 func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
-	list := make([]string, 0)
+	var list []string
 	str := l.Path()
 	mapRef := l.fileSystem.fsMap
 	if om, ok := mapRef[l.Volume()]; ok {

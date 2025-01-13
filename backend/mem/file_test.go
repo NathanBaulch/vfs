@@ -45,8 +45,7 @@ func (s *memFileTest) TearDownTest() {
 
 // TestZBR ensures that we can always read zero bytes
 func (s *memFileTest) TestZBR() {
-	byteSlice := make([]byte, 0)
-	_, err := s.testFile.Read(byteSlice)
+	_, err := s.testFile.Read([]byte{})
 	s.Require().ErrorIs(err, io.EOF, "read of 0 bytes failed")
 }
 
@@ -365,7 +364,7 @@ func (s *memFileTest) TestCopyToLocationOS() {
 
 	osFile, err = backend.Backend(_os.Scheme).NewFile("", osFileName)
 	s.Require().NoError(err, "unexpected error creating osFile")
-	_, err = osFile.Write(make([]byte, 0))
+	_, err = osFile.Write([]byte{})
 	s.Require().NoError(err, "unexpected error writing zero bytes to osFile")
 	s.Require().NoError(osFile.Close())
 
@@ -430,7 +429,7 @@ func (s *memFileTest) TestCopyToFileOS() {
 	osFileName := filepath.Join(dir, "osFile.txt")
 	osFile, err = backend.Backend(_os.Scheme).NewFile("", osFileName)
 	s.Require().NoError(err, "unexpected error creating osFile")
-	_, err = osFile.Write(make([]byte, 0))
+	_, err = osFile.Write([]byte{})
 	s.Require().NoError(err, "unexpected error writing zero bytes to osFile")
 	num, err := s.testFile.Write([]byte(expectedText))
 	s.NotZero(num)
@@ -455,7 +454,7 @@ func (s *memFileTest) TestCopyToFileOS() {
 // file becoming empty
 func (s *memFileTest) TestEmptyCopyToFile() {
 	expectedText := ""
-	expectedSlice := make([]byte, 0)
+	var expectedSlice []byte
 	otherFile, err := s.fileSystem.NewFile("", "/some/path/otherfile.txt")
 	s.Require().NoError(err, "unexpected error creating a file")
 
