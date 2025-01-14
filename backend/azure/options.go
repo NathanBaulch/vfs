@@ -67,6 +67,10 @@ func NewOptions() *Options {
 //     is used with storage accounts and only provides access to a single storage account.
 //  3. Returns a nil credential.  This allows access only to public blobs.
 func (o *Options) Credential() (any, error) {
+	if o == nil {
+		return nil, nil
+	}
+
 	if o.tokenCredentialFactory == nil {
 		o.tokenCredentialFactory = DefaultTokenCredentialFactory
 	}

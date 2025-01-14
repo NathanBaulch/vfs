@@ -20,12 +20,12 @@ const (
 
 var (
 	dataConnGetterFunc  func(context.Context, utils.Authority, *FileSystem, *File, types.OpenType) (types.DataConn, error)
-	defaultClientGetter func(context.Context, utils.Authority, Options) (client types.Client, err error)
+	defaultClientGetter func(context.Context, utils.Authority, *Options) (client types.Client, err error)
 )
 
 // FileSystem implements vfs.FileSystem for the FTP filesystem.
 type FileSystem struct {
-	options   vfs.Options
+	options   *Options
 	ftpclient types.Client
 	dataconn  types.DataConn
 	resetConn bool
@@ -106,18 +106,10 @@ func (fs *FileSystem) DataConn(ctx context.Context, authority utils.Authority, t
 // See Overview for authentication resolution
 func (fs *FileSystem) Client(ctx context.Context, authority utils.Authority) (types.Client, error) {
 	if fs.ftpclient == nil {
-		if fs.options == nil {
-			fs.options = Options{}
-		}
-
-		if opts, ok := fs.options.(Options); ok {
-			var err error
-			fs.ftpclient, err = defaultClientGetter(ctx, authority, opts)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, errors.New("unable to create client, vfs.Options must be an ftp.Options")
+		var err error
+		fs.ftpclient, err = defaultClientGetter(ctx, authority, fs.options)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return fs.ftpclient, nil
@@ -126,11 +118,16 @@ func (fs *FileSystem) Client(ctx context.Context, authority utils.Authority) (ty
 // WithOptions sets options for client and returns the filesystem (chainable)
 func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 	// only set options if vfs.Options is ftp.Options
-	if opts, ok := opts.(Options); ok {
+	switch opts := opts.(type) {
+	case Options:
+		fs.options = &opts
+	case *Options:
 		fs.options = opts
-		// we set client to nil to ensure that a new client is created using the new context when Client() is called
-		fs.ftpclient = nil
+	default:
+		return fs
 	}
+	// we set client to nil to ensure that a new client is created
+	fs.ftpclient = nil
 	return fs
 }
 
@@ -138,7 +135,6 @@ func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 func (fs *FileSystem) WithClient(client types.Client) *FileSystem {
 	fs.ftpclient = client
 	fs.options = nil
-
 	return fs
 }
 

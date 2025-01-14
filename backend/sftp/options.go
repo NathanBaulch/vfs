@@ -103,7 +103,7 @@ var defaultSSHConfig = &ssh.ClientConfig{
 	},
 }
 
-func getClient(authority utils.Authority, opts Options) (Client, io.Closer, error) {
+func getClient(authority utils.Authority, opts *Options) (Client, io.Closer, error) {
 	// setup Authentication
 	authMethods, err := getAuthMethods(opts)
 	if err != nil {
@@ -143,9 +143,13 @@ func getClient(authority utils.Authority, opts Options) (Client, io.Closer, erro
 }
 
 // getSShConfig gets ssh config from Options
-func getSShConfig(opts Options) *ssh.ClientConfig {
+func getSShConfig(opts *Options) *ssh.ClientConfig {
 	// copy default config
 	config := *defaultSSHConfig
+
+	if opts == nil {
+		return &config
+	}
 
 	// override default config with any user-defined config
 	if opts.HostKeyAlgorithms != nil {
@@ -165,14 +169,14 @@ func getSShConfig(opts Options) *ssh.ClientConfig {
 }
 
 // getHostKeyCallback gets host key callback for all known_hosts files
-func getHostKeyCallback(opts Options) (ssh.HostKeyCallback, error) {
+func getHostKeyCallback(opts *Options) (ssh.HostKeyCallback, error) {
 	var knownHostsFiles []string
 	switch {
 	// use explicit callback in Options
-	case opts.KnownHostsCallback != nil:
+	case opts != nil && opts.KnownHostsCallback != nil:
 		return opts.KnownHostsCallback, nil
 
-	case opts.KnownHostsString != "":
+	case opts != nil && opts.KnownHostsString != "":
 		hostKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(opts.KnownHostsString))
 		if err != nil {
 			return nil, err
@@ -180,7 +184,7 @@ func getHostKeyCallback(opts Options) (ssh.HostKeyCallback, error) {
 		return ssh.FixedHostKey(hostKey), nil
 
 	// use env var known_hosts file path, ie, /home/bob/.ssh/known_hosts
-	case opts.KnownHostsFile != "":
+	case opts != nil && opts.KnownHostsFile != "":
 		// check first to prevent auto-vivification of file
 		found, err := foundFile(opts.KnownHostsFile)
 		if err != nil {
@@ -271,12 +275,12 @@ func foundFile(file string) (bool, error) {
 	return true, nil
 }
 
-func getAuthMethods(opts Options) ([]ssh.AuthMethod, error) {
+func getAuthMethods(opts *Options) ([]ssh.AuthMethod, error) {
 	auth := make([]ssh.AuthMethod, 0)
 
 	// explicitly set password from opts, then from env if any
 	pw := os.Getenv("VFS_SFTP_PASSWORD")
-	if opts.Password != "" {
+	if opts != nil && opts.Password != "" {
 		pw = opts.Password
 	}
 	if pw != "" {
@@ -285,13 +289,13 @@ func getAuthMethods(opts Options) ([]ssh.AuthMethod, error) {
 
 	// setup key-based auth from env, if any
 	keyfile := os.Getenv("VFS_SFTP_KEYFILE")
-	if opts.KeyFilePath != "" {
+	if opts != nil && opts.KeyFilePath != "" {
 		keyfile = opts.KeyFilePath
 	}
 	if keyfile != "" {
 		// gather passphrase, if any
 		passphrase := os.Getenv("VFS_SFTP_KEYFILE_PASSPHRASE")
-		if opts.KeyPassphrase != "" {
+		if opts != nil && opts.KeyPassphrase != "" {
 			passphrase = opts.KeyPassphrase
 		}
 

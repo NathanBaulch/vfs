@@ -30,7 +30,7 @@ type fileTestSuite struct {
 func (ts *fileTestSuite) SetupTest() {
 	var err error
 	ts.sftpMock = &mocks.Client{}
-	ts.fs = FileSystem{sftpclient: ts.sftpMock, options: Options{}}
+	ts.fs = FileSystem{sftpclient: ts.sftpMock}
 	ts.testFile, err = ts.fs.NewFile("user@host.com:22", "/some/path/to/file.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test sftp.File instance.")
 }
@@ -54,7 +54,6 @@ func (ts *fileTestSuite) TestRead() {
 	sftpfile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: client,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      filepath,
@@ -85,7 +84,6 @@ func (ts *fileTestSuite) TestSeek() {
 	sftpfile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: client,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      filepath,
@@ -194,7 +192,7 @@ func (ts *fileTestSuite) Test_openFile() {
 				Authority: authority,
 				fileSystem: &FileSystem{
 					sftpclient: client,
-					options:    Options{FilePermissions: utils.Ptr("0644")},
+					options:    &Options{FilePermissions: utils.Ptr("0644")},
 				},
 			}
 
@@ -250,7 +248,6 @@ func (ts *fileTestSuite) TestCopyToFile() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -270,7 +267,6 @@ func (ts *fileTestSuite) TestCopyToFile() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/path.txt",
@@ -306,7 +302,7 @@ func (ts *fileTestSuite) TestCopyToFileBuffered() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{FileBufferSize: 2 * utils.TouchCopyMinBufferSize},
+			options:    &Options{FileBufferSize: 2 * utils.TouchCopyMinBufferSize},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -326,7 +322,6 @@ func (ts *fileTestSuite) TestCopyToFileBuffered() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/path.txt",
@@ -363,7 +358,6 @@ func (ts *fileTestSuite) TestCopyToFileEmpty() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -383,7 +377,6 @@ func (ts *fileTestSuite) TestCopyToFileEmpty() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/path.txt",
@@ -420,7 +413,7 @@ func (ts *fileTestSuite) TestCopyToFileEmptyBuffered() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{FileBufferSize: 2 * utils.TouchCopyMinBufferSize},
+			options:    &Options{FileBufferSize: 2 * utils.TouchCopyMinBufferSize},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -440,7 +433,6 @@ func (ts *fileTestSuite) TestCopyToFileEmptyBuffered() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/path.txt",
@@ -478,7 +470,6 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -498,7 +489,6 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/path.txt",
@@ -539,7 +529,6 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -559,7 +548,6 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/path.txt",
@@ -589,7 +577,6 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -611,7 +598,6 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/other/path.txt",
@@ -638,7 +624,6 @@ func (ts *fileTestSuite) TestMoveToFile_fileExists() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -659,7 +644,6 @@ func (ts *fileTestSuite) TestMoveToFile_fileExists() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/other/path.txt",
@@ -694,7 +678,6 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	sourceFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: sourceClient,
-			options:    Options{},
 		},
 		Authority: auth,
 		path:      "/some/path.txt",
@@ -714,7 +697,6 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			sftpclient: targetClient,
-			options:    Options{},
 		},
 		Authority: auth2,
 		path:      "/some/other/path.txt",
@@ -819,7 +801,7 @@ func (ts *fileTestSuite) TestTouch() {
 			file := &File{
 				fileSystem: &FileSystem{
 					sftpclient: client,
-					options: Options{
+					options: &Options{
 						FilePermissions: func() *string {
 							if tc.setPermissions {
 								return utils.Ptr("0666")
@@ -939,7 +921,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 	testCases := []struct {
 		name           string
 		client         *mocks.Client
-		options        vfs.Options
+		options        *Options
 		expectedError  bool
 		expectedErrMsg string
 	}{
@@ -959,10 +941,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(nil)
 				return client
 			}(),
-			options: func() vfs.Options {
-				opts := Options{FilePermissions: utils.Ptr("0644")}
-				return opts
-			}(),
+			options:       &Options{FilePermissions: utils.Ptr("0644")},
 			expectedError: false,
 		},
 		{
@@ -972,10 +951,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 				client.EXPECT().Chmod("/some/path.txt", os.FileMode(0o644)).Return(errors.New("chmod error"))
 				return client
 			}(),
-			options: func() vfs.Options {
-				opts := Options{FilePermissions: utils.Ptr("0644")}
-				return opts
-			}(),
+			options:        &Options{FilePermissions: utils.Ptr("0644")},
 			expectedError:  true,
 			expectedErrMsg: "chmod error",
 		},

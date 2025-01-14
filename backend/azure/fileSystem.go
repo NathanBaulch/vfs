@@ -35,14 +35,27 @@ func NewFileSystem() *FileSystem {
 
 // WithOptions allows the caller to override the default options
 func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
-	azureOpts, _ := opts.(Options)
-	fs.options = &azureOpts
+	// only set options if vfs.Options is azure.Options
+	switch opts := opts.(type) {
+	case Options:
+		fs.options = &opts
+	case *Options:
+		fs.options = opts
+	default:
+		return fs
+	}
+	if fs.options.TenantID != "" || fs.options.ClientID != "" || fs.options.ClientSecret != "" ||
+		fs.options.AccountName != "" || fs.options.AccountKey != "" {
+		// we set client to nil to ensure that a new client is created
+		fs.client = nil
+	}
 	return fs
 }
 
 // WithClient allows the caller to specify a specific client to be used
 func (fs *FileSystem) WithClient(client Client) *FileSystem {
 	fs.client = client
+	fs.options = nil
 	return fs
 }
 
@@ -111,12 +124,15 @@ func (fs *FileSystem) Scheme() string {
 
 // Host returns the host portion of the URI.  For azure this consists of <account_name>.blob.core.windows.net.
 func (fs *FileSystem) Host() string {
-	return fs.options.AccountName + ".blob.core.windows.net"
+	if fs.options != nil {
+		return fs.options.AccountName + ".blob.core.windows.net"
+	}
+	return "blob.core.windows.net"
 }
 
 // Retry returns the default retry function.  This is overridable via the WithOptions function.
 func (fs *FileSystem) Retry() vfs.Retry {
-	if fs.options.RetryFunc != nil {
+	if fs.options != nil && fs.options.RetryFunc != nil {
 		return fs.options.RetryFunc
 	}
 	return vfs.DefaultRetryer()

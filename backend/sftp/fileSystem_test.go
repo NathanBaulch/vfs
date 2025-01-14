@@ -102,12 +102,12 @@ func (ts *fileSystemTestSuite) TestRetry() {
 
 func (ts *fileSystemTestSuite) TestWithOptions() {
 	// ignore non-sftp.Options
-	fs := ts.sftpfs.WithOptions("just a string")
-	ts.Equal(ts.sftpfs, fs, "no change for non-sftp.Options")
+	ts.sftpfs.WithOptions("just a string")
+	ts.Nil(ts.sftpfs.options, "no change for non-sftp.Options")
 
 	// with option
-	fs = ts.sftpfs.WithOptions(Options{})
-	ts.NotNil(fs.options, "sftpfs.options is not nil")
+	ts.sftpfs.WithOptions(Options{})
+	ts.NotNil(ts.sftpfs.options, "sftpfs.options is not nil")
 }
 
 func (ts *fileSystemTestSuite) TestClient() {
@@ -115,13 +115,6 @@ func (ts *fileSystemTestSuite) TestClient() {
 	client, err := ts.sftpfs.Client(utils.Authority{})
 	ts.Require().NoError(err, "no error")
 	ts.Equal(ts.sftpfs.sftpclient, client, "client was already set")
-
-	// bad options
-	badOpt := "not an sftp.Options"
-	ts.sftpfs.sftpclient = nil
-	ts.sftpfs.options = badOpt
-	_, err = ts.sftpfs.Client(utils.Authority{})
-	ts.Require().EqualError(err, "unable to create client, vfs.Options must be an sftp.Options", "client was already set")
 }
 
 func (ts *fileSystemTestSuite) TestClientWithAutoDisconnect() {
@@ -129,7 +122,7 @@ func (ts *fileSystemTestSuite) TestClientWithAutoDisconnect() {
 	client := &mocks.Client{}
 	client.On("ReadDir", "/").Return([]os.FileInfo{}, nil).Times(3)
 	client.On("Close").Return(nil).Times(1)
-	defaultClientGetter = func(utils.Authority, Options) (Client, io.Closer, error) {
+	defaultClientGetter = func(utils.Authority, *Options) (Client, io.Closer, error) {
 		getClientCount++
 		return client, nil, nil
 	}

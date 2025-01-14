@@ -25,7 +25,6 @@ func (s *optionsSuite) TestFetchUsername() {
 	testCases := []struct {
 		description string
 		authority   string
-		options     Options
 		expected    string
 	}{
 		{
@@ -54,7 +53,7 @@ func (s *optionsSuite) TestFetchUsername() {
 func (s *optionsSuite) TestFetchPassword() {
 	testCases := []struct {
 		description string
-		options     Options
+		options     *Options
 		envVar      *string
 		expected    string
 	}{
@@ -76,7 +75,7 @@ func (s *optionsSuite) TestFetchPassword() {
 			description: "option should override",
 			expected:    "xyz123",
 			envVar:      utils.Ptr("12abc3"),
-			options: Options{
+			options: &Options{
 				Password: "xyz123",
 			},
 		},
@@ -135,7 +134,7 @@ func (s *optionsSuite) TestIsDisableEPSV() {
 	falseVal := false
 	testCases := []struct {
 		description string
-		options     Options
+		options     *Options
 		envVar      *string
 		expected    bool
 	}{
@@ -170,14 +169,14 @@ func (s *optionsSuite) TestIsDisableEPSV() {
 		},
 		{
 			description: "Options is set to false'",
-			options: Options{
+			options: &Options{
 				DisableEPSV: &falseVal,
 			},
 			expected: false,
 		},
 		{
 			description: "Options is set to true'",
-			options: Options{
+			options: &Options{
 				DisableEPSV: &trueVal,
 			},
 			expected: true,
@@ -185,7 +184,7 @@ func (s *optionsSuite) TestIsDisableEPSV() {
 		{
 			description: "env var is set true but Options is set to false'",
 			envVar:      utils.Ptr("true"),
-			options: Options{
+			options: &Options{
 				DisableEPSV: &falseVal,
 			},
 			expected: false,
@@ -193,7 +192,7 @@ func (s *optionsSuite) TestIsDisableEPSV() {
 		{
 			description: "env var is set true but Options is set to false'",
 			envVar:      utils.Ptr("false"),
-			options: Options{
+			options: &Options{
 				DisableEPSV: &trueVal,
 			},
 			expected: true,
@@ -225,7 +224,7 @@ func (s *optionsSuite) TestFetchTLSConfig() {
 	testCases := []struct {
 		description                string
 		authority                  string
-		options                    Options
+		options                    *Options
 		expected                   *tls.Config
 		expectInsecureCipherSuites bool
 	}{
@@ -242,7 +241,7 @@ func (s *optionsSuite) TestFetchTLSConfig() {
 		{
 			description: "authority has port specified",
 			authority:   "user@host.com:10000",
-			options: Options{
+			options: &Options{
 				Password:  "xyz",
 				TLSConfig: cfg,
 			},
@@ -251,7 +250,7 @@ func (s *optionsSuite) TestFetchTLSConfig() {
 		{
 			description: "include insecure cipher suites",
 			authority:   "user@host.com",
-			options: Options{
+			options: &Options{
 				IncludeInsecureCiphers: true,
 			},
 			expected: &tls.Config{
@@ -299,7 +298,7 @@ func containsInsecureCipherSuites(suites []uint16) bool {
 func (s *optionsSuite) TestFetchProtocol() {
 	testCases := []struct {
 		description string
-		options     Options
+		options     *Options
 		envVar      *string
 		expected    string
 	}{
@@ -329,7 +328,7 @@ func (s *optionsSuite) TestFetchProtocol() {
 		},
 		{
 			description: "options set to garbage",
-			options: Options{
+			options: &Options{
 				Protocol: ProtocolFTPS,
 			},
 			expected: ProtocolFTPS,
@@ -337,7 +336,7 @@ func (s *optionsSuite) TestFetchProtocol() {
 		{
 			description: "options set to FTPES - overriding FTPS",
 			envVar:      utils.Ptr("FTPS"),
-			options: Options{
+			options: &Options{
 				Protocol: ProtocolFTPES,
 			},
 			expected: ProtocolFTPES,
@@ -362,7 +361,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 	testCases := []struct {
 		description string
 		authority   string
-		options     Options
+		options     *Options
 		envVar      *string
 		expected    int
 	}{
@@ -392,7 +391,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		{
 			description: "protocol Options is set to FTPS",
 			authority:   "user@host.com",
-			options: Options{
+			options: &Options{
 				Protocol: ProtocolFTPS,
 			},
 			expected: 3,
@@ -400,7 +399,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		{
 			description: "protocol Options is set to garbage value",
 			authority:   "user@host.com",
-			options: Options{
+			options: &Options{
 				Protocol: "blah",
 			},
 			expected: 2,
@@ -408,7 +407,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		{
 			description: "debug writer is set",
 			authority:   "user@host.com",
-			options: Options{
+			options: &Options{
 				DebugWriter: bytes.NewBuffer([]byte{}),
 			},
 			expected: 3,
@@ -416,7 +415,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		{
 			description: "dial timeout is set",
 			authority:   "user@host.com",
-			options: Options{
+			options: &Options{
 				DialTimeout: 1 * time.Minute,
 			},
 			expected: 3,
@@ -424,7 +423,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		{
 			description: "all options set ",
 			authority:   "user@host.com",
-			options: Options{
+			options: &Options{
 				DebugWriter: bytes.NewBuffer([]byte{}),
 				DialTimeout: 1 * time.Minute,
 				Protocol:    ProtocolFTPS,

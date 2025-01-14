@@ -19,7 +19,7 @@ const (
 // FileSystem implements vfs.FileSystem for the S3 file system.
 type FileSystem struct {
 	client  Client
-	options vfs.Options
+	options *Options
 }
 
 // Retry will return the default no-op retrier. The S3 client provides its own retryer interface, and is available
@@ -81,18 +81,10 @@ func (fs *FileSystem) Scheme() string {
 // See Overview for authentication resolution
 func (fs *FileSystem) Client() (Client, error) {
 	if fs.client == nil {
-		if fs.options == nil {
-			fs.options = Options{}
-		}
-
-		if opts, ok := fs.options.(Options); ok {
-			var err error
-			fs.client, err = getClient(opts)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, errors.New("unable to create client, vfs.Options must be an s3.Options")
+		var err error
+		fs.client, err = getClient(fs.options)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return fs.client, nil
@@ -101,13 +93,18 @@ func (fs *FileSystem) Client() (Client, error) {
 // WithOptions sets options for client and returns the file system (chainable)
 func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 	// only set options if vfs.Options is s3.Options
-	if opts, ok := opts.(Options); ok {
+	switch opts := opts.(type) {
+	case Options:
+		fs.options = &opts
+	case *Options:
 		fs.options = opts
-		// we set client to nil to ensure that a new client is created using the new context when Client() is called
-		if opts.Region != "" || opts.ForcePathStyle || opts.Endpoint != "" || opts.Retry != nil ||
-			opts.AccessKeyID != "" || opts.SecretAccessKey != "" || opts.SessionToken != "" {
-			fs.client = nil
-		}
+	default:
+		return fs
+	}
+	if fs.options.Region != "" || fs.options.ForcePathStyle || fs.options.Endpoint != "" || fs.options.Retry != nil ||
+		fs.options.AccessKeyID != "" || fs.options.SecretAccessKey != "" || fs.options.SessionToken != "" {
+		// we set client to nil to ensure that a new client is created
+		fs.client = nil
 	}
 	return fs
 }

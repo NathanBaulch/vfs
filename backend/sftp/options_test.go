@@ -171,14 +171,14 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 	defer func() { o.Require().NoError(os.Remove(knownHosts), "clean up file for getHostKeyCallback test") }()
 
 	testCases := []struct {
-		options    Options
+		options    *Options
 		envVars    map[string]string
 		hasError   bool
 		errMessage string
 		message    string
 	}{
 		{
-			options: Options{
+			options: &Options{
 				KnownHostsCallback: ssh.FixedHostKey(o.publicKey),
 			},
 			hasError:   false,
@@ -186,7 +186,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 			message:    "explicit Options callback",
 		},
 		{
-			options: Options{
+			options: &Options{
 				KnownHostsString: "127.0.0.1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMkEmvHLSa43yoLA8QBqTfwgXgNCfd0DKs20NlBVbMoo21+Bs0fUpemyy6U0nnGHiOJVhiL7lNG/lB1fF1ymouM=", //nolint:lll // long line
 			},
 			hasError:   false,
@@ -194,7 +194,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 			message:    "Options KnownHostsString",
 		},
 		{
-			options: Options{
+			options: &Options{
 				KnownHostsString: "blah",
 			},
 			hasError:   true,
@@ -202,7 +202,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 			message:    "Options KnownHostsString, malformed",
 		},
 		{
-			options: Options{
+			options: &Options{
 				KnownHostsFile: knownHosts,
 			},
 			hasError:   false,
@@ -210,7 +210,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 			message:    "Options KnownHostsFile",
 		},
 		{
-			options: Options{
+			options: &Options{
 				KnownHostsFile: "nonexistent.key",
 			},
 			envVars: map[string]string{
@@ -221,7 +221,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 			message:    "insecure known hosts",
 		},
 		{
-			options: Options{},
+			options: &Options{},
 			envVars: map[string]string{
 				"VFS_SFTP_KNOWN_HOSTS_FILE": knownHosts,
 			},
@@ -236,7 +236,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 		},
 	} // #nosec - InsecureIgnoreHostKey only used for testing
 
-	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+	for _, tc := range testCases {
 		o.Run(tc.message, func() {
 			// setup env vars, if any
 			tmpMap := make(map[string]string)
@@ -263,7 +263,7 @@ func (o *optionsSuite) TestGetHostKeyCallback() {
 
 func (o *optionsSuite) TestGetAuthMethods() {
 	testCases := []struct {
-		options     Options
+		options     *Options
 		envVars     map[string]string
 		returnCount int
 		hasError    bool
@@ -272,7 +272,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 		message     string
 	}{
 		{
-			options: Options{
+			options: &Options{
 				Password: "somepassword",
 			},
 			returnCount: 1,
@@ -322,7 +322,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 			message:     "unencrypted keyfile - with passphrase",
 		},
 		{
-			options: Options{
+			options: &Options{
 				KeyFilePath: o.keyFiles.SSHPrivateKeyNoPassphrase,
 			},
 			returnCount: 1,
@@ -331,7 +331,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 			message:     "explicit Options keypath - no passphrase",
 		},
 		{
-			options: Options{
+			options: &Options{
 				KeyFilePath:   o.keyFiles.SSHPrivateKey,
 				KeyPassphrase: o.keyFiles.passphrase,
 			},
@@ -344,7 +344,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 			envVars: map[string]string{
 				"VFS_SFTP_KEYFILE": o.keyFiles.SSHPrivateKeyNoPassphrase, // overridden by explicit options value
 			},
-			options: Options{
+			options: &Options{
 				KeyFilePath:   o.keyFiles.SSHPrivateKey,
 				KeyPassphrase: o.keyFiles.passphrase,
 				Password:      "somepassword",
@@ -356,7 +356,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 			message:     "multiple auths",
 		},
 		{
-			options: Options{
+			options: &Options{
 				Password:     "somepassword",
 				KeyExchanges: []string{"diffie-hellman-group-exchange-sha256", "ecdh-sha2-nistp256"},
 			},
@@ -376,7 +376,7 @@ func (o *optionsSuite) TestGetAuthMethods() {
 		},
 	}
 
-	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+	for _, tc := range testCases {
 		o.Run(tc.message, func() {
 			// setup env vars, if any
 			tmpMap := make(map[string]string)
@@ -411,7 +411,7 @@ func (o *optionsSuite) TestGetClient() {
 	o.Require().NoError(err)
 
 	testCases := []struct {
-		options   Options
+		options   *Options
 		authority utils.Authority
 		hasError  bool
 		err       error
@@ -420,7 +420,7 @@ func (o *optionsSuite) TestGetClient() {
 	}{
 		{
 			authority: auth,
-			options: Options{
+			options: &Options{
 				Password:           "somepassword",
 				KnownHostsCallback: ssh.FixedHostKey(o.publicKey),
 			},
@@ -430,7 +430,7 @@ func (o *optionsSuite) TestGetClient() {
 		},
 		{
 			authority: auth,
-			options: Options{
+			options: &Options{
 				KeyFilePath:        "nonexistent.key",
 				KnownHostsCallback: ssh.FixedHostKey(o.publicKey),
 			},
@@ -440,7 +440,7 @@ func (o *optionsSuite) TestGetClient() {
 		},
 		{
 			authority: auth,
-			options: Options{
+			options: &Options{
 				Password:         "somepassword",
 				KnownHostsString: "badstring",
 			},
@@ -450,7 +450,7 @@ func (o *optionsSuite) TestGetClient() {
 		},
 	} // #nosec - InsecureIgnoreHostKey only used for testing
 
-	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+	for _, tc := range testCases {
 		o.Run(tc.message, func() {
 			_, _, err := getClient(tc.authority, tc.options)
 			if tc.hasError {
@@ -491,18 +491,18 @@ func (o *optionsSuite) TestMarshalOptions() {
 
 func (o *optionsSuite) TestGetSSHConfig() {
 	testCases := []struct {
-		name   string
-		opts   Options
-		expect *ssh.ClientConfig
+		name    string
+		options *Options
+		expect  *ssh.ClientConfig
 	}{
 		{
-			name:   "DefaultConfig",
-			opts:   Options{},
-			expect: defaultSSHConfig,
+			name:    "DefaultConfig",
+			options: &Options{},
+			expect:  defaultSSHConfig,
 		},
 		{
 			name: "CustomHostKeyAlgorithms",
-			opts: Options{
+			options: &Options{
 				HostKeyAlgorithms: []string{"ssh-rsa", "ecdsa-sha2-nistp256"},
 			},
 			expect: &ssh.ClientConfig{
@@ -512,7 +512,7 @@ func (o *optionsSuite) TestGetSSHConfig() {
 		},
 		{
 			name: "CustomCiphers",
-			opts: Options{
+			options: &Options{
 				Ciphers: []string{"aes128-ctr", "aes192-ctr", "aes256-ctr"},
 			},
 			expect: &ssh.ClientConfig{
@@ -526,7 +526,7 @@ func (o *optionsSuite) TestGetSSHConfig() {
 		},
 		{
 			name: "CustomMACs",
-			opts: Options{
+			options: &Options{
 				MACs: []string{""},
 			},
 			expect: &ssh.ClientConfig{
@@ -540,7 +540,7 @@ func (o *optionsSuite) TestGetSSHConfig() {
 		},
 		{
 			name: "CustomKeyExchanges",
-			opts: Options{
+			options: &Options{
 				KeyExchanges: []string{"diffie-hellman-group-exchange-sha256", "ecdh-sha2-nistp256"},
 			},
 			expect: &ssh.ClientConfig{
@@ -554,9 +554,9 @@ func (o *optionsSuite) TestGetSSHConfig() {
 		},
 	}
 
-	for _, tc := range testCases { //nolint:gocritic // rangeValCopy
+	for _, tc := range testCases {
 		o.Run(tc.name, func() {
-			result := getSShConfig(tc.opts)
+			result := getSShConfig(tc.options)
 			o.Equal(tc.expect, result)
 		})
 	}

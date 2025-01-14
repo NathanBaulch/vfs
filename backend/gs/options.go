@@ -16,11 +16,10 @@ type Options struct {
 	FileBufferSize int // Buffer Size In Bytes Used with utils.TouchCopyBuffered
 }
 
-func parseClientOptions(opts vfs.Options) []option.ClientOption {
+func parseClientOptions(opts *Options) []option.ClientOption {
 	var googleClientOpts []option.ClientOption
 
-	// we only care about 'gs.Options' types, skip anything else
-	if opts, ok := opts.(Options); ok {
+	if opts != nil {
 		switch {
 		case opts.APIKey != "":
 			googleClientOpts = append(googleClientOpts, option.WithAPIKey(opts.APIKey))

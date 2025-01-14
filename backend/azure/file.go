@@ -200,7 +200,10 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	}
 
 	// Otherwise, use TouchCopyBuffered using io.CopyBuffer
-	fileBufferSize := f.fileSystem.options.FileBufferSize
+	fileBufferSize := 0
+	if f.fileSystem.options != nil {
+		fileBufferSize = f.fileSystem.options.FileBufferSize
+	}
 
 	if terr := utils.TouchCopyBuffered(file, f, fileBufferSize); terr != nil {
 		return terr
@@ -397,5 +400,6 @@ func (f *File) checkTempFile() error {
 func (f *File) isSameAuth(target *File) bool {
 	sourceOptions := f.fileSystem.options
 	targetOptions := target.fileSystem.options
-	return sourceOptions.AccountKey == targetOptions.AccountKey
+	return (sourceOptions == nil && targetOptions == nil) ||
+		(sourceOptions != nil && targetOptions != nil && sourceOptions.AccountKey == targetOptions.AccountKey)
 }

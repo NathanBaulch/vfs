@@ -17,40 +17,40 @@ func TestOptionsSuite(t *testing.T) {
 func (s *optionsSuite) TestParseClientOptions() {
 	testCases := []struct {
 		name            string
-		input           Options
+		input           *Options
 		expectedOptions int // Count of expectedErrString Google client options
 	}{
 		{
 			name: "API Key only",
-			input: Options{
+			input: &Options{
 				APIKey: "test-api-key",
 			},
 			expectedOptions: 1,
 		},
 		{
 			name: "Credential File only",
-			input: Options{
+			input: &Options{
 				CredentialFile: "path/to/credential/file.json",
 			},
 			expectedOptions: 1,
 		},
 		{
 			name: "Endpoint only",
-			input: Options{
+			input: &Options{
 				Endpoint: "custom-endpoint",
 			},
 			expectedOptions: 1,
 		},
 		{
 			name: "Scopes only",
-			input: Options{
+			input: &Options{
 				Scopes: []string{"scope1", "scope2"},
 			},
 			expectedOptions: 1,
 		},
 		{
 			name: "Multiple options",
-			input: Options{
+			input: &Options{
 				APIKey:         "test-api-key",
 				CredentialFile: "path/to/credential/file.json",
 				Endpoint:       "custom-endpoint",
@@ -60,7 +60,7 @@ func (s *optionsSuite) TestParseClientOptions() {
 		},
 		{
 			name:            "No options",
-			input:           Options{},
+			input:           &Options{},
 			expectedOptions: 0,
 		},
 	}

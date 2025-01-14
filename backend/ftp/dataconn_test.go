@@ -35,7 +35,6 @@ func (s *dataConnSuite) SetupTest() {
 	s.ftpFile = &File{
 		fileSystem: &FileSystem{
 			ftpclient: s.client,
-			options:   Options{},
 		},
 		path: filepath,
 	}

@@ -24,11 +24,11 @@ const (
 	defaultAutoDisconnectDuration = 10
 )
 
-var defaultClientGetter func(utils.Authority, Options) (Client, io.Closer, error)
+var defaultClientGetter func(utils.Authority, *Options) (Client, io.Closer, error)
 
 // FileSystem implements vfs.FileSystem for the SFTP filesystem.
 type FileSystem struct {
-	options    vfs.Options
+	options    *Options
 	sftpclient Client
 	sshConn    io.Closer
 	timerMutex sync.Mutex
@@ -103,16 +103,8 @@ func (fs *FileSystem) Client(authority utils.Authority) (Client, error) {
 	// first stop connection timer, if any
 	fs.connTimerStop()
 	if fs.sftpclient == nil {
-		if fs.options == nil {
-			fs.options = Options{}
-		}
-
-		opts, ok := fs.options.(Options)
-		if !ok {
-			return nil, errors.New("unable to create client, vfs.Options must be an sftp.Options")
-		}
 		var err error
-		fs.sftpclient, fs.sshConn, err = defaultClientGetter(authority, opts)
+		fs.sftpclient, fs.sshConn, err = defaultClientGetter(authority, fs.options)
 		if err != nil {
 			return nil, err
 		}
@@ -125,10 +117,8 @@ func (fs *FileSystem) connTimerStart() {
 	defer fs.timerMutex.Unlock()
 
 	aliveSec := defaultAutoDisconnectDuration
-	if fs.options != nil {
-		if v, ok := fs.options.(Options); ok && v.AutoDisconnect != 0 {
-			aliveSec = v.AutoDisconnect
-		}
+	if fs.options != nil && fs.options.AutoDisconnect != 0 {
+		aliveSec = fs.options.AutoDisconnect
 	}
 
 	fs.connTimer = time.AfterFunc(time.Duration(aliveSec)*time.Second, func() {
@@ -157,9 +147,18 @@ func (fs *FileSystem) connTimerStop() {
 // WithOptions sets options for client and returns the filesystem (chainable)
 func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 	// only set options if vfs.Options is sftp.Options
-	if opts, ok := opts.(Options); ok {
+	switch opts := opts.(type) {
+	case Options:
+		fs.options = &opts
+	case *Options:
 		fs.options = opts
-		// we set client to nil to ensure that a new client is created using the new context when Client() is called
+	default:
+		return fs
+	}
+	if fs.options.Password != "" || fs.options.KeyFilePath != "" || fs.options.KeyPassphrase != "" || fs.options.KnownHostsFile != "" ||
+		fs.options.KnownHostsString != "" || len(fs.options.KeyExchanges) > 0 || len(fs.options.Ciphers) > 0 ||
+		len(fs.options.MACs) > 0 || len(fs.options.HostKeyAlgorithms) > 0 || fs.options.KnownHostsCallback != nil {
+		// we set client to nil to ensure that a new client is created
 		fs.sftpclient = nil
 	}
 	return fs

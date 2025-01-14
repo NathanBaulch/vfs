@@ -32,7 +32,7 @@ var (
 	s3cliMock      *mocks.Client
 	fs             FileSystem
 	testFile       vfs.File
-	defaultOptions Options
+	defaultOptions *Options
 	testFileName   string
 	bucket         string
 	matchContext   = mock.MatchedBy(func(context.Context) bool { return true })
@@ -41,7 +41,7 @@ var (
 func (ts *fileTestSuite) SetupTest() {
 	var err error
 	s3cliMock = &mocks.Client{}
-	defaultOptions = Options{AccessKeyID: "abc"}
+	defaultOptions = &Options{AccessKeyID: "abc"}
 	fs = FileSystem{client: s3cliMock, options: defaultOptions}
 	testFileName = "/some/path/to/file.txt"
 	bucket = "bucket"
@@ -330,7 +330,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 			sourceFile := &File{
 				fileSystem: &FileSystem{
 					client: s3cliMock,
-					options: Options{
+					options: &Options{
 						AccessKeyID:                 "abc",
 						DisableServerSideEncryption: true,
 					},
@@ -342,7 +342,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 			targetFile := &File{
 				fileSystem: &FileSystem{
 					client: s3cliMock,
-					options: Options{
+					options: &Options{
 						AccessKeyID: "abc",
 					},
 				},
@@ -371,7 +371,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
 			client: s3cliMock,
-			options: Options{
+			options: &Options{
 				AccessKeyID: "xyz",
 				ACL:         "SomeCannedACL",
 			},

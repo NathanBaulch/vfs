@@ -18,14 +18,13 @@ func (o *optionsTestSuite) SetupTest() {
 
 func (o *optionsTestSuite) TestGetClient() {
 	// no options
-	opts := Options{}
-	client, err := getClient(opts)
+	client, err := getClient(nil)
 	o.Require().NoError(err)
 	o.NotNil(client, "client is set")
 	o.Empty(client.(*s3.Client).Options().Region, "config is empty")
 
 	// options set
-	opts = Options{
+	opts := &Options{
 		AccessKeyID:     "mykey",
 		SecretAccessKey: "mysecret",
 		Region:          "some-region",
@@ -39,8 +38,7 @@ func (o *optionsTestSuite) TestGetClient() {
 
 	// env var
 	_ = os.Setenv("AWS_DEFAULT_REGION", "set-by-envvar")
-	opts = Options{}
-	client, err = getClient(opts)
+	client, err = getClient(nil)
 	o.Require().NoError(err)
 	o.NotNil(client, "client is set")
 	o.Equal("set-by-envvar", client.(*s3.Client).Options().Region, "region is set by env var")

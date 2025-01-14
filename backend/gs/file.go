@@ -426,19 +426,16 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 			tf.opts = f.opts
 		}
 
-		opts, ok := tf.fileSystem.options.(Options)
-		if ok {
-			if f.isSameAuth(&opts) {
-				return f.copyWithinGCSToFile(tf)
-			}
+		if f.isSameAuth(tf.fileSystem.options) {
+			return f.copyWithinGCSToFile(tf)
 		}
 	}
 
 	// Otherwise, use TouchCopyBuffered using io.CopyBuffer
 	fileBufferSize := 0
 
-	if opts, ok := f.fileSystem.options.(Options); ok {
-		fileBufferSize = opts.FileBufferSize
+	if f.fileSystem.options != nil {
+		fileBufferSize = f.fileSystem.options.FileBufferSize
 	}
 
 	if err := utils.TouchCopyBuffered(file, f, fileBufferSize); err != nil {
@@ -640,13 +637,11 @@ func (f *File) isSameAuth(opts *Options) bool {
 		return false
 	}
 
-	fOptions := f.fileSystem.options.(Options)
-
-	if opts.CredentialFile != "" && opts.CredentialFile == fOptions.CredentialFile {
+	if opts.CredentialFile != "" && opts.CredentialFile == f.fileSystem.options.CredentialFile {
 		return true
 	}
 
-	if opts.APIKey != "" && opts.APIKey == fOptions.APIKey {
+	if opts.APIKey != "" && opts.APIKey == f.fileSystem.options.APIKey {
 		return true
 	}
 

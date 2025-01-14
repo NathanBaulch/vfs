@@ -28,7 +28,7 @@ type Options struct {
 }
 
 // getClient setup S3 client
-func getClient(opt Options) (Client, error) {
+func getClient(opt *Options) (Client, error) {
 	// setup default config
 	awsConfig, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
@@ -37,6 +37,10 @@ func getClient(opt Options) (Client, error) {
 
 	// return client instance
 	return s3.NewFromConfig(awsConfig, func(opts *s3.Options) {
+		if opt == nil {
+			return
+		}
+
 		if opt.Region != "" {
 			opts.Region = opt.Region
 		}

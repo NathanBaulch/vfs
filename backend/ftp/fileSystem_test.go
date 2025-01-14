@@ -100,12 +100,12 @@ func (ts *fileSystemTestSuite) TestRetry() {
 
 func (ts *fileSystemTestSuite) TestWithOptions() {
 	// ignore non-ftp.Options
-	fs := ts.ftpfs.WithOptions("just a string")
-	ts.Equal(ts.ftpfs, fs, "no change for non-ftp.Options")
+	ts.ftpfs.WithOptions("just a string")
+	ts.Nil(ts.ftpfs.options, "no change for non-ftp.Options")
 
 	// with option
-	fs = ts.ftpfs.WithOptions(Options{})
-	ts.NotNil(fs.options, "ftpfs.options is not nil")
+	ts.ftpfs.WithOptions(Options{})
+	ts.NotNil(ts.ftpfs.options, "ftpfs.options is not nil")
 }
 
 func (ts *fileSystemTestSuite) TestClient() {
@@ -113,13 +113,6 @@ func (ts *fileSystemTestSuite) TestClient() {
 	client, err := ts.ftpfs.Client(context.Background(), utils.Authority{})
 	ts.Require().NoError(err, "no error")
 	ts.Equal(ts.ftpfs.ftpclient, client, "client was already set")
-
-	// bad options
-	badOpt := "not an ftp.Options"
-	ts.ftpfs.ftpclient = nil
-	ts.ftpfs.options = badOpt
-	_, err = ts.ftpfs.Client(context.Background(), utils.Authority{})
-	ts.Require().EqualError(err, "unable to create client, vfs.Options must be an ftp.Options", "client was already set")
 }
 
 func TestFileSystem(t *testing.T) {

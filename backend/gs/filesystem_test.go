@@ -140,7 +140,7 @@ func (s *fileSystemSuite) TestName() {
 func (s *fileSystemSuite) TestRetry() {
 	sentinel := errors.New("sentinel")
 	fs := &FileSystem{
-		options: Options{
+		options: &Options{
 			Retry: func(func() error) error {
 				return sentinel
 			},

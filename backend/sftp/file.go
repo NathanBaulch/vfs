@@ -223,8 +223,8 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 
 	fileBufferSize := 0
 
-	if opts, ok := f.fileSystem.options.(Options); ok {
-		fileBufferSize = opts.FileBufferSize
+	if f.fileSystem.options != nil {
+		fileBufferSize = f.fileSystem.options.FileBufferSize
 	}
 
 	if err := utils.TouchCopyBuffered(file, f, fileBufferSize); err != nil {
@@ -498,24 +498,18 @@ func (f *File) _open(flags int) (ReadWriteSeekCloser, error) {
 }
 
 // setPermissions sets the file permissions if they are set in the options
-func (f *File) setPermissions(client Client, opts vfs.Options) error {
+func (f *File) setPermissions(client Client, opts *Options) error {
 	if opts == nil {
 		return nil
 	}
 
-	// ensure we're dealing with pointer to Options
-	ptrOpts, ok := opts.(*Options)
-	if !ok {
-		ptrOpts = utils.Ptr(opts.(Options))
-	}
-
 	// if file permissions are not set, return early
-	if ptrOpts.FilePermissions == nil {
+	if opts.FilePermissions == nil {
 		return nil
 	}
 
 	// get file mode
-	perms, err := ptrOpts.GetFileMode()
+	perms, err := opts.GetFileMode()
 	if err != nil {
 		return fmt.Errorf("get file mode err: %w", err)
 	}

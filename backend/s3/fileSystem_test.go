@@ -89,14 +89,14 @@ func (ts *fileSystemTestSuite) TestName_Error() {
 
 func (ts *fileSystemTestSuite) TestWithOptions() {
 	// ignore non-s3.Options
-	fs := s3fs.WithOptions("just a string")
-	ts.Equal(s3fs, fs, "no change for non-s3.Options")
+	s3fs.WithOptions("just a string")
+	ts.Nil(s3fs.options, "no change for non-s3.Options")
 
 	// with option
-	fs = s3fs.WithOptions(Options{
+	s3fs.WithOptions(Options{
 		Region: "us-east-1",
 	})
-	ts.NotNil(fs.options, "fs.options is not nil")
+	ts.NotNil(s3fs.options, "fs.options is not nil")
 }
 
 func (ts *fileSystemTestSuite) TestClient() {
@@ -104,13 +104,6 @@ func (ts *fileSystemTestSuite) TestClient() {
 	client, err := s3fs.Client()
 	ts.Require().NoError(err, "no error")
 	ts.Equal(s3fs.client, client, "client was already set")
-
-	// bad options
-	badOpt := "not an s3.Options"
-	s3fs.client = nil
-	s3fs.options = badOpt
-	_, err = s3fs.Client()
-	ts.Require().EqualError(err, "unable to create client, vfs.Options must be an s3.Options", "client was already set")
 
 	s3fs = &FileSystem{}
 	client, err = s3fs.Client()

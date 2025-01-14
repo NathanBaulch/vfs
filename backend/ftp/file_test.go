@@ -36,14 +36,14 @@ func TestFile(t *testing.T) {
 func (ts *fileTestSuite) SetupTest() {
 	var err error
 	ts.ftpClientMock = &mocks.Client{}
-	ts.fs = FileSystem{ftpclient: ts.ftpClientMock, options: Options{}}
+	ts.fs = FileSystem{ftpclient: ts.ftpClientMock}
 	ts.testFile, err = ts.fs.NewFile("user@host.com:22", "/some/path/to/file.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test ftp.File instance.")
 }
 
 var errClientGetter = errors.New("some dataconn getter error")
 
-func clientGetterReturnsError(_ context.Context, _ utils.Authority, _ Options) (client types.Client, err error) {
+func clientGetterReturnsError(_ context.Context, _ utils.Authority, _ *Options) (client types.Client, err error) {
 	return nil, errClientGetter
 }
 
@@ -63,7 +63,6 @@ func (ts *fileTestSuite) TestRead() {
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			options:   Options{},
 			dataconn:  dc,
 		},
 		authority: auth,
@@ -110,7 +109,6 @@ func (ts *fileTestSuite) TestClose() {
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			options:   Options{},
 			dataconn:  dc,
 		},
 		authority: auth,
@@ -196,7 +194,6 @@ func (ts *fileTestSuite) TestSeek() {
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			options:   Options{},
 			dataconn:  fakeDataConn,
 		},
 		authority: auth,
@@ -288,7 +285,6 @@ func (ts *fileTestSuite) TestSeekError() {
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			options:   Options{},
 		},
 		authority: auth,
 		path:      fp,
@@ -741,7 +737,6 @@ func (ts *fileTestSuite) TestTouch_exists() {
 	file := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			options:   Options{},
 			dataconn:  dconn,
 		},
 		authority: auth,
@@ -902,7 +897,6 @@ func (ts *fileTestSuite) TestTouch_notExists() {
 	file := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			options:   Options{},
 			dataconn:  dconn,
 		},
 		authority: auth,

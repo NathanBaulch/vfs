@@ -145,8 +145,8 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	// Otherwise, use TouchCopyBuffered using io.CopyBuffer
 	fileBufferSize := 0
 
-	if opts, ok := f.fileSystem.options.(Options); ok {
-		fileBufferSize = opts.FileBufferSize
+	if f.fileSystem.options != nil {
+		fileBufferSize = f.fileSystem.options.FileBufferSize
 	}
 
 	if err := utils.TouchCopyBuffered(file, f, fileBufferSize); err != nil {
@@ -595,7 +595,7 @@ func (f *File) getCopyObjectInput(targetFile *File) *s3.CopyObjectInput {
 		copyInput.ContentType = aws.String(contentType)
 	}
 
-	if f.fileSystem.options != nil && f.fileSystem.options.(Options).DisableServerSideEncryption {
+	if f.fileSystem.options != nil && f.fileSystem.options.DisableServerSideEncryption {
 		copyInput.ServerSideEncryption = ""
 	}
 
@@ -609,16 +609,16 @@ func (f *File) isSameAuth(targetFile *File) (bool, types.ObjectCannedACL) {
 	if fileOptions == nil && targetOptions == nil {
 		// if both opts are nil, we must be using the default credentials
 		return true, ""
-	} else if opts, ok := fileOptions.(Options); ok {
+	} else if fileOptions != nil {
 		// use source ACL (even if empty), UNLESS target ACL is set
-		ACL := opts.ACL
-		if targetOpts, ok := targetOptions.(Options); ok {
-			if targetOpts.ACL != "" {
-				ACL = targetOpts.ACL
+		ACL := fileOptions.ACL
+		if targetOptions != nil {
+			if targetOptions.ACL != "" {
+				ACL = targetOptions.ACL
 			}
 			// since accesskey and session token are mutually exclusive, one will be nil
 			// if both are the same, we're using the same credentials
-			isSameAccount := (opts.AccessKeyID == targetOpts.AccessKeyID) && (opts.SessionToken == targetOpts.SessionToken)
+			isSameAccount := (fileOptions.AccessKeyID == targetOptions.AccessKeyID) && (fileOptions.SessionToken == targetOptions.SessionToken)
 			return isSameAccount, ACL
 		}
 		return false, ACL
@@ -652,18 +652,12 @@ func uploadInput(f *File) *s3.PutObjectInput {
 		ServerSideEncryption: types.ServerSideEncryptionAes256,
 	}
 
-	if f.fileSystem.options == nil {
-		f.fileSystem.options = Options{}
-	}
-
-	if f.fileSystem.options.(Options).DisableServerSideEncryption {
+	if f.fileSystem.options != nil && f.fileSystem.options.DisableServerSideEncryption {
 		input.ServerSideEncryption = ""
 	}
 
-	if opts, ok := f.fileSystem.options.(Options); ok {
-		if opts.ACL != "" {
-			input.ACL = opts.ACL
-		}
+	if f.fileSystem.options != nil && f.fileSystem.options.ACL != "" {
+		input.ACL = f.fileSystem.options.ACL
 	}
 
 	for _, o := range f.opts {
@@ -828,27 +822,17 @@ func (f *File) getS3Writer() (*io.PipeWriter, error) {
 }
 
 func (f *File) getUploadPartitionSize() int64 {
-	partSize := defaultPartitionSize
-	if f.fileSystem.options != nil {
-		if opts, ok := f.fileSystem.options.(Options); ok {
-			if opts.UploadPartitionSize != 0 {
-				partSize = opts.UploadPartitionSize
-			}
-		}
+	if f.fileSystem.options != nil && f.fileSystem.options.UploadPartitionSize != 0 {
+		return f.fileSystem.options.UploadPartitionSize
 	}
-	return partSize
+	return defaultPartitionSize
 }
 
 func (f *File) getDownloadPartitionSize() int64 {
-	partSize := defaultPartitionSize
-	if f.fileSystem.options != nil {
-		if opts, ok := f.fileSystem.options.(Options); ok {
-			if opts.DownloadPartitionSize != 0 {
-				partSize = opts.DownloadPartitionSize
-			}
-		}
+	if f.fileSystem.options != nil && f.fileSystem.options.DownloadPartitionSize != 0 {
+		return f.fileSystem.options.DownloadPartitionSize
 	}
-	return partSize
+	return defaultPartitionSize
 }
 
 func withDownloadPartitionSize(partSize int64) func(*manager.Downloader) {

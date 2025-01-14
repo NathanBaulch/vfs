@@ -24,14 +24,14 @@ const (
 type FileSystem struct {
 	client        *storage.Client
 	ctx           context.Context
-	options       vfs.Options
+	options       *Options
 	clientCreator ClientCreator
 }
 
 // Retry will return a retrier provided via options, or a no-op if none is provided.
 func (fs *FileSystem) Retry() vfs.Retry {
-	if opts, _ := fs.options.(Options); opts.Retry != nil {
-		return opts.Retry
+	if fs.options != nil && fs.options.Retry != nil {
+		return fs.options.Retry
 	}
 	return vfs.DefaultRetryer()
 }
@@ -100,9 +100,19 @@ func (fs *FileSystem) Client() (*storage.Client, error) {
 
 // WithOptions sets options for client and returns the file system (chainable)
 func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
-	fs.options = opts
-	// we set client to nil to ensure that a new client is created using the new context when Client() is called
-	fs.client = nil
+	// only set options if vfs.Options is gs.Options
+	switch opts := opts.(type) {
+	case Options:
+		fs.options = &opts
+	case *Options:
+		fs.options = opts
+	default:
+		return fs
+	}
+	if fs.options.APIKey != "" || fs.options.CredentialFile != "" || fs.options.Endpoint != "" || len(fs.options.Scopes) > 0 {
+		// we set client to nil to ensure that a new client is created
+		fs.client = nil
+	}
 	return fs
 }
 
@@ -117,6 +127,7 @@ func (fs *FileSystem) WithContext(ctx context.Context) *FileSystem {
 // WithClient passes in a google storage client and returns the file system (chainable)
 func (fs *FileSystem) WithClient(client *storage.Client) *FileSystem {
 	fs.client = client
+	fs.options = nil
 	return fs
 }
 

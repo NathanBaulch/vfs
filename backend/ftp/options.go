@@ -43,7 +43,7 @@ const (
 	envPassword    = "VFS_FTP_PASSWORD" //nolint:gosec
 )
 
-func getClient(ctx context.Context, authority utils.Authority, opts Options) (types.Client, error) {
+func getClient(ctx context.Context, authority utils.Authority, opts *Options) (types.Client, error) {
 	// dial connection
 	c, err := _ftp.Dial(fetchHostPortString(authority), fetchDialOptions(ctx, authority, opts)...)
 	if err != nil {
@@ -73,7 +73,7 @@ func fetchUsername(auth utils.Authority) string {
 
 // note: since the format "user:pass" in the authority userinfo field is deprecated (per https://tools.ietf.org/html/rfc3986#section-3.2.1)
 // it is not used by fetchPassword and should never be included in a vfs URI
-func fetchPassword(opts Options) string {
+func fetchPassword(opts *Options) string {
 	// set default password
 	password := defaultPassword
 
@@ -83,7 +83,7 @@ func fetchPassword(opts Options) string {
 	}
 
 	// override with options, if any
-	if opts.Password != "" {
+	if opts != nil && opts.Password != "" {
 		password = opts.Password
 	}
 
@@ -104,7 +104,7 @@ func fetchHostPortString(auth utils.Authority) string {
 	return fmt.Sprintf("%s:%d", host, port)
 }
 
-func fetchDialOptions(ctx context.Context, auth utils.Authority, opts Options) []_ftp.DialOption {
+func fetchDialOptions(ctx context.Context, auth utils.Authority, opts *Options) []_ftp.DialOption {
 	// set context DialOption
 	dialOptions := []_ftp.DialOption{
 		_ftp.DialWithContext(ctx),
@@ -121,6 +121,10 @@ func fetchDialOptions(ctx context.Context, auth utils.Authority, opts Options) [
 		dialOptions = append(dialOptions, _ftp.DialWithExplicitTLS(fetchTLSConfig(auth, opts)))
 	}
 
+	if opts == nil {
+		return dialOptions
+	}
+
 	// determine debug writer DialOption, if any
 	if opts.DebugWriter != nil {
 		dialOptions = append(dialOptions, _ftp.DialWithDebugOutput(opts.DebugWriter))
@@ -134,7 +138,7 @@ func fetchDialOptions(ctx context.Context, auth utils.Authority, opts Options) [
 	return dialOptions
 }
 
-func isDisableOption(opts Options) bool {
+func isDisableOption(opts *Options) bool {
 	// default to false, meaning EPSV stays enabled
 	disableEpsv := false
 
@@ -146,20 +150,24 @@ func isDisableOption(opts Options) bool {
 	}
 
 	// override with Options, if any
-	if opts.DisableEPSV != nil {
+	if opts != nil && opts.DisableEPSV != nil {
 		disableEpsv = *opts.DisableEPSV
 	}
 
 	return disableEpsv
 }
 
-func fetchTLSConfig(auth utils.Authority, opts Options) *tls.Config {
+func fetchTLSConfig(auth utils.Authority, opts *Options) *tls.Config {
 	// setup basic TLS config for host
 	tlsConfig := &tls.Config{
 		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: true, //nolint:gosec
 		ClientSessionCache: tls.NewLRUClientSessionCache(0),
 		ServerName:         auth.Host(),
+	}
+
+	if opts == nil {
+		return tlsConfig
 	}
 
 	if opts.IncludeInsecureCiphers {
@@ -188,7 +196,7 @@ func fetchTLSConfig(auth utils.Authority, opts Options) *tls.Config {
 	return tlsConfig
 }
 
-func fetchProtocol(opts Options) string {
+func fetchProtocol(opts *Options) string {
 	// set default protocol
 	protocol := ProtocolFTP
 
@@ -198,7 +206,7 @@ func fetchProtocol(opts Options) string {
 	}
 
 	// override with options value
-	if opts.Protocol != "" {
+	if opts != nil && opts.Protocol != "" {
 		protocol = opts.Protocol
 	}
 
