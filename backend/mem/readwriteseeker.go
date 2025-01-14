@@ -6,30 +6,14 @@ import (
 	"github.com/c2fo/vfs/v6"
 )
 
-// ReadWriteSeeker is a custom type that implements io.ReadWriteSeeker.
-type ReadWriteSeeker struct {
+// readWriteSeeker is a custom type that implements io.ReadWriteSeeker.
+type readWriteSeeker struct {
 	data   []byte
 	cursor int
 }
 
-// NewReadWriteSeeker creates a new ReadWriteSeeker.
-func NewReadWriteSeeker() *ReadWriteSeeker {
-	return &ReadWriteSeeker{
-		data:   []byte{},
-		cursor: 0,
-	}
-}
-
-// NewReadWriteSeekerWithData creates a new ReadWriteSeeker with the provided data.
-func NewReadWriteSeekerWithData(data []byte) *ReadWriteSeeker {
-	return &ReadWriteSeeker{
-		data:   data,
-		cursor: 0,
-	}
-}
-
 // Write writes data to the current cursor position and advances the cursor.
-func (rws *ReadWriteSeeker) Write(p []byte) (n int, err error) {
+func (rws *readWriteSeeker) Write(p []byte) (n int, err error) {
 	position := rws.cursor + len(p)
 	if position <= len(rws.data) {
 		copy(rws.data[rws.cursor:position], p)
@@ -41,7 +25,7 @@ func (rws *ReadWriteSeeker) Write(p []byte) (n int, err error) {
 }
 
 // Read reads data from the current cursor position and advances the cursor.
-func (rws *ReadWriteSeeker) Read(p []byte) (n int, err error) {
+func (rws *readWriteSeeker) Read(p []byte) (n int, err error) {
 	if rws.cursor >= len(rws.data) {
 		return 0, io.EOF
 	}
@@ -52,7 +36,7 @@ func (rws *ReadWriteSeeker) Read(p []byte) (n int, err error) {
 }
 
 // Seek sets the cursor position.
-func (rws *ReadWriteSeeker) Seek(offset int64, whence int) (int64, error) {
+func (rws *readWriteSeeker) Seek(offset int64, whence int) (int64, error) {
 	var position int64
 	switch whence {
 	case io.SeekStart: // io.SeekStart
@@ -75,6 +59,6 @@ func (rws *ReadWriteSeeker) Seek(offset int64, whence int) (int64, error) {
 }
 
 // Bytes returns a byte slice of the data.
-func (rws *ReadWriteSeeker) Bytes() []byte {
+func (rws *readWriteSeeker) Bytes() []byte {
 	return rws.data
 }

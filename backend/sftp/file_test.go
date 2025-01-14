@@ -35,7 +35,7 @@ func (ts *fileTestSuite) SetupTest() {
 	ts.Require().NoError(err, "Shouldn't return error creating test sftp.File instance.")
 }
 
-// this wraps strings.Reader to satisfy ReadWriteSeekCloser interface
+// this wraps strings.Reader to satisfy readWriteSeekCloser interface
 type nopWriteCloser struct {
 	io.ReadSeeker
 }
@@ -271,7 +271,7 @@ func (ts *fileTestSuite) TestCopyToFile() {
 		Authority: auth2,
 		path:      "/some/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	// run tests
@@ -326,7 +326,7 @@ func (ts *fileTestSuite) TestCopyToFileBuffered() {
 		Authority: auth2,
 		path:      "/some/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	targetMockLocation := &_mocks.Location{}
@@ -381,7 +381,7 @@ func (ts *fileTestSuite) TestCopyToFileEmpty() {
 		Authority: auth2,
 		path:      "/some/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	targetMockLocation := &_mocks.Location{}
@@ -437,7 +437,7 @@ func (ts *fileTestSuite) TestCopyToFileEmptyBuffered() {
 		Authority: auth2,
 		path:      "/some/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	targetMockLocation := &_mocks.Location{}
@@ -493,7 +493,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 		Authority: auth2,
 		path:      "/some/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	targetMockLocation := &_mocks.Location{}
@@ -552,7 +552,7 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 		Authority: auth2,
 		path:      "/some/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	// run tests
@@ -583,7 +583,7 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 	}
 
 	rws := mocks.NewReadWriteSeekCloser(ts.T())
-	sourceFile.opener = func(Client, string, int) (ReadWriteSeekCloser, error) { return rws, nil }
+	sourceFile.opener = func(Client, string, int) (readWriteSeekCloser, error) { return rws, nil }
 
 	// set up target
 	targetFileInfo := &mocks.FileInfo{}
@@ -630,7 +630,7 @@ func (ts *fileTestSuite) TestMoveToFile_fileExists() {
 	}
 
 	rws := mocks.NewReadWriteSeekCloser(ts.T())
-	sourceFile.opener = func(Client, string, int) (ReadWriteSeekCloser, error) { return rws, nil }
+	sourceFile.opener = func(Client, string, int) (readWriteSeekCloser, error) { return rws, nil }
 
 	// set up target
 	targetFileInfo := &mocks.FileInfo{}
@@ -701,7 +701,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 		Authority: auth2,
 		path:      "/some/other/path.txt",
 		sftpfile:  targetSftpFile,
-		opener:    func(Client, string, int) (ReadWriteSeekCloser, error) { return targetSftpFile, nil },
+		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
 	targetMockLocation := &_mocks.Location{}

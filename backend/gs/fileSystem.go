@@ -25,7 +25,7 @@ type FileSystem struct {
 	client        *storage.Client
 	ctx           context.Context
 	options       *Options
-	clientCreator ClientCreator
+	clientCreator clientCreator
 }
 
 // Retry will return a retrier provided via options, or a no-op if none is provided.
@@ -131,12 +131,12 @@ func (fs *FileSystem) WithClient(client *storage.Client) *FileSystem {
 	return fs
 }
 
-// ClientCreator defines an interface for creating a new Google Cloud Storage client.
-type ClientCreator interface {
+// clientCreator defines an interface for creating a new Google Cloud Storage client.
+type clientCreator interface {
 	NewClient(ctx context.Context, opts ...option.ClientOption) (*storage.Client, error)
 }
 
-// defaultClientCreator is the default implementation of ClientCreator.
+// defaultClientCreator is the default implementation of clientCreator.
 type defaultClientCreator struct{}
 
 // NewClient is a function that creates a new Google Cloud Storage client.

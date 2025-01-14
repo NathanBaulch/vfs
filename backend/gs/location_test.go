@@ -16,15 +16,13 @@ type locationTestSuite struct {
 	suite.Suite
 }
 
-type Objects []fakestorage.Object
-
 func (lt *locationTestSuite) TestList() {
 	bucket := "fake-bucket"
 	fileCount := 3
 	dirCount := 3
 	var objectNames []string
 	var objectPrefixes []string
-	objects := Objects{}
+	var objects []fakestorage.Object
 	objectBaseNameSet := map[string]struct{}{}
 	var createObjects func(prefix string, level, levels int)
 	createObjects = func(prefix string, level, levels int) {
@@ -112,7 +110,7 @@ func (lt *locationTestSuite) TestList() {
 }
 
 func (lt *locationTestSuite) TestVolume() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -123,7 +121,7 @@ func (lt *locationTestSuite) TestVolume() {
 }
 
 func (lt *locationTestSuite) TestPath() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -141,7 +139,7 @@ func (lt *locationTestSuite) TestPath() {
 }
 
 func (lt *locationTestSuite) TestNewFile() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -171,8 +169,8 @@ func (lt *locationTestSuite) TestNewFile() {
 
 func (lt *locationTestSuite) TestExists_true() {
 	bucket := "foo"
-	server := fakestorage.NewServer(Objects{
-		fakestorage.Object{
+	server := fakestorage.NewServer([]fakestorage.Object{
+		{
 			ObjectAttrs: fakestorage.ObjectAttrs{
 				BucketName:      bucket,
 				Name:            "file.txt",
@@ -192,7 +190,7 @@ func (lt *locationTestSuite) TestExists_true() {
 }
 
 func (lt *locationTestSuite) TestExists_false() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 	bucket := "foo"
@@ -204,7 +202,7 @@ func (lt *locationTestSuite) TestExists_false() {
 }
 
 func (lt *locationTestSuite) TestChangeDir() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -237,7 +235,7 @@ func (lt *locationTestSuite) TestChangeDir() {
 }
 
 func (lt *locationTestSuite) TestNewLocation() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -267,7 +265,7 @@ func (lt *locationTestSuite) TestNewLocation() {
 }
 
 func (lt *locationTestSuite) TestStringURI() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -277,8 +275,8 @@ func (lt *locationTestSuite) TestStringURI() {
 
 func (lt *locationTestSuite) TestDeleteFile() {
 	bucket := "bucket"
-	server := fakestorage.NewServer(Objects{
-		fakestorage.Object{
+	server := fakestorage.NewServer([]fakestorage.Object{
+		{
 			ObjectAttrs: fakestorage.ObjectAttrs{
 				BucketName:      bucket,
 				Name:            "old/filename.txt",

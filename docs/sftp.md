@@ -586,14 +586,3 @@ type Options struct {
 ```
 
 Options holds sftp-specific options. Currently only client options are used.
-
-### type ReadWriteSeekCloser
-
-```go
-type ReadWriteSeekCloser interface {
-	io.ReadWriteSeeker
-	io.Closer
-}
-```
-
-ReadWriteSeekCloser is a read write seek closer interface representing capabilities needed from std libs sftp File struct.

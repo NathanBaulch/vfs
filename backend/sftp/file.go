@@ -19,7 +19,7 @@ type File struct {
 	Authority  utils.Authority
 	path       string
 	opts       []options.NewFileOption
-	sftpfile   ReadWriteSeekCloser
+	sftpfile   readWriteSeekCloser
 	opener     fileOpener
 	seekCalled bool
 	readCalled bool
@@ -27,7 +27,7 @@ type File struct {
 }
 
 // this type allows for injecting a mock fileOpener function
-type fileOpener func(c Client, p string, f int) (ReadWriteSeekCloser, error)
+type fileOpener func(c Client, p string, f int) (readWriteSeekCloser, error)
 
 // Info Functions
 
@@ -377,9 +377,9 @@ func (f *File) String() string {
 */
 
 // openFile wrapper allows us to inject a file opener (for mocking) vs the defaultOpenFile.
-func (f *File) openFile(flags int) (ReadWriteSeekCloser, error) { //nolint:gocyclo // this function is complex by nature
+func (f *File) openFile(flags int) (readWriteSeekCloser, error) { //nolint:gocyclo // this function is complex by nature
 	if f.sftpfile != nil {
-		// this case shouldn't normally exist except when we've set our own ReadWriteSeekCloser in tests
+		// this case shouldn't normally exist except when we've set our own readWriteSeekCloser in tests
 		if f.flagsUsed == 0 && !f.readCalled && !f.seekCalled {
 			return f.sftpfile, nil
 		}
@@ -459,7 +459,7 @@ func (f *File) openFile(flags int) (ReadWriteSeekCloser, error) { //nolint:gocyc
 	return file, nil
 }
 
-func (f *File) _open(flags int) (ReadWriteSeekCloser, error) {
+func (f *File) _open(flags int) (readWriteSeekCloser, error) {
 	client, err := f.fileSystem.Client(f.Authority)
 	if err != nil {
 		return nil, err
@@ -522,7 +522,7 @@ func (f *File) setPermissions(client Client, opts *Options) error {
 }
 
 // defaultOpenFile uses sftp.Client to open a file and returns an sftp.File
-func defaultOpenFile(c Client, p string, f int) (ReadWriteSeekCloser, error) {
+func defaultOpenFile(c Client, p string, f int) (readWriteSeekCloser, error) {
 	return c.OpenFile(p, f)
 }
 
@@ -540,8 +540,8 @@ func (f *File) sftpRename(target *File) error {
 	return nil
 }
 
-// ReadWriteSeekCloser is a read write seek closer interface representing capabilities needed from std libs sftp File struct.
-type ReadWriteSeekCloser interface {
+// readWriteSeekCloser is a read write seek closer interface representing capabilities needed from std libs sftp File struct.
+type readWriteSeekCloser interface {
 	io.ReadWriteSeeker
 	io.Closer
 	// sftp.File also provides the following which we don't use (but could):

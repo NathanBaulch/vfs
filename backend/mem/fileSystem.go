@@ -61,7 +61,7 @@ func (fs *FileSystem) NewFile(volume, absFilePath string, opts ...options.NewFil
 					vfsFile := &File{
 						name:            obj.i.(*memFile).name,
 						memFile:         obj.i.(*memFile),
-						readWriteSeeker: NewReadWriteSeekerWithData(obj.i.(*memFile).contents),
+						readWriteSeeker: &readWriteSeeker{data: obj.i.(*memFile).contents},
 						opts:            opts,
 					}
 					return vfsFile, nil
@@ -164,13 +164,9 @@ func (o objMap) fileNamesHere(absLocPath string) []string {
 }
 
 func deepCopy(srcFile *memFile) vfs.File {
-	destination := &File{
+	return &File{
 		name:            srcFile.name,
 		memFile:         srcFile,
-		readWriteSeeker: NewReadWriteSeekerWithData(srcFile.contents),
+		readWriteSeeker: &readWriteSeeker{data: srcFile.contents},
 	}
-
-	destination.memFile = srcFile
-	destination.readWriteSeeker = NewReadWriteSeekerWithData(srcFile.contents)
-	return destination
 }

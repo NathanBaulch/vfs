@@ -8,30 +8,30 @@ import (
 	"github.com/c2fo/vfs/v6"
 )
 
-// BucketHandle is an interface which contains a subset of the functions provided
+// bucketHandle is an interface which contains a subset of the functions provided
 // by storage.BucketHandler. Any function normally called directly by storage.BucketHandler
 // should be added to this interface to allow for proper retry wrapping of the functions
 // which call the GCS API.
-type BucketHandle interface {
+type bucketHandle interface {
 	Attrs(ctx context.Context) (*storage.BucketAttrs, error)
 }
 
-// BucketHandleWrapper is a unique, wrapped type which should mimic the behavior of BucketHandler, but with
+// bucketHandleWrapper is a unique, wrapped type which should mimic the behavior of BucketHandler, but with
 // modified return types. Each function that returns a sub type that also should be wrapped should be added
 // to this interface with the 'Wrapped' prefix.
-type BucketHandleWrapper interface {
-	BucketHandle
-	WrappedObjects(ctx context.Context, q *storage.Query) ObjectIteratorWrapper
+type bucketHandleWrapper interface {
+	bucketHandle
+	WrappedObjects(ctx context.Context, q *storage.Query) objectIteratorWrapper
 }
 
-// RetryBucketHandler implements the BucketHandle interface
-type RetryBucketHandler struct {
+// retryBucketHandler implements the bucketHandle interface
+type retryBucketHandler struct {
 	Retry   vfs.Retry
 	handler *storage.BucketHandle
 }
 
 // Attrs accepts a context and returns bucket attrs wrapped in a retry
-func (r *RetryBucketHandler) Attrs(ctx context.Context) (*storage.BucketAttrs, error) {
+func (r *retryBucketHandler) Attrs(ctx context.Context) (*storage.BucketAttrs, error) {
 	return bucketAttributeRetry(r.Retry, func() (*storage.BucketAttrs, error) {
 		return r.handler.Attrs(ctx)
 	})
@@ -39,17 +39,17 @@ func (r *RetryBucketHandler) Attrs(ctx context.Context) (*storage.BucketAttrs, e
 
 // WrappedObjects returns an iterator over the objects in the bucket that match the Query q, all wrapped in a retry.
 // If q is nil, no filtering is done.
-func (r *RetryBucketHandler) WrappedObjects(ctx context.Context, q *storage.Query) ObjectIteratorWrapper {
-	return &RetryObjectIterator{Retry: r.Retry, iterator: r.handler.Objects(ctx, q)}
+func (r *retryBucketHandler) WrappedObjects(ctx context.Context, q *storage.Query) objectIteratorWrapper {
+	return &retryObjectIterator{Retry: r.Retry, iterator: r.handler.Objects(ctx, q)}
 }
 
-// ObjectIteratorWrapper is an interface which contains a subset of the functions provided by storage.ObjectIterator.
-type ObjectIteratorWrapper interface {
+// objectIteratorWrapper is an interface which contains a subset of the functions provided by storage.ObjectIterator.
+type objectIteratorWrapper interface {
 	Next() (*storage.ObjectAttrs, error)
 }
 
-// RetryObjectIterator implements the ObjectIteratorWrapper interface
-type RetryObjectIterator struct {
+// retryObjectIterator implements the objectIteratorWrapper interface
+type retryObjectIterator struct {
 	Retry    vfs.Retry
 	iterator *storage.ObjectIterator
 }
@@ -61,7 +61,7 @@ type RetryObjectIterator struct {
 // If Query.Delimiter is non-empty, some of the ObjectAttrs returned by Next will
 // have a non-empty Prefix field, and a zero value for all other fields. These
 // represent prefixes.
-func (r *RetryObjectIterator) Next() (*storage.ObjectAttrs, error) {
+func (r *retryObjectIterator) Next() (*storage.ObjectAttrs, error) {
 	return objectAttributeRetry(r.Retry, func() (*storage.ObjectAttrs, error) {
 		return r.iterator.Next()
 	})

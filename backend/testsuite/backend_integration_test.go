@@ -66,14 +66,14 @@ func (s *vfsTestSuite) SetupSuite() {
 func (s *vfsTestSuite) TestScheme() {
 	for scheme, location := range s.testLocations {
 		fmt.Printf("************** TESTING scheme: %s **************\n", scheme)
-		s.FileSystem(location)
-		s.Location(location)
-		s.File(location)
+		s.fileSystem(location)
+		s.location(location)
+		s.file(location)
 	}
 }
 
 // Test FileSystem
-func (s *vfsTestSuite) FileSystem(baseLoc vfs.Location) {
+func (s *vfsTestSuite) fileSystem(baseLoc vfs.Location) {
 	fmt.Println("****** testing vfs.FileSystem ******")
 
 	// setup FileSystem
@@ -140,7 +140,7 @@ func (s *vfsTestSuite) FileSystem(baseLoc vfs.Location) {
 }
 
 // Test Location
-func (s *vfsTestSuite) Location(baseLoc vfs.Location) {
+func (s *vfsTestSuite) location(baseLoc vfs.Location) {
 	fmt.Println("****** testing vfs.Location ******")
 
 	srcLoc, err := baseLoc.NewLocation("locTestSrc/")
@@ -399,7 +399,7 @@ func (s *vfsTestSuite) Location(baseLoc vfs.Location) {
 }
 
 // Test File
-func (s *vfsTestSuite) File(baseLoc vfs.Location) {
+func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 	fmt.Println("****** testing vfs.File ******")
 	srcLoc, err := baseLoc.NewLocation("fileTestSrc/")
 	s.Require().NoError(err)

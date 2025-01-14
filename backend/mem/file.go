@@ -38,7 +38,7 @@ type memFile struct {
 // memFile. Simultaneous reading is allowed, but writing and closing are protected by locks.
 type File struct {
 	memFile         *memFile
-	readWriteSeeker *ReadWriteSeeker
+	readWriteSeeker *readWriteSeeker
 	name            string // the base name of the file
 	opts            []options.NewFileOption
 	cursor          int
@@ -117,7 +117,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 		}
 
 		// update the file's readWriteSeeker contents and set the cursor to the current position
-		f.readWriteSeeker = NewReadWriteSeekerWithData(f.memFile.contents)
+		f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
 		_, err = f.readWriteSeeker.Seek(int64(f.cursor), 0)
 		if err != nil {
 			return 0, utils.WrapReadError(err)
@@ -169,7 +169,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 		}
 
 		// update the file's readWriteSeeker contents and set the cursor to the current position
-		f.readWriteSeeker = NewReadWriteSeekerWithData(f.memFile.contents)
+		f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
 		_, err := f.readWriteSeeker.Seek(int64(f.cursor), 0)
 		if err != nil {
 			return 0, utils.WrapSeekError(err)
@@ -199,14 +199,14 @@ func (f *File) Write(p []byte) (int, error) {
 		if f.readCalled || f.seekCalled {
 			// file has been read or seeked first, so we are in edit mode
 			f.writeMode = edit
-			f.readWriteSeeker = NewReadWriteSeekerWithData(f.memFile.contents)
+			f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
 			_, err := f.readWriteSeeker.Seek(int64(f.cursor), 0)
 			if err != nil {
 				return 0, utils.WrapWriteError(err)
 			}
 		} else {
 			// file has not been read or seeked first, so we are in truncate(overwrite) mode
-			f.readWriteSeeker = NewReadWriteSeeker()
+			f.readWriteSeeker = &readWriteSeeker{}
 			f.writeMode = truncate
 		}
 		f.isOpen = true
@@ -480,7 +480,7 @@ func (f *File) Size() (uint64, error) {
 	}
 
 	// in case the file contents have changed
-	f.readWriteSeeker = NewReadWriteSeekerWithData(f.memFile.contents)
+	f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
 
 	return uint64(len(f.readWriteSeeker.Bytes())), nil
 }

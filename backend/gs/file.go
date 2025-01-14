@@ -713,14 +713,14 @@ func (f *File) copyToLocalTempReader(tmpFile *os.File) error {
 }
 
 // getObjectHandle returns cached Object struct for file
-func (f *File) getObjectHandle() (ObjectHandleCopier, error) {
+func (f *File) getObjectHandle() (objectHandleCopier, error) {
 	client, err := f.fileSystem.Client()
 	if err != nil {
 		return nil, err
 	}
 
 	handler := client.Bucket(f.bucket).Object(utils.RemoveLeadingSlash(f.key))
-	return &RetryObjectHandler{Retry: f.fileSystem.Retry(), handler: handler}, nil
+	return &retryObjectHandler{Retry: f.fileSystem.Retry(), handler: handler}, nil
 }
 
 // getObjectGenerationHandles returns Object generation structs for file

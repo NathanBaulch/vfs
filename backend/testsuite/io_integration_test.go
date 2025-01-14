@@ -20,16 +20,16 @@ import (
 	"github.com/c2fo/vfs/v6/vfssimple"
 )
 
-type OSWrapper struct {
+type osWrapper struct {
 	filename   string
 	file       *os.File
 	exists     bool
 	seekCalled bool
 }
 
-func NewOSWrapper(absPath string) *OSWrapper {
+func newOSWrapper(absPath string) *osWrapper {
 	exists := fileExists(absPath)
-	return &OSWrapper{
+	return &osWrapper{
 		filename: absPath,
 		exists:   exists,
 	}
@@ -43,7 +43,7 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func (o *OSWrapper) Read(b []byte) (int, error) {
+func (o *osWrapper) Read(b []byte) (int, error) {
 	if !o.exists {
 		return 0, errors.New("file not found")
 	}
@@ -57,7 +57,7 @@ func (o *OSWrapper) Read(b []byte) (int, error) {
 	return o.file.Read(b)
 }
 
-func (o *OSWrapper) Write(b []byte) (int, error) {
+func (o *osWrapper) Write(b []byte) (int, error) {
 	if o.file == nil {
 		flags := os.O_RDWR | os.O_CREATE | os.O_TRUNC
 		if o.seekCalled {
@@ -74,7 +74,7 @@ func (o *OSWrapper) Write(b []byte) (int, error) {
 	return o.file.Write(b)
 }
 
-func (o *OSWrapper) Seek(offset int64, whence int) (int64, error) {
+func (o *osWrapper) Seek(offset int64, whence int) (int64, error) {
 	if !o.exists {
 		return 0, errors.New("file not found")
 	}
@@ -90,7 +90,7 @@ func (o *OSWrapper) Seek(offset int64, whence int) (int64, error) {
 	return o.file.Seek(offset, whence)
 }
 
-func (o *OSWrapper) Close() error {
+func (o *osWrapper) Close() error {
 	if !o.exists {
 		return nil
 	}
@@ -102,23 +102,21 @@ func (o *OSWrapper) Close() error {
 	return nil
 }
 
-func (o *OSWrapper) Name() string {
+func (o *osWrapper) Name() string {
 	return path.Base(o.filename)
 }
 
-func (o *OSWrapper) URI() string {
+func (o *osWrapper) URI() string {
 	return o.filename
 }
 
-func (o *OSWrapper) Delete(...options.DeleteOption) error {
+func (o *osWrapper) Delete(...options.DeleteOption) error {
 	return os.Remove(o.URI())
 }
 
-type ReadWriteSeekCloseURINamer interface {
+type readWriteSeekCloseDeleter interface {
 	io.ReadWriteSeeker
 	io.Closer
-	Name() string
-	URI() string
 	Delete(opts ...options.DeleteOption) error
 }
 
@@ -381,7 +379,7 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 }
 
 //nolint:gocyclo
-func executeSequence(t *testing.T, file ReadWriteSeekCloseURINamer, sequence string) (string, error) {
+func executeSequence(t *testing.T, file readWriteSeekCloseDeleter, sequence string) (string, error) {
 	// split sequence by semicolon
 	commands := strings.Split(sequence, ";")
 	var commandErr error
@@ -453,7 +451,7 @@ SEQ:
 	var f io.ReadCloser
 
 	switch assertedFile := file.(type) {
-	case *OSWrapper:
+	case *osWrapper:
 		var err error
 		f, err = os.Open(assertedFile.URI())
 		if err != nil {
@@ -491,12 +489,12 @@ func parseCommand(t *testing.T, command string) (string, []string) {
 	return results[1], args
 }
 
-func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (ReadWriteSeekCloseURINamer, error) {
-	var f ReadWriteSeekCloseURINamer
+func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (readWriteSeekCloseDeleter, error) {
+	var f readWriteSeekCloseDeleter
 	var err error
 	// Create file
 	if strings.HasPrefix(loc, "/") {
-		f = NewOSWrapper(loc + filename)
+		f = newOSWrapper(loc + filename)
 	} else {
 		scheme, _, _ := strings.Cut(loc, ":")
 		// Write something to the file

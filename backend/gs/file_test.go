@@ -83,8 +83,8 @@ func (ts *fileTestSuite) TestRead() {
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
 	server := fakestorage.NewServer(
-		Objects{
-			fakestorage.Object{
+		[]fakestorage.Object{
+			{
 				ObjectAttrs: fakestorage.ObjectAttrs{
 					BucketName:      bucketName,
 					Name:            objectName,
@@ -117,8 +117,8 @@ func (ts *fileTestSuite) TestDelete() {
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
 	server := fakestorage.NewServer(
-		Objects{
-			fakestorage.Object{
+		[]fakestorage.Object{
+			{
 				ObjectAttrs: fakestorage.ObjectAttrs{
 					BucketName:      bucketName,
 					Name:            objectName,
@@ -148,8 +148,8 @@ func (ts *fileTestSuite) TestDeleteError() {
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
 	server := fakestorage.NewServer(
-		Objects{
-			fakestorage.Object{
+		[]fakestorage.Object{
+			{
 				ObjectAttrs: fakestorage.ObjectAttrs{
 					BucketName:      bucketName,
 					Name:            objectName,
@@ -176,8 +176,8 @@ func (ts *fileTestSuite) TestDeleteRemoveAllVersions() {
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
 	server := fakestorage.NewServer(
-		Objects{
-			fakestorage.Object{
+		[]fakestorage.Object{
+			{
 				ObjectAttrs: fakestorage.ObjectAttrs{
 					BucketName:      bucketName,
 					Name:            objectName,
@@ -214,7 +214,7 @@ func (ts *fileTestSuite) TestWrite() {
 	contents := "hello world!"
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -231,7 +231,7 @@ func (ts *fileTestSuite) TestWriteWithContentType() {
 	contents := "hello world!"
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	client := server.Client()
 	bucket := client.Bucket(bucketName)
@@ -257,7 +257,7 @@ func (ts *fileTestSuite) TestWriteWithContentType() {
 func (ts *fileTestSuite) TestTouchWithContentType() {
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	client := server.Client()
 	bucket := client.Bucket(bucketName)
@@ -278,7 +278,7 @@ func (ts *fileTestSuite) TestTouchWithContentType() {
 }
 
 func (ts *fileTestSuite) TestGetLocation() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -295,8 +295,8 @@ func (ts *fileTestSuite) TestExists() {
 	bucketName := "bucki"
 	objectName := "some/path/file.txt"
 
-	server := fakestorage.NewServer(Objects{
-		fakestorage.Object{
+	server := fakestorage.NewServer([]fakestorage.Object{
+		{
 			ObjectAttrs: fakestorage.ObjectAttrs{
 				BucketName:      bucketName,
 				Name:            objectName,
@@ -318,7 +318,7 @@ func (ts *fileTestSuite) TestExists() {
 }
 
 func (ts *fileTestSuite) TestNotExists() {
-	server := fakestorage.NewServer(Objects{})
+	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
 
@@ -359,8 +359,8 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 			}
 
 			content := []byte("content")
-			fakeObjects := Objects{
-				fakestorage.Object{
+			fakeObjects := []fakestorage.Object{
+				{
 					ObjectAttrs: fakestorage.ObjectAttrs{
 						BucketName:      sourceBucketName,
 						Name:            sourceName,
@@ -463,8 +463,8 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 			}
 
 			content := []byte("content")
-			fakeObjects := Objects{
-				fakestorage.Object{
+			fakeObjects := []fakestorage.Object{
+				{
 					ObjectAttrs: fakestorage.ObjectAttrs{
 						BucketName:      sourceBucketName,
 						Name:            sourceName,

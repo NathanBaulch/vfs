@@ -54,7 +54,7 @@ func (ts *fileTestSuite) TestRead() {
 
 	contents := "hello world!"
 
-	dc := NewFakeDataConn(types.OpenRead)
+	dc := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(dc.AssertReadContents(contents))
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
@@ -100,7 +100,7 @@ func (ts *fileTestSuite) TestClose() {
 
 	contents := "hello world!"
 
-	dc := NewFakeDataConn(types.OpenRead)
+	dc := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(dc.AssertReadContents(contents))
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
@@ -139,7 +139,7 @@ func (ts *fileTestSuite) TestClose() {
 }
 
 func (ts *fileTestSuite) TestWrite() {
-	fakeDataConn := NewFakeDataConn(types.OpenWrite)
+	dataConn := newFakeDataConn(types.OpenWrite)
 
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
@@ -149,19 +149,19 @@ func (ts *fileTestSuite) TestWrite() {
 		path:       "/tmp/hello.txt",
 	}
 
-	file.fileSystem.dataconn = fakeDataConn
+	file.fileSystem.dataconn = dataConn
 
 	contents := "hello world!"
 
 	// test write success
 	count, err := file.Write([]byte(contents))
 	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
-	ts.Equal(fakeDataConn.GetWriteContents(), contents, "expected contents written")
+	ts.Equal(dataConn.GetWriteContents(), contents, "expected contents written")
 	ts.Require().NoError(err, "Error should be nil when calling Write")
 
 	// test write failure
 	myWriteErr := errors.New("some write error")
-	fakeDataConn.AssertWriteErr(myWriteErr)
+	dataConn.AssertWriteErr(myWriteErr)
 	count, wErr := file.Write([]byte(contents))
 	ts.Require().ErrorIs(wErr, myWriteErr, "error is a write error")
 	ts.Zero(count, "byte count is 0")
@@ -189,12 +189,12 @@ func (ts *fileTestSuite) TestSeek() {
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
 	ts.Require().NoError(err)
-	fakeDataConn := NewFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeDataConn.AssertReadContents(contents))
+	dataConn := newFakeDataConn(types.OpenRead)
+	ts.Require().NoError(dataConn.AssertReadContents(contents))
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			dataconn:  fakeDataConn,
+			dataconn:  dataConn,
 		},
 		authority: auth,
 		path:      fp,
@@ -235,7 +235,7 @@ func (ts *fileTestSuite) TestSeek() {
 	ts.EqualValues(5, pos, "new offset should be 5")
 
 	// whence = 2 (seek from end)
-	ftpfile.fileSystem.dataconn.(*FakeDataConn).AssertSize(uint64(len(contents)))
+	ftpfile.fileSystem.dataconn.(*fakeDataConn).AssertSize(uint64(len(contents)))
 	pos, err = ftpfile.Seek(8, 2) // seek to some mid point
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(4, pos, "position check")
@@ -259,7 +259,7 @@ func (ts *fileTestSuite) TestSeek() {
 	ts.EqualValues(0, pos, "new offset should be 5")
 
 	// whence = 2, file doesn't exist yet
-	ftpfile.fileSystem.dataconn.(*FakeDataConn).AssertExists(false)
+	ftpfile.fileSystem.dataconn.(*fakeDataConn).AssertExists(false)
 	_, err = ftpfile.Seek(15, 2)
 	ts.Require().ErrorIs(err, os.ErrNotExist, "os error not exist expected")
 
@@ -280,8 +280,8 @@ func (ts *fileTestSuite) TestSeekError() {
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
 	ts.Require().NoError(err)
-	fakeDataConn := NewFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeDataConn.AssertReadContents(contents))
+	dataConn := newFakeDataConn(types.OpenRead)
+	ts.Require().NoError(dataConn.AssertReadContents(contents))
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
@@ -300,7 +300,7 @@ func (ts *fileTestSuite) TestSeekError() {
 
 	// whence = 1, f.dataconn.Close() error
 	dataConnGetterFunc = getFakeDataConn
-	fakedconn := NewFakeDataConn(types.OpenRead)
+	fakedconn := newFakeDataConn(types.OpenRead)
 	ftpfile.fileSystem.dataconn = fakedconn
 	closeErr := errors.New("some close error")
 	fakedconn.AssertCloseErr(closeErr)
@@ -437,7 +437,7 @@ func (ts *fileTestSuite) TestCopyToFile() {
 
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
@@ -449,7 +449,7 @@ func (ts *fileTestSuite) TestCopyToFile() {
 	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
-	fakeWriteDataConn := NewFakeDataConn(types.OpenWrite)
+	fakeWriteDataConn := newFakeDataConn(types.OpenWrite)
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
 	targetFile := &File{
@@ -462,10 +462,10 @@ func (ts *fileTestSuite) TestCopyToFile() {
 	// successful copy
 	err = sourceFile.CopyToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
-	ts.Equal(contents, targetFile.fileSystem.dataconn.(*FakeDataConn).GetWriteContents(), "contents match")
+	ts.Equal(contents, targetFile.fileSystem.dataconn.(*fakeDataConn).GetWriteContents(), "contents match")
 
 	// file doesn't exist error while copying
-	fakeSingleOpDataConn := NewFakeDataConn(types.SingleOp)
+	fakeSingleOpDataConn := newFakeDataConn(types.SingleOp)
 	fakeSingleOpDataConn.AssertExists(false)
 	sourceFile.fileSystem.resetConn = false
 	sourceFile.fileSystem.dataconn = fakeSingleOpDataConn
@@ -473,11 +473,11 @@ func (ts *fileTestSuite) TestCopyToFile() {
 	ts.Require().ErrorIs(err, os.ErrNotExist, "error is expected kind of error")
 
 	// writer close error while copying
-	fakeReadDataConn = NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn = newFakeDataConn(types.OpenRead)
 	sourceFile.fileSystem.dataconn = fakeReadDataConn
 	sourceFile.fileSystem.resetConn = false
 	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
-	fakeWriteDataConn = NewFakeDataConn(types.OpenWrite)
+	fakeWriteDataConn = newFakeDataConn(types.OpenWrite)
 	targetFile.fileSystem.dataconn = fakeWriteDataConn
 	targetFile.fileSystem.resetConn = false
 	closeErr := errors.New("some close error")
@@ -494,7 +494,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
@@ -520,10 +520,10 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	newFile, err := sourceFile.CopyToLocation(targetLocation)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 	ts.Equal("ftp://user@host.com:22/targ/hello.txt", newFile.URI(), "new file uri check")
-	ts.Equal(contents, newFile.(*File).fileSystem.dataconn.(*FakeDataConn).GetWriteContents(), "contents match")
+	ts.Equal(contents, newFile.(*File).fileSystem.dataconn.(*fakeDataConn).GetWriteContents(), "contents match")
 
 	// copy to location newfile failure
-	fakeReadDataConn = NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn = newFakeDataConn(types.OpenRead)
 	sourceFile.fileSystem.dataconn = fakeReadDataConn
 	sourceFile.path = ""
 	newFile, err = sourceFile.CopyToLocation(targetLocation)
@@ -540,7 +540,7 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
@@ -552,7 +552,7 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
-	fakeWriteDataConn := NewFakeDataConn(types.OpenWrite)
+	fakeWriteDataConn := newFakeDataConn(types.OpenWrite)
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
 	targetFile := &File{
@@ -565,11 +565,11 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 	// successfully MoveToFile for different authorities (copy-delete)
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to MoveToFile")
-	ts.Equal(contents, targetFile.fileSystem.dataconn.(*FakeDataConn).GetWriteContents(), "contents match")
+	ts.Equal(contents, targetFile.fileSystem.dataconn.(*fakeDataConn).GetWriteContents(), "contents match")
 	ts.Equal("ftp://user@host.com:22/targ/hello.txt", targetFile.URI(), "expected uri")
 
 	// CopyToFile failure on MoveToFile
-	fakeReadDataConn = NewFakeDataConn(types.SingleOp)
+	fakeReadDataConn = newFakeDataConn(types.SingleOp)
 	sourceFile.fileSystem.dataconn = fakeReadDataConn
 	sourceFile.fileSystem.resetConn = false
 	readErr := errors.New("some read error")
@@ -589,7 +589,7 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
@@ -603,7 +603,7 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 
 	// set up target
 	tgtMockFTPClient := &mocks.Client{}
-	fakeWriteDataConn := NewFakeDataConn(types.OpenWrite)
+	fakeWriteDataConn := newFakeDataConn(types.OpenWrite)
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	targetFile := &File{
@@ -662,12 +662,12 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 
 	// Exists failure
 	existsErr := errors.New("some exists error")
-	targetFile.fileSystem.dataconn = NewFakeDataConn(types.SingleOp)
-	targetFile.fileSystem.dataconn.(*FakeDataConn).AssertSingleOpErr(existsErr)
-	targetFile.fileSystem.dataconn.(*FakeDataConn).AssertExists(true)
+	targetFile.fileSystem.dataconn = newFakeDataConn(types.SingleOp)
+	targetFile.fileSystem.dataconn.(*fakeDataConn).AssertSingleOpErr(existsErr)
+	targetFile.fileSystem.dataconn.(*fakeDataConn).AssertExists(true)
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().ErrorIs(err, existsErr, "error is the right kind of error")
-	targetFile.fileSystem.dataconn = NewFakeDataConn(types.SingleOp)
+	targetFile.fileSystem.dataconn = newFakeDataConn(types.SingleOp)
 
 	// Mkdir failure
 	mkdirErr := errors.New("some mkdir error")
@@ -675,8 +675,8 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 		List(targetFile.Location().Path()).
 		Return([]*_ftp.Entry{}, errors.New("550")).
 		Once()
-	sourceFile.fileSystem.dataconn = NewFakeDataConn(types.SingleOp)
-	sourceFile.fileSystem.dataconn.(*FakeDataConn).AssertSingleOpErr(mkdirErr)
+	sourceFile.fileSystem.dataconn = newFakeDataConn(types.SingleOp)
+	sourceFile.fileSystem.dataconn.(*fakeDataConn).AssertSingleOpErr(mkdirErr)
 	sourceFile.fileSystem.resetConn = false
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().ErrorIs(err, mkdirErr, "error is the right kind of error")
@@ -690,7 +690,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := NewFakeDataConn(types.OpenRead)
+	fakeReadDataConn := newFakeDataConn(types.OpenRead)
 	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
@@ -731,7 +731,7 @@ func (ts *fileTestSuite) TestTouch_exists() {
 	filepath := "/some/path.txt"
 	// set up source
 	client := &mocks.Client{}
-	dconn := NewFakeDataConn(types.OpenRead)
+	dconn := newFakeDataConn(types.OpenRead)
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	file := &File{
@@ -891,7 +891,7 @@ func (ts *fileTestSuite) TestTouch_notExists() {
 	filepath := "/some/path.txt"
 	// set up source
 	client := &mocks.Client{}
-	dconn := NewFakeDataConn(types.SingleOp)
+	dconn := newFakeDataConn(types.SingleOp)
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	file := &File{
@@ -1119,8 +1119,8 @@ func (ts *fileTestSuite) TestNewFile() {
 	ts.Equal(key, ftpFile.Path())
 }
 
-// FakeDataConn implements a types.DataConn
-type FakeDataConn struct {
+// fakeDataConn implements a types.DataConn
+type fakeDataConn struct {
 	rw               *fs.SeekableBuffer
 	mode             types.OpenType
 	closeErr         error
@@ -1133,11 +1133,11 @@ type FakeDataConn struct {
 	closeCalledCount int
 }
 
-func (f *FakeDataConn) Delete(string) error {
+func (f *fakeDataConn) Delete(string) error {
 	return f.singleOpErr
 }
 
-func (f *FakeDataConn) GetEntry(string) (*_ftp.Entry, error) {
+func (f *fakeDataConn) GetEntry(string) (*_ftp.Entry, error) {
 	if f.exists {
 		return &_ftp.Entry{
 			Size: f.size,
@@ -1147,7 +1147,7 @@ func (f *FakeDataConn) GetEntry(string) (*_ftp.Entry, error) {
 	}
 }
 
-func (f *FakeDataConn) List(string) ([]*_ftp.Entry, error) {
+func (f *fakeDataConn) List(string) ([]*_ftp.Entry, error) {
 	if f.exists {
 		return []*_ftp.Entry{
 			{
@@ -1158,86 +1158,86 @@ func (f *FakeDataConn) List(string) ([]*_ftp.Entry, error) {
 	return nil, errors.New("550")
 }
 
-func (f *FakeDataConn) MakeDir(string) error {
+func (f *fakeDataConn) MakeDir(string) error {
 	return f.singleOpErr
 }
 
-func (f *FakeDataConn) Rename(_, _ string) error {
+func (f *fakeDataConn) Rename(_, _ string) error {
 	return f.singleOpErr
 }
 
-func (f *FakeDataConn) IsSetTimeSupported() bool {
+func (f *fakeDataConn) IsSetTimeSupported() bool {
 	return false
 }
 
-func (f *FakeDataConn) SetTime(string, time.Time) error {
+func (f *fakeDataConn) SetTime(string, time.Time) error {
 	return f.singleOpErr
 }
 
-func (f *FakeDataConn) IsTimePreciseInList() bool {
+func (f *fakeDataConn) IsTimePreciseInList() bool {
 	return f.mlst
 }
 
-func (f *FakeDataConn) Read(p []byte) (int, error) {
+func (f *fakeDataConn) Read(p []byte) (int, error) {
 	if f.readErr != nil {
 		return 0, f.readErr
 	}
 	return f.rw.Read(p)
 }
 
-func (f *FakeDataConn) Write(p []byte) (int, error) {
+func (f *fakeDataConn) Write(p []byte) (int, error) {
 	if f.writeErr != nil {
 		return 0, f.writeErr
 	}
 	return f.rw.Write(p)
 }
 
-func (f *FakeDataConn) Close() error {
+func (f *fakeDataConn) Close() error {
 	f.closeCalledCount++
 	return f.closeErr
 }
 
-func (f *FakeDataConn) Mode() types.OpenType {
+func (f *fakeDataConn) Mode() types.OpenType {
 	return f.mode
 }
 
-func NewFakeDataConn(mode types.OpenType) *FakeDataConn {
+func newFakeDataConn(mode types.OpenType) *fakeDataConn {
 	buf := fs.NewSeekableBuffer()
-	return &FakeDataConn{
+	return &fakeDataConn{
 		mode: mode,
 		rw:   buf,
 	}
 }
 
-func (f *FakeDataConn) AssertReadErr(err error) {
+func (f *fakeDataConn) AssertReadErr(err error) {
 	f.readErr = err
 }
 
-func (f *FakeDataConn) AssertWriteErr(err error) {
+func (f *fakeDataConn) AssertWriteErr(err error) {
 	f.writeErr = err
 }
 
-func (f *FakeDataConn) AssertCloseErr(err error) {
+func (f *fakeDataConn) AssertCloseErr(err error) {
 	f.closeErr = err
 }
 
-func (f *FakeDataConn) AssertExists(exists bool) {
+func (f *fakeDataConn) AssertExists(exists bool) {
 	f.exists = exists
 }
 
-func (f *FakeDataConn) AssertSingleOpErr(err error) {
+func (f *fakeDataConn) AssertSingleOpErr(err error) {
 	f.singleOpErr = err
 }
 
-func (f *FakeDataConn) AssertMlst(mlst bool) {
+func (f *fakeDataConn) AssertMlst(mlst bool) {
 	f.mlst = mlst
 }
 
-func (f *FakeDataConn) AssertSize(size uint64) {
+func (f *fakeDataConn) AssertSize(size uint64) {
 	f.size = size
 }
 
-func (f *FakeDataConn) AssertReadContents(contents string) error {
+func (f *fakeDataConn) AssertReadContents(contents string) error {
 	// write contents to buffer
 	_, err := f.rw.Write([]byte(contents))
 	if err != nil {
@@ -1250,11 +1250,11 @@ func (f *FakeDataConn) AssertReadContents(contents string) error {
 	return err
 }
 
-func (f *FakeDataConn) GetWriteContents() string {
+func (f *fakeDataConn) GetWriteContents() string {
 	return string(f.rw.Bytes())
 }
 
-func (f *FakeDataConn) GetCloseCalledCount() int {
+func (f *fakeDataConn) GetCloseCalledCount() int {
 	return f.closeCalledCount
 }
 
@@ -1276,27 +1276,27 @@ func getFakeDataConn(_ context.Context, _ utils.Authority, fileSystem *FileSyste
 		if f != nil {
 			f.fileSystem.resetConn = false
 		}
-		contents := fileSystem.dataconn.(*FakeDataConn).rw.Bytes()
-		fileSystem.dataconn = NewFakeDataConn(t)
+		contents := fileSystem.dataconn.(*fakeDataConn).rw.Bytes()
+		fileSystem.dataconn = newFakeDataConn(t)
 		_, err := fileSystem.dataconn.Write(contents)
 		if err != nil {
 			return nil, err
 		}
-		_, err = fileSystem.dataconn.(*FakeDataConn).rw.Seek(0, 0)
+		_, err = fileSystem.dataconn.(*fakeDataConn).rw.Seek(0, 0)
 		if err != nil {
 			return nil, err
 		}
-		fileSystem.dataconn.(*FakeDataConn).exists = true
-		fileSystem.dataconn.(*FakeDataConn).mlst = true
+		fileSystem.dataconn.(*fakeDataConn).exists = true
+		fileSystem.dataconn.(*fakeDataConn).mlst = true
 	}
 
 	if fileSystem.dataconn == nil {
-		fileSystem.dataconn = NewFakeDataConn(t)
+		fileSystem.dataconn = newFakeDataConn(t)
 	}
 
 	// Seek to offset (whence is always zero because of the way file.Seek calculates it for you)
 	if f != nil {
-		_, err := fileSystem.dataconn.(*FakeDataConn).rw.Seek(f.offset, 0)
+		_, err := fileSystem.dataconn.(*fakeDataConn).rw.Seek(f.offset, 0)
 		if err != nil {
 			return nil, err
 		}

@@ -19,7 +19,7 @@ type Location struct {
 	fileSystem   *FileSystem
 	prefix       string
 	bucket       string
-	bucketHandle BucketHandleWrapper
+	bucketHandle bucketHandleWrapper
 }
 
 // String returns the full URI of the location.
@@ -193,7 +193,7 @@ func (l *Location) URI() string {
 }
 
 // getBucketHandle returns cached Bucket struct for file
-func (l *Location) getBucketHandle() (BucketHandleWrapper, error) {
+func (l *Location) getBucketHandle() (bucketHandleWrapper, error) {
 	if l.bucketHandle != nil {
 		return l.bucketHandle, nil
 	}
@@ -202,7 +202,7 @@ func (l *Location) getBucketHandle() (BucketHandleWrapper, error) {
 	if err != nil {
 		return nil, err
 	}
-	handler := &RetryBucketHandler{Retry: l.fileSystem.Retry(), handler: client.Bucket(l.bucket)}
+	handler := &retryBucketHandler{Retry: l.fileSystem.Retry(), handler: client.Bucket(l.bucket)}
 	l.bucketHandle = handler
 	return l.bucketHandle, nil
 }
