@@ -145,17 +145,15 @@ func (c *Copier) Run(ctx context.Context) (*storage.ObjectAttrs, error) {
 func objectAttributeRetry(retry vfs.Retry, attrFunc func() (*storage.ObjectAttrs, error)) (*storage.ObjectAttrs, error) {
 	var attrs *storage.ObjectAttrs
 	attrs, err := attrFunc()
-	if err != nil && !errors.Is(err, iterator.Done) {
-		if err := retry(func() error {
-			var retryErr error
-			attrs, retryErr = attrFunc()
-			if retryErr != nil {
+	if err != nil {
+		if !errors.Is(err, iterator.Done) {
+			err = retry(func() error {
+				var retryErr error
+				attrs, retryErr = attrFunc()
 				return retryErr
-			}
-			return nil
-		}); err != nil {
-			return nil, err
+			})
 		}
+		return nil, err
 	}
-	return attrs, err
+	return attrs, nil
 }

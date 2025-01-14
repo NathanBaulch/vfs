@@ -535,11 +535,10 @@ Private helper functions
 */
 func (f *File) getAllObjectVersions(client Client) (*s3.ListObjectVersionsOutput, error) {
 	prefix := utils.RemoveLeadingSlash(f.key)
-	objVers, err := client.ListObjectVersions(context.Background(), &s3.ListObjectVersionsInput{
+	return client.ListObjectVersions(context.Background(), &s3.ListObjectVersionsInput{
 		Bucket: &f.bucket,
 		Prefix: &prefix,
 	})
-	return objVers, err
 }
 
 func (f *File) getHeadObject() (*s3.HeadObjectOutput, error) {

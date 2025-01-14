@@ -85,7 +85,7 @@ func (l *Location) ListByPrefix(filenamePrefix string) ([]string, error) {
 func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 	keys, err := l.List()
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var filteredKeys []string

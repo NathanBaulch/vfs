@@ -175,7 +175,7 @@ func (a *DefaultClient) Copy(srcFile, tgtFile vfs.File) error {
 func (a *DefaultClient) List(l vfs.Location) ([]string, error) {
 	cli, err := a.newContainerClient(l.(*Location).ContainerURL())
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	pager := cli.NewListBlobsHierarchyPager("/", &container.ListBlobsHierarchyOptions{
@@ -187,7 +187,7 @@ func (a *DefaultClient) List(l vfs.Location) ([]string, error) {
 	for pager.More() {
 		listBlob, err := pager.NextPage(ctx)
 		if err != nil {
-			return []string{}, err
+			return nil, err
 		}
 
 		for _, item := range listBlob.ListBlobsHierarchySegmentResponse.Segment.BlobItems {
@@ -249,7 +249,7 @@ func (a *DefaultClient) getBlobVersions(cli *container.Client, blobName string) 
 	for pager.More() {
 		listBlob, err := pager.NextPage(ctx)
 		if err != nil {
-			return []*string{}, err
+			return nil, err
 		}
 
 		for _, item := range listBlob.ListBlobsFlatSegmentResponse.Segment.BlobItems {

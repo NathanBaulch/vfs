@@ -23,10 +23,9 @@ type Location struct {
 // List calls SFTP ReadDir to list all files in the location's path.
 // If you have many thousands of files at the given location, this could become quite expensive.
 func (l *Location) List() ([]string, error) {
-	var filenames []string
 	client, err := l.fileSystem.Client(l.Authority)
 	if err != nil {
-		return filenames, err
+		return nil, err
 	}
 	// start timer once action is completed
 	defer l.fileSystem.connTimerStart()
@@ -34,10 +33,11 @@ func (l *Location) List() ([]string, error) {
 	fileinfos, err := client.ReadDir(l.Path())
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return filenames, nil
+			return nil, nil
 		}
-		return filenames, err
+		return nil, err
 	}
+	var filenames []string
 	for _, fileinfo := range fileinfos {
 		if !fileinfo.IsDir() {
 			filenames = append(filenames, fileinfo.Name())
@@ -49,10 +49,9 @@ func (l *Location) List() ([]string, error) {
 
 // ListByPrefix calls SFTP ReadDir with the location's path modified relatively by the prefix arg passed to the function.
 func (l *Location) ListByPrefix(prefix string) ([]string, error) {
-	var filenames []string
 	client, err := l.fileSystem.Client(l.Authority)
 	if err != nil {
-		return filenames, err
+		return nil, err
 	}
 	// start timer once action is completed
 	defer l.fileSystem.connTimerStart()
@@ -67,9 +66,10 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	fullpath = utils.EnsureTrailingSlash(path.Dir(fullpath))
 	fileinfos, err := client.ReadDir(fullpath)
 	if err != nil {
-		return filenames, err
+		return nil, err
 	}
 
+	var filenames []string
 	for _, fileinfo := range fileinfos {
 		if !fileinfo.IsDir() {
 			name := fileinfo.Name()
@@ -91,7 +91,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 	filenames, err := l.List()
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var filteredFilenames []string

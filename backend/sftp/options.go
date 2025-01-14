@@ -302,7 +302,7 @@ func getAuthMethods(opts *Options) ([]ssh.AuthMethod, error) {
 		// setup keyfile
 		secretKey, err := getKeyFile(keyfile, passphrase)
 		if err != nil {
-			return []ssh.AuthMethod{}, err
+			return nil, err
 		}
 		auth = append(auth, ssh.PublicKeys(secretKey))
 	}

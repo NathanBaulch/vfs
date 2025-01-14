@@ -48,7 +48,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 	keys, err := l.List()
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var filteredKeys []string
@@ -88,7 +88,7 @@ func (l *Location) Exists() (bool, error) {
 		return false, err
 	}
 
-	return true, err
+	return true, nil
 }
 
 // NewLocation makes a copy of the underlying Location, then modifies its path by calling ChangeDir with the
@@ -178,15 +178,15 @@ func (l *Location) String() string {
 */
 
 func (l *Location) fullLocationList(input *s3.ListObjectsInput, prefix string) ([]string, error) {
-	var keys []string
 	client, err := l.fileSystem.Client()
 	if err != nil {
-		return keys, err
+		return nil, err
 	}
+	var keys []string
 	for {
 		listObjectsOutput, err := client.ListObjects(context.Background(), input)
 		if err != nil {
-			return []string{}, err
+			return nil, err
 		}
 		newKeys := getNamesFromObjectSlice(listObjectsOutput.Contents, utils.EnsureTrailingSlash(utils.RemoveLeadingSlash(prefix)))
 		keys = append(keys, newKeys...)

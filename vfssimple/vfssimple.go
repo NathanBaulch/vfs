@@ -116,8 +116,8 @@ func parseSupportedURI(uri string) (vfs.FileSystem, string, string, error) {
 	}
 
 	if longest == "" {
-		err = ErrRegFsNotFound
+		return nil, "", "", ErrRegFsNotFound
 	}
 
-	return backend.Backend(longest), authority, path, err
+	return backend.Backend(longest), authority, path, nil
 }

@@ -63,8 +63,10 @@ func (fs *FileSystem) WithClient(client Client) *FileSystem {
 func (fs *FileSystem) Client() (Client, error) {
 	if fs.client == nil {
 		client, err := NewClient(fs.options)
+		if err != nil {
+			return nil, err
+		}
 		fs.client = client
-		return fs.client, err
 	}
 	return fs.client, nil
 }

@@ -744,7 +744,7 @@ func (f *File) getObjectGenerationHandles() ([]*storage.ObjectHandle, error) {
 		handle := client.Bucket(attrs.Bucket).Object(attrs.Name).Generation(attrs.Generation)
 		handles = append(handles, handle)
 	}
-	return handles, err
+	return handles, nil
 }
 
 // getObjectAttrs returns the file's attributes

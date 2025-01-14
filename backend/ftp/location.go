@@ -25,20 +25,20 @@ type Location struct {
 // List calls FTP ReadDir to list all files in the location's path.
 // If you have many thousands of files at the given location, this could become quite expensive.
 func (l *Location) List() ([]string, error) {
-	var filenames []string
 	dc, err := l.fileSystem.DataConn(context.TODO(), l.Authority, types.SingleOp, nil)
 	if err != nil {
-		return filenames, err
+		return nil, err
 	}
 
 	entries, err := dc.List(l.Path())
 	if err != nil {
 		if strings.HasPrefix(err.Error(), strconv.Itoa(_ftp.StatusFileUnavailable)) {
 			// in this case the directory does not exist
-			return filenames, nil
+			return nil, nil
 		}
-		return filenames, err
+		return nil, err
 	}
+	var filenames []string
 	for _, entry := range entries {
 		if entry.Type == _ftp.EntryTypeFile {
 			filenames = append(filenames, entry.Name)
@@ -55,11 +55,9 @@ func (l *Location) List() ([]string, error) {
 //   - If the user cares about the distinction between an empty location and a non-existent one, Location.Exists() should
 //     be checked first.
 func (l *Location) ListByPrefix(prefix string) ([]string, error) {
-	var filenames []string
-
 	// validate prefix
 	if err := utils.ValidatePrefix(prefix); err != nil {
-		return filenames, err
+		return nil, err
 	}
 
 	// get absolute prefix path (in case prefix contains relative prefix, ie, some/path/to/myprefix)
@@ -86,7 +84,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	// get dataconn
 	dc, err := l.fileSystem.DataConn(context.TODO(), l.Authority, types.SingleOp, nil)
 	if err != nil {
-		return filenames, err
+		return nil, err
 	}
 
 	// list directory entries
@@ -97,9 +95,10 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 			// in this case the directory does not exist
 			return []string{}, nil
 		}
-		return filenames, err
+		return nil, err
 	}
 
+	var filenames []string
 	for _, entry := range entries {
 		// find entries that match prefix and are files
 		if entry.Type == _ftp.EntryTypeFile && strings.HasPrefix(entry.Name, baseprefix) {

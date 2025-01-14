@@ -67,7 +67,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	if d != "." && d != "/" {
 		loc, err = l.NewLocation(utils.EnsureTrailingSlash(d))
 		if err != nil {
-			return []string{}, err
+			return nil, err
 		}
 		prefix = path.Base(prefix)
 	} else {
@@ -88,19 +88,19 @@ func (l *Location) ListByRegex(regex *regexp.Regexp) ([]string, error) {
 }
 
 func (l *Location) fileList(testEval fileTest) ([]string, error) {
-	var files []string
 	exists, err := l.Exists()
 	if err != nil {
-		return files, err
+		return nil, err
 	}
 
 	// Function should return an empty slice if the directory doesn't exist. This is to match behavior of remote
 	// systems. If the user cares about the distinction between directories that are empty, vs non-existent then
 	// Location.Exists() should be used first.
+	var files []string
 	if exists {
 		entries, err := os.ReadDir(l.Path())
 		if err != nil {
-			return files, err
+			return nil, err
 		}
 
 		for _, info := range entries {

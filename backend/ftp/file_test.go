@@ -1264,7 +1264,7 @@ func getFakeDataConn(_ context.Context, _ utils.Authority, fileSystem *FileSyste
 			// wrong session type ... close current session and unset it (so we can set a new one after)
 			err := fileSystem.dataconn.Close()
 			if err != nil {
-				return fileSystem.dataconn, err
+				return nil, err
 			}
 			if f != nil {
 				f.fileSystem.resetConn = true

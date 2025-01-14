@@ -51,7 +51,7 @@ func (f *File) LastModified() (*time.Time, error) {
 		return nil, err
 	}
 
-	return utils.Ptr(stats.ModTime()), err
+	return utils.Ptr(stats.ModTime()), nil
 }
 
 // Name returns the base name of the file path.
@@ -78,7 +78,7 @@ func (f *File) Size() (uint64, error) {
 		return 0, err
 	}
 
-	return uint64(stats.Size()), err
+	return uint64(stats.Size()), nil
 }
 
 // Close implements the io.Closer interface, closing the underlying *os.File. its an error, if any.
@@ -178,7 +178,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	f.seekCalled = true
-	return f.cursorPos, err
+	return f.cursorPos, nil
 }
 
 // Exists true if the file exists on the file system, otherwise false, and an error, if any.
@@ -212,7 +212,7 @@ func (f *File) Write(p []byte) (n int, err error) {
 	offset := int64(write)
 	f.cursorPos += offset
 
-	return write, err
+	return write, nil
 }
 
 // Location returns the underlying os.Location.
@@ -412,8 +412,7 @@ func openOSFile(filePath string) (*os.File, error) {
 		return nil, err
 	}
 
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, fileMode) //nolint:gosec
-	return file, err
+	return os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, fileMode) //nolint:gosec
 }
 
 func ensureDir(location vfs.Location) error {
