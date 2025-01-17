@@ -60,7 +60,7 @@ func (ts *fileTestSuite) TestRead() {
 		sftpfile:  &nopWriteCloser{strings.NewReader(contents)},
 	}
 	// perform test
-	localFile := bytes.NewBuffer([]byte{})
+	localFile := &bytes.Buffer{}
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
 	b, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
@@ -93,7 +93,7 @@ func (ts *fileTestSuite) TestSeek() {
 	_, seekErr := sftpfile.Seek(6, io.SeekStart)
 	ts.Require().NoError(seekErr, "no error expected")
 
-	localFile := bytes.NewBuffer([]byte{})
+	localFile := &bytes.Buffer{}
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
 	_, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
@@ -101,7 +101,7 @@ func (ts *fileTestSuite) TestSeek() {
 
 	ts.Equal("world!", localFile.String(), "Seeking should move the sftp file cursor as expected")
 
-	localFile = bytes.NewBuffer([]byte{})
+	localFile = &bytes.Buffer{}
 	_, seekErr2 := sftpfile.Seek(0, io.SeekStart)
 	ts.Require().NoError(seekErr2, "no error expected")
 

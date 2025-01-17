@@ -408,7 +408,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 			description: "debug writer is set",
 			authority:   "user@host.com",
 			options: &Options{
-				DebugWriter: bytes.NewBuffer([]byte{}),
+				DebugWriter: &bytes.Buffer{},
 			},
 			expected: 3,
 		},
@@ -424,7 +424,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 			description: "all options set ",
 			authority:   "user@host.com",
 			options: &Options{
-				DebugWriter: bytes.NewBuffer([]byte{}),
+				DebugWriter: &bytes.Buffer{},
 				DialTimeout: time.Minute,
 				Protocol:    ProtocolFTPS,
 			},

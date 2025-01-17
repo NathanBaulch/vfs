@@ -58,7 +58,7 @@ func (ts *fileTestSuite) TestRead() {
 	file, err := fs.NewFile("bucket", "/some/path/file.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
-	localFile := bytes.NewBuffer([]byte{})
+	localFile := &bytes.Buffer{}
 	s3cliMock.
 		On("HeadObject", matchContext, mock.AnythingOfType("*s3.HeadObjectInput")).
 		Return(&s3.HeadObjectOutput{ContentLength: aws.Int64(12)}, nil).
@@ -130,7 +130,7 @@ func (ts *fileTestSuite) TestSeek() {
 			if !tc.expectedErr {
 				m.Twice()
 			}
-			localFile := bytes.NewBuffer([]byte{})
+			localFile := &bytes.Buffer{}
 			pos, err := file.Seek(tc.seekOffset, tc.seekWhence)
 
 			if tc.expectedErr {
