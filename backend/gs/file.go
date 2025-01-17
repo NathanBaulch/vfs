@@ -312,7 +312,7 @@ func (f *File) initWriters() error {
 			}
 
 			// seek to cursorPos
-			if _, err := f.tempFileWriter.Seek(f.cursorPos, 0); err != nil {
+			if _, err := f.tempFileWriter.Seek(f.cursorPos, io.SeekStart); err != nil {
 				return err
 			}
 		}
@@ -705,7 +705,7 @@ func (f *File) copyToLocalTempReader(tmpFile *os.File) error {
 	}
 
 	// Return cursor to the beginning of the new temp file
-	if _, err := tmpFile.Seek(0, 0); err != nil {
+	if _, err := tmpFile.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
 

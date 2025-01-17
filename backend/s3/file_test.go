@@ -162,7 +162,7 @@ func (ts *fileTestSuite) TestSeek() {
 		On("HeadObject", matchContext, mock.AnythingOfType("*s3.HeadObjectInput")).
 		Return(nil, &types.NotFound{}).
 		Once()
-	_, err = file.Seek(0, 0)
+	_, err = file.Seek(0, io.SeekStart)
 	ts.Require().ErrorIs(err, vfs.ErrNotExist, "error expected")
 
 	err = file.Close()

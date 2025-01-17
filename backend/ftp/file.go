@@ -366,9 +366,9 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 		mode = f.fileSystem.dataconn.Mode()
 
 		switch whence {
-		case 0: // offset from the beginning of the file (position 0)
+		case io.SeekStart: // offset from the beginning of the file (position 0)
 			f.offset = offset
-		case 1: // offset relative to current position
+		case io.SeekCurrent: // offset relative to current position
 			if f.offset < 0 {
 				f.offset = 0
 			}
@@ -380,7 +380,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 				return 0, utils.WrapSeekError(err)
 			}
 			f.fileSystem.resetConn = true
-		case 2: // offset from end of the file
+		case io.SeekEnd: // offset from end of the file
 			sz, err := f.Size()
 			if err != nil {
 				if !errors.Is(err, os.ErrNotExist) {

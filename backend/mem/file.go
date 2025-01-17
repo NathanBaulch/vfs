@@ -118,7 +118,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 
 		// update the file's readWriteSeeker contents and set the cursor to the current position
 		f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
-		_, err = f.readWriteSeeker.Seek(int64(f.cursor), 0)
+		_, err = f.readWriteSeeker.Seek(int64(f.cursor), io.SeekStart)
 		if err != nil {
 			return 0, utils.WrapReadError(err)
 		}
@@ -170,7 +170,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 
 		// update the file's readWriteSeeker contents and set the cursor to the current position
 		f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
-		_, err := f.readWriteSeeker.Seek(int64(f.cursor), 0)
+		_, err := f.readWriteSeeker.Seek(int64(f.cursor), io.SeekStart)
 		if err != nil {
 			return 0, utils.WrapSeekError(err)
 		}
@@ -200,7 +200,7 @@ func (f *File) Write(p []byte) (int, error) {
 			// file has been read or seeked first, so we are in edit mode
 			f.writeMode = edit
 			f.readWriteSeeker = &readWriteSeeker{data: f.memFile.contents}
-			_, err := f.readWriteSeeker.Seek(int64(f.cursor), 0)
+			_, err := f.readWriteSeeker.Seek(int64(f.cursor), io.SeekStart)
 			if err != nil {
 				return 0, utils.WrapWriteError(err)
 			}

@@ -45,7 +45,7 @@ func (f *File) Close() error {
 			return utils.WrapCloseError(err)
 		}
 
-		if _, err := f.Seek(0, 0); err != nil {
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
 			return utils.WrapCloseError(err)
 		}
 
@@ -387,7 +387,7 @@ func (f *File) checkTempFile() error {
 				return err
 			}
 
-			if _, err := tf.Seek(0, 0); err != nil {
+			if _, err := tf.Seek(0, io.SeekStart); err != nil {
 				return err
 			}
 

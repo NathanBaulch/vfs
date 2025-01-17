@@ -495,7 +495,7 @@ func (f *File) copyToLocalTempReader() (*os.File, error) {
 
 		if f.cursorPos > 0 {
 			// match cursor position in tmep file
-			if _, err := tmpFile.Seek(f.cursorPos, 0); err != nil {
+			if _, err := tmpFile.Seek(f.cursorPos, io.SeekStart); err != nil {
 				return nil, err
 			}
 		}

@@ -189,7 +189,7 @@ func (s *memFileTest) TestSeek2() {
 	s.Require().Error(err, "expected read error")
 	s.Require().NoError(newFile.Close(), "unexpected close error")
 
-	_, err = newFile.Seek(0, 0)
+	_, err = newFile.Seek(0, io.SeekStart)
 	s.Require().NoError(err, "unexpected seek error")
 	testByte := make([]byte, 1)
 
@@ -216,7 +216,7 @@ func (s *memFileTest) TestSeek2() {
 	// test for seeking on non-existent file
 	f, err := s.fileSystem.NewFile("", "/some/non-existent/file.txt")
 	s.Require().NoError(err, "unexpected error creating a new file")
-	_, err = f.Seek(0, 0)
+	_, err = f.Seek(0, io.SeekStart)
 	s.Require().ErrorIs(err, fs.ErrNotExist, "expected Seek error")
 }
 
@@ -261,7 +261,7 @@ func (s *memFileTest) TestSeek() {
 	_, err = file.Write([]byte(expectedText))
 	s.Require().NoError(err, "write error not expected")
 
-	_, err = file.Seek(0, 0)
+	_, err = file.Seek(0, io.SeekStart)
 	s.Require().NoError(err, "seek error not expected")
 	s.Require().NoError(file.Close(), "unexpected close error")
 	_, err = file.Read(data)
@@ -585,7 +585,7 @@ func (s *memFileTest) TestWrite() {
 	s.Require().NoError(s.testFile.Close(), "unexpected close error")
 
 	// test write after Seek (edit mode)
-	_, err = s.testFile.Seek(0, 0)
+	_, err = s.testFile.Seek(0, io.SeekStart)
 	s.Require().NoError(err, "unexpected seek error")
 	_, err = s.testFile.Write([]byte("Hello World!"))
 	s.Require().NoError(err, "unexpected write error")
@@ -628,7 +628,7 @@ func (s *memFileTest) TestWriteThenReadNoClose() {
 	_, err = file.Write([]byte(expectedText))
 	s.Require().NoError(err, "write error not expected")
 
-	_, err = file.Seek(0, 0)
+	_, err = file.Seek(0, io.SeekStart)
 	s.Require().NoError(err, "seek error not expected")
 	_, err = file.Read(data)
 	s.Require().NoError(err, "no error expected")

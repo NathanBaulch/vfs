@@ -326,7 +326,7 @@ func (f *File) Close() error { //nolint:gocyclo
 
 func (f *File) tempToS3() error {
 	// ensure cursor is at 0
-	if _, err := f.tempFileWriter.Seek(0, 0); err != nil {
+	if _, err := f.tempFileWriter.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
 
@@ -772,7 +772,7 @@ func (f *File) initWriters() error {
 			}
 
 			// seek to cursorPos
-			if _, err := f.tempFileWriter.Seek(f.cursorPos, 0); err != nil {
+			if _, err := f.tempFileWriter.Seek(f.cursorPos, io.SeekStart); err != nil {
 				return err
 			}
 		}

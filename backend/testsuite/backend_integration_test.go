@@ -512,7 +512,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 	s.Require().NoError(err)
 	s.Equal("this is a test\nand more text", string(str), "read was successful")
 
-	offset, err := srcFile.Seek(3, 0)
+	offset, err := srcFile.Seek(3, io.SeekStart)
 	s.Require().NoError(err)
 	s.EqualValues(3, offset, "seek was successful")
 
@@ -544,7 +544,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 		//   * In the case of an error, nil is returned for the file.
 		//   * CopyToLocation should use native functions when possible within the same scheme.
 		//   * If the file already exists at the location, the contents will be overwritten with the current file's contents.
-		_, err = srcFile.Seek(0, 0)
+		_, err = srcFile.Seek(0, io.SeekStart)
 		s.Require().NoError(err)
 		dst, err := srcFile.CopyToLocation(dstLoc)
 		s.Require().NoError(err)
@@ -567,7 +567,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 		exists, err = dstFile1.Exists()
 		s.Require().NoError(err)
 		s.False(exists, "dstFile1 file should not yet exist")
-		_, err = srcFile.Seek(0, 0)
+		_, err = srcFile.Seek(0, io.SeekStart)
 		s.Require().NoError(err)
 		err = srcFile.CopyToFile(dstFile1)
 		s.Require().NoError(err)
@@ -593,7 +593,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 		buffer := make([]byte, utils.TouchCopyMinBufferSize)
 
 		if srcLoc.FileSystem().Scheme() != "ftp" {
-			_, err = srcFile.Seek(0, 0)
+			_, err = srcFile.Seek(0, io.SeekStart)
 			s.Require().NoError(err)
 			b1, err := io.CopyBuffer(copyFile1, srcFile, buffer)
 			s.Require().NoError(err)
@@ -623,7 +623,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 		// do copy
 		// skip this test for ftp files
 		if srcLoc.FileSystem().Scheme() != "ftp" {
-			_, err = srcFile.Seek(0, 0)
+			_, err = srcFile.Seek(0, io.SeekStart)
 			s.Require().NoError(err)
 			buffer = make([]byte, utils.TouchCopyMinBufferSize)
 			b2, err := io.CopyBuffer(copyFile2, srcFile, buffer)
@@ -657,7 +657,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 
 		// skip this test for ftp files
 		if srcLoc.FileSystem().Scheme() != "ftp" {
-			_, err = srcFile.Seek(0, 0)
+			_, err = srcFile.Seek(0, io.SeekStart)
 			s.Require().NoError(err)
 			buffer = make([]byte, utils.TouchCopyMinBufferSize)
 			_, err = io.CopyBuffer(fileForNew, srcFile, buffer)

@@ -170,7 +170,7 @@ func (s *osFileTest) TestRead() {
 func (s *osFileTest) TestSeek() {
 	expectedText := "world"
 	data := make([]byte, len(expectedText))
-	_, serr := s.testFile.Seek(6, 0)
+	_, serr := s.testFile.Seek(6, io.SeekStart)
 	s.Require().NoError(serr, "seek error not expected")
 	_, rerr := s.testFile.Read(data)
 	s.Require().NoError(rerr, "read error not expected")
@@ -477,7 +477,7 @@ func (s *osFileTest) TestWrite() {
 	_, werr := file.Write([]byte(expectedText))
 	s.Require().NoError(werr, "write error not expected")
 
-	_, serr := file.Seek(0, 0)
+	_, serr := file.Seek(0, io.SeekStart)
 	s.Require().NoError(serr, "seek error not expected")
 	_, rerr := file.Read(data)
 	s.Require().NoError(rerr, "read error not expected")
@@ -501,7 +501,7 @@ func (s *osFileTest) TestWrite() {
 	f, err := s.tmploc.NewFile("test_files/writeFileFail.txt")
 	s.Require().NoError(err)
 	s.Require().NoError(f.Touch())
-	_, err = f.Seek(0, 0)
+	_, err = f.Seek(0, io.SeekStart)
 	s.Require().NoError(err)
 	f.(*File).fileOpener = func(string) (*os.File, error) { return nil, errors.New("bad opener") }
 	data = make([]byte, 4)
@@ -520,7 +520,7 @@ func (s *osFileTest) TestCursor() {
 	s.Equal(24, write)
 	s.Require().NoError(file.Close())
 
-	_, serr := file.Seek(5, 0) // cursor 5 - opens fd to orig file
+	_, serr := file.Seek(5, io.SeekStart) // cursor 5 - opens fd to orig file
 	s.Equal(int64(5), file.(*File).cursorPos)
 	s.Require().NoError(serr)
 
@@ -541,7 +541,7 @@ func (s *osFileTest) TestCursor() {
 	s.Equal(int64(8), file.(*File).cursorPos)
 	s.Equal(3, sz)
 
-	_, serr = file.Seek(5, 0) // cursor 5 - in temp file
+	_, serr = file.Seek(5, io.SeekStart) // cursor 5 - in temp file
 	s.Equal(int64(5), file.(*File).cursorPos)
 	s.Require().NoError(serr)
 
@@ -579,7 +579,7 @@ func (s *osFileTest) TestCursor() {
 	s.Equal(5, overwrite)
 
 	data = make([]byte, 5)
-	_, serr = file.Seek(0, 0) // cursor 0 of tempfile
+	_, serr = file.Seek(0, io.SeekStart) // cursor 0 of tempfile
 	s.Require().NoError(serr)
 
 	_, rerr = file.Read(data) // cursor 5 of tempfile - data: "hello"
@@ -597,7 +597,7 @@ func (s *osFileTest) TestCursor() {
 	s.Equal("llo", string(data))
 	s.Equal(int64(5), file.(*File).cursorPos)
 
-	_, serr = file.Seek(0, 0)
+	_, serr = file.Seek(0, io.SeekStart)
 	s.Require().NoError(serr)
 	final = make([]byte, 5)
 	rd, err = file.Read(final)

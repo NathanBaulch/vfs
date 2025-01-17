@@ -201,7 +201,7 @@ func (ts *fileTestSuite) TestSeek() {
 	}
 
 	// seek to position 6, whence 0
-	_, err = ftpfile.Seek(6, 0)
+	_, err = ftpfile.Seek(6, io.SeekStart)
 	ts.Require().NoError(err, "no error expected")
 	localFile := bytes.NewBuffer([]byte{})
 	_, err = io.Copy(localFile, ftpfile)
@@ -210,14 +210,14 @@ func (ts *fileTestSuite) TestSeek() {
 	localFile = bytes.NewBuffer([]byte{})
 
 	// seek back to start
-	_, err = ftpfile.Seek(0, 0)
+	_, err = ftpfile.Seek(0, io.SeekStart)
 	ts.Require().NoError(err, "no error expected")
 	_, err = io.Copy(localFile, ftpfile)
 	ts.Require().NoError(err, "no error expected")
 	ts.Equal(contents, localFile.String(), "Subsequent calls to seek work on temp ftp file as expected")
 
 	// whence = 1 (seek relative position), seek 2
-	pos, err := ftpfile.Seek(6, 0) // seek to some mid point
+	pos, err := ftpfile.Seek(6, io.SeekStart) // seek to some mid point
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(6, pos, "position check")
 	pos, err = ftpfile.Seek(2, 1) // now seek to relative position
@@ -247,7 +247,7 @@ func (ts *fileTestSuite) TestSeek() {
 	// dataconn != nil, so set file offset and get new dataconn
 	ftpfile.offset = 8                  // set it to some offset
 	ftpfile.fileSystem.resetConn = true // make dataconn nil
-	offset, err := ftpfile.Seek(6, 0)
+	offset, err := ftpfile.Seek(6, io.SeekStart)
 	ts.Require().NoError(err, "error not expected")
 	ts.EqualValues(6, offset, "returned offset should be 6")
 	ts.EqualValues(6, ftpfile.offset, "ftp File offset should be 6")
@@ -295,7 +295,7 @@ func (ts *fileTestSuite) TestSeekError() {
 	dataConnGetterFunc = func(context.Context, utils.Authority, *FileSystem, *File, types.OpenType) (types.DataConn, error) {
 		return nil, dconnErr
 	}
-	_, err = ftpfile.Seek(6, 0)
+	_, err = ftpfile.Seek(6, io.SeekStart)
 	ts.Require().ErrorIs(err, dconnErr, "should be right kind of error")
 
 	// whence = 1, f.dataconn.Close() error
@@ -1245,7 +1245,7 @@ func (f *fakeDataConn) AssertReadContents(contents string) error {
 	}
 
 	// reset cursor after writing contents
-	_, err = f.rw.Seek(0, 0)
+	_, err = f.rw.Seek(0, io.SeekStart)
 
 	return err
 }
@@ -1282,7 +1282,7 @@ func getFakeDataConn(_ context.Context, _ utils.Authority, fileSystem *FileSyste
 		if err != nil {
 			return nil, err
 		}
-		_, err = fileSystem.dataconn.(*fakeDataConn).rw.Seek(0, 0)
+		_, err = fileSystem.dataconn.(*fakeDataConn).rw.Seek(0, io.SeekStart)
 		if err != nil {
 			return nil, err
 		}
@@ -1296,7 +1296,7 @@ func getFakeDataConn(_ context.Context, _ utils.Authority, fileSystem *FileSyste
 
 	// Seek to offset (whence is always zero because of the way file.Seek calculates it for you)
 	if f != nil {
-		_, err := fileSystem.dataconn.(*fakeDataConn).rw.Seek(f.offset, 0)
+		_, err := fileSystem.dataconn.(*fakeDataConn).rw.Seek(f.offset, io.SeekStart)
 		if err != nil {
 			return nil, err
 		}
