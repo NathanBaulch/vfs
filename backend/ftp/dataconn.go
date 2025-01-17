@@ -202,13 +202,13 @@ func openWriteConnection(client types.Client, f *File) (types.DataConn, error) {
 	}
 	pr, pw := io.Pipe()
 	errChan := make(chan error, 1)
-	go func(errChan chan error) {
+	go func() {
 		err := client.StorFrom(f.Path(), pr, uint64(f.offset))
 		errChan <- err
 		// close the pipe reader so that writes to the dataconn aren't blocking.
 		// error will occur when pipereader is already closed - nothing to do in that case.
 		_ = pr.Close()
-	}(errChan)
+	}()
 
 	return &dataConn{
 		mode:    types.OpenWrite,

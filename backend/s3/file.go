@@ -809,14 +809,14 @@ func (f *File) getS3Writer() (*io.PipeWriter, error) {
 	uploadInput := uploadInput(f)
 	uploadInput.Body = pr
 
-	go func(input *s3.PutObjectInput) {
+	go func() {
 		defer cancel()
-		_, err := uploader.Upload(ctx, input)
+		_, err := uploader.Upload(ctx, uploadInput)
 		if err != nil {
 			_ = pw.CloseWithError(err)
 		}
 		f.s3WriterCompleteCh <- err
-	}(uploadInput)
+	}()
 
 	return pw, nil
 }
