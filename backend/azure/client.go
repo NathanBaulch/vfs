@@ -144,7 +144,7 @@ func (a *DefaultClient) Download(file vfs.File) (io.ReadCloser, error) {
 // error.
 func (a *DefaultClient) Copy(srcFile, tgtFile vfs.File) error {
 	// Can't use url.PathEscape here since that will escape everything (even the directory separators)
-	srcURL := strings.Replace(srcFile.URI(), "%", "%25", -1)
+	srcURL := strings.ReplaceAll(srcFile.URI(), "%", "%25")
 
 	tgtURL := tgtFile.Location().(*Location).ContainerURL()
 

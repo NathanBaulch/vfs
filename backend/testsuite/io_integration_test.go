@@ -502,7 +502,7 @@ func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (Re
 	if strings.HasPrefix(loc, "/") {
 		f = NewOSWrapper(loc + filename)
 	} else {
-		scheme := strings.Split(loc, ":")[0]
+		scheme, _, _ := strings.Cut(loc, ":")
 		// Write something to the file
 		f, err = s.testLocations[scheme].NewFile(filename)
 		if err != nil {
@@ -528,7 +528,7 @@ func (s *ioTestSuite) teardownTestLocation(t *testing.T, testPath string) {
 		err := os.RemoveAll(testPath)
 		s.Require().NoError(err)
 	} else {
-		scheme := strings.Split(testPath, ":")[0]
+		scheme, _, _ := strings.Cut(testPath, ":")
 		// Write something to the file
 		loc := s.testLocations[scheme]
 		files, err := loc.List()

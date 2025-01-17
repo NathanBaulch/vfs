@@ -134,8 +134,8 @@ func ParsePath(p string) (host, pth string, err error) {
 		return "", "", errors.New("no container specified for Azure path")
 	}
 	isLocation := strings.HasSuffix(p, "/")
-	l := strings.Split(p, "/")
-	p = utils.EnsureLeadingSlash(path.Join(l[2:]...))
+	l := strings.SplitN(p, "/", 3)
+	p = utils.EnsureLeadingSlash(l[2])
 	if isLocation {
 		p = utils.EnsureTrailingSlash(p)
 	}
