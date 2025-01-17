@@ -800,7 +800,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 	s.Require().NoError(err)
 	modifiedDeRef := *modified
 	// wait for eventual consistency
-	time.Sleep(1 * time.Second)
+	time.Sleep(time.Second)
 	err = touchedFile.Touch()
 	s.Require().NoError(err)
 	newModified, err := touchedFile.LastModified()

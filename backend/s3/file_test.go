@@ -853,7 +853,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 				},
 				func(*File) error {
 					// sleep 1 sec
-					time.Sleep(1 * time.Second)
+					time.Sleep(time.Second)
 					return nil
 				},
 				func(f *File) error {

@@ -697,7 +697,7 @@ func waitUntilFileExists(file vfs.File, retries int) error {
 		}
 
 		retryCount++
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second)
 	}
 
 	return nil

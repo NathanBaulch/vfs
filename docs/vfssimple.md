@@ -145,7 +145,7 @@ func InitializeWithRetry() error {
 		Retry: func(wrapper func() error) error {
 			for i := 0; i < 5; i++ {
 				if err := wrapper(); err != nil {
-					time.Sleep(1 * time.Second)
+					time.Sleep(time.Second)
 					continue
 				}
 			}

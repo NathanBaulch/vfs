@@ -659,7 +659,7 @@ func (s *memFileTest) TestLastModified() {
 
 	t, _ := s.testFile.LastModified()
 	firstTime := *t
-	time.Sleep(1 * time.Second)
+	time.Sleep(time.Second)
 	_, err = s.testFile.Write([]byte("hey!"))
 	s.Require().NoError(err, "unexpected write error")
 	s.Require().NoError(s.testFile.Close(), "close error not expected")

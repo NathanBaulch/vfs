@@ -416,7 +416,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 			description: "dial timeout is set",
 			authority:   "user@host.com",
 			options: &Options{
-				DialTimeout: 1 * time.Minute,
+				DialTimeout: time.Minute,
 			},
 			expected: 3,
 		},
@@ -425,7 +425,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 			authority:   "user@host.com",
 			options: &Options{
 				DebugWriter: bytes.NewBuffer([]byte{}),
-				DialTimeout: 1 * time.Minute,
+				DialTimeout: time.Minute,
 				Protocol:    ProtocolFTPS,
 			},
 			expected: 5,
