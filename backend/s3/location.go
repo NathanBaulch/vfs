@@ -182,9 +182,10 @@ func (l *Location) fullLocationList(input *s3.ListObjectsInput, prefix string) (
 	if err != nil {
 		return nil, err
 	}
+	ctx := context.Background()
 	var keys []string
 	for {
-		listObjectsOutput, err := client.ListObjects(context.Background(), input)
+		listObjectsOutput, err := client.ListObjects(ctx, input)
 		if err != nil {
 			return nil, err
 		}

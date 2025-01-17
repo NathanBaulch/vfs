@@ -43,7 +43,7 @@ type File struct {
 
 // LastModified returns the LastModified property of ftp file.
 func (f *File) LastModified() (*time.Time, error) {
-	entry, err := f.stat(context.TODO())
+	entry, err := f.stat(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (f *File) Path() string {
 
 // Exists returns a boolean of whether or not the file exists on the ftp server
 func (f *File) Exists() (bool, error) {
-	_, err := f.stat(context.TODO())
+	_, err := f.stat(context.Background())
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			// file does not exist
@@ -124,7 +124,7 @@ func (f *File) Touch() error {
 	}
 
 	// if a set time function is available use that to set last modified to now
-	dc, err := f.fileSystem.DataConn(context.TODO(), f.authority, types.SingleOp, f)
+	dc, err := f.fileSystem.DataConn(context.Background(), f.authority, types.SingleOp, f)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func getTempFilename(origName string) string {
 
 // Size returns the size of the remote file.
 func (f *File) Size() (uint64, error) {
-	entry, err := f.stat(context.TODO())
+	entry, err := f.stat(context.Background())
 	if err != nil {
 		return 0, err
 	}
@@ -186,7 +186,7 @@ func (f *File) MoveToFile(t vfs.File) error {
 		if err != nil {
 			return err
 		}
-		dc, err := f.fileSystem.DataConn(context.TODO(), f.authority, types.SingleOp, f)
+		dc, err := f.fileSystem.DataConn(context.Background(), f.authority, types.SingleOp, f)
 		if err != nil {
 			return err
 		}
@@ -303,7 +303,7 @@ func (f *File) CopyToLocation(location vfs.Location) (vfs.File, error) {
 
 // Delete removes the remote file.  Error is returned, if any.
 func (f *File) Delete(...options.DeleteOption) error {
-	dc, err := f.fileSystem.DataConn(context.TODO(), f.authority, types.SingleOp, f)
+	dc, err := f.fileSystem.DataConn(context.Background(), f.authority, types.SingleOp, f)
 	if err != nil {
 		return err
 	}
@@ -326,7 +326,7 @@ func (f *File) Close() error {
 
 // Read calls the underlying ftp.File Read.
 func (f *File) Read(p []byte) (n int, err error) {
-	dc, err := f.fileSystem.DataConn(context.TODO(), f.authority, types.OpenRead, f)
+	dc, err := f.fileSystem.DataConn(context.Background(), f.authority, types.OpenRead, f)
 	if err != nil {
 		return 0, utils.WrapReadError(err)
 	}
@@ -405,7 +405,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	// now that f.offset has been adjusted and mode was captured, reinitialize file
-	_, err = f.fileSystem.DataConn(context.TODO(), f.authority, mode, f)
+	_, err = f.fileSystem.DataConn(context.Background(), f.authority, mode, f)
 	if err != nil {
 		return 0, utils.WrapSeekError(err)
 	}
@@ -416,7 +416,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 
 // Write calls the underlying ftp.File Write.
 func (f *File) Write(data []byte) (res int, err error) {
-	dc, err := f.fileSystem.DataConn(context.TODO(), f.authority, types.OpenWrite, f)
+	dc, err := f.fileSystem.DataConn(context.Background(), f.authority, types.OpenWrite, f)
 	if err != nil {
 		return 0, utils.WrapWriteError(err)
 	}

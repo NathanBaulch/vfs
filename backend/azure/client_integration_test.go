@@ -37,18 +37,19 @@ func (s *ClientIntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 	s.testContainerURL = cli
 
-	_, err = s.testContainerURL.Create(context.Background(), nil)
+	ctx := context.Background()
+	_, err = s.testContainerURL.Create(ctx, nil)
 	s.Require().NoError(err)
 
 	// The create function claims to be synchronous but for some reason it does not exist for a little bit so
 	// we need to wait for it to be there.
-	_, err = s.testContainerURL.GetProperties(context.Background(), nil)
+	_, err = s.testContainerURL.GetProperties(ctx, nil)
 	for {
 		time.Sleep(2 * time.Second)
 		if err == nil || !bloberror.HasCode(err, bloberror.BlobNotFound) {
 			break
 		}
-		_, err = s.testContainerURL.GetProperties(context.Background(), nil)
+		_, err = s.testContainerURL.GetProperties(ctx, nil)
 	}
 }
 

@@ -25,7 +25,7 @@ type Location struct {
 // List calls FTP ReadDir to list all files in the location's path.
 // If you have many thousands of files at the given location, this could become quite expensive.
 func (l *Location) List() ([]string, error) {
-	dc, err := l.fileSystem.DataConn(context.TODO(), l.Authority, types.SingleOp, nil)
+	dc, err := l.fileSystem.DataConn(context.Background(), l.Authority, types.SingleOp, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	}
 
 	// get dataconn
-	dc, err := l.fileSystem.DataConn(context.TODO(), l.Authority, types.SingleOp, nil)
+	dc, err := l.fileSystem.DataConn(context.Background(), l.Authority, types.SingleOp, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (l *Location) Path() string {
 
 // Exists returns true if the remote FTP directory exists.
 func (l *Location) Exists() (bool, error) {
-	dc, err := l.fileSystem.DataConn(context.TODO(), l.Authority, types.SingleOp, nil)
+	dc, err := l.fileSystem.DataConn(context.Background(), l.Authority, types.SingleOp, nil)
 	if err != nil {
 		return false, err
 	}

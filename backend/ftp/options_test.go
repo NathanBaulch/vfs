@@ -432,6 +432,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 		},
 	}
 
+	ctx := context.Background()
 	for _, tc := range testCases {
 		s.Run(tc.description, func() {
 			if tc.envVar != nil {
@@ -442,7 +443,7 @@ func (s *optionsSuite) TestFetchDialOptions() {
 			auth, err := utils.NewAuthority(tc.authority)
 			s.Require().NoError(err, tc.description)
 
-			dialOpts := fetchDialOptions(context.Background(), auth, tc.options)
+			dialOpts := fetchDialOptions(ctx, auth, tc.options)
 			s.Len(dialOpts, tc.expected, tc.description)
 		})
 	}

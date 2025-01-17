@@ -23,8 +23,7 @@ type fileTestSuite struct {
 
 func objectExists(bucket *storage.BucketHandle, objectName string) bool {
 	objectHandle := bucket.Object(objectName)
-	ctx := context.Background()
-	_, err := objectHandle.Attrs(ctx)
+	_, err := objectHandle.Attrs(context.Background())
 	if err != nil {
 		if errors.Is(err, storage.ErrObjectNotExist) {
 			return false
@@ -36,8 +35,7 @@ func objectExists(bucket *storage.BucketHandle, objectName string) bool {
 
 func mustReadObject(bucket *storage.BucketHandle, objectName string) []byte {
 	objectHandle := bucket.Object(objectName)
-	ctx := context.Background()
-	reader, err := objectHandle.NewReader(ctx)
+	reader, err := objectHandle.NewReader(context.Background())
 	if err != nil {
 		panic(err)
 	}

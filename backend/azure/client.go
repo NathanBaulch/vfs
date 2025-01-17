@@ -81,10 +81,12 @@ func (c *DefaultClient) Properties(containerURI, filePath string) (*BlobProperti
 		return nil, err
 	}
 
+	ctx := context.Background()
+
 	if filePath == "" {
 		// this is only used to check for the existence of a container so we don't care about anything but the
 		// error
-		_, err := cli.GetProperties(context.Background(), nil)
+		_, err := cli.GetProperties(ctx, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +94,7 @@ func (c *DefaultClient) Properties(containerURI, filePath string) (*BlobProperti
 	}
 
 	blobURL := cli.NewBlockBlobClient(utils.RemoveLeadingSlash(filePath))
-	resp, err := blobURL.GetProperties(context.Background(), nil)
+	resp, err := blobURL.GetProperties(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,8 +155,7 @@ func (c *DefaultClient) Copy(srcFile, tgtFile vfs.File) error {
 		return err
 	}
 	blobURL := cli.NewBlockBlobClient(utils.RemoveLeadingSlash(tgtFile.Path()))
-	ctx := context.Background()
-	resp, err := blobURL.StartCopyFromURL(ctx, srcURL, nil)
+	resp, err := blobURL.StartCopyFromURL(context.Background(), srcURL, nil)
 	if err != nil {
 		return err
 	}
@@ -224,13 +225,14 @@ func (c *DefaultClient) DeleteAllVersions(file vfs.File) error {
 		return err
 	}
 
+	ctx := context.Background()
 	for _, version := range versions {
 		// Delete a specific version
 		cli, err := blobURL.WithVersionID(*version)
 		if err != nil {
 			return err
 		}
-		_, err = cli.Delete(context.Background(), nil)
+		_, err = cli.Delete(ctx, nil)
 		if err != nil {
 			return err
 		}

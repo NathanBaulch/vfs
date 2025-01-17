@@ -220,7 +220,8 @@ func (f *File) Delete(opts ...options.DeleteOption) error {
 		}
 	}
 
-	_, err = client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+	ctx := context.Background()
+	_, err = client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Key:    &f.key,
 		Bucket: &f.bucket,
 	})
@@ -235,7 +236,7 @@ func (f *File) Delete(opts ...options.DeleteOption) error {
 		}
 
 		for _, version := range objectVersions.Versions {
-			if _, err = client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+			if _, err = client.DeleteObject(ctx, &s3.DeleteObjectInput{
 				Key:       &f.key,
 				Bucket:    &f.bucket,
 				VersionId: version.VersionId,
