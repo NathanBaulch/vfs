@@ -350,30 +350,27 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 		s.Run(tc.description, func() {
 			testFileName := "testfile.txt"
 
-			// run in a closure so we can defer teardown
-			func() {
-				// Setup vfs environment
-				file, err := s.setupTestFile(tc.fileAlreadyExists, testPath, testFileName) // Implement this setup function
-				defer func() {
-					if file != nil {
-						_ = file.Close()
-						_ = file.Delete()
-					}
-				}()
-				s.Require().NoError(err)
-
-				// Use vfs to execute the sequence of operations described by the description
-				actualContents, err := s.executeSequence(file, tc.sequence) // Implement this function
-
-				// Assert expected outcomes
-				if tc.expectFailure {
-					s.Error(err, "%s: expected failure but got success", tc.description)
-				} else {
-					s.Require().NoError(err, "%s: expected success but got failure", tc.description)
+			// Setup vfs environment
+			file, err := s.setupTestFile(tc.fileAlreadyExists, testPath, testFileName) // Implement this setup function
+			defer func() {
+				if file != nil {
+					_ = file.Close()
+					_ = file.Delete()
 				}
-
-				s.Equal(tc.expectedResults, actualContents, "%s: expected results %s but got %s", tc.description, tc.expectedResults, actualContents)
 			}()
+			s.Require().NoError(err)
+
+			// Use vfs to execute the sequence of operations described by the description
+			actualContents, err := s.executeSequence(file, tc.sequence) // Implement this function
+
+			// Assert expected outcomes
+			if tc.expectFailure {
+				s.Error(err, "%s: expected failure but got success", tc.description)
+			} else {
+				s.Require().NoError(err, "%s: expected success but got failure", tc.description)
+			}
+
+			s.Equal(tc.expectedResults, actualContents, "%s: expected results %s but got %s", tc.description, tc.expectedResults, actualContents)
 		})
 	}
 }
