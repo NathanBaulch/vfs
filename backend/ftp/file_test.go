@@ -742,7 +742,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	mockReadDataConn.EXPECT().Close().Return(nil).Twice()
 	mockWriteDataConn.EXPECT().Close().Return(nil).Once()
 	newFile, err := sourceFile.MoveToLocation(targetLocation)
-	ts.Require().NoError(err, "error shouldn't be returned from successful call to MoveToFile")
+	ts.Require().NoError(err, "error shouldn't be returned from successful call to MoveToLocation")
 	ts.Equal("ftp://user@host.com:22/targ/hello.txt", newFile.URI(), "new file uri check")
 
 	// failed to MoveToLocation (read error while copying)
@@ -1086,7 +1086,7 @@ func (ts *fileTestSuite) TestSize() {
 		Once()
 	ts.ftpClientMock.EXPECT().
 		GetEntry(ts.testFile.Path()).
-		Return(&ftp.Entry{}, myErr).
+		Return(nil, myErr).
 		Once()
 	size, err = ts.testFile.Size()
 	ts.Require().ErrorIs(err, myErr, "got correct error")

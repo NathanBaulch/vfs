@@ -108,10 +108,8 @@ func fetchDialOptions(ctx context.Context, auth utils.Authority, opts *Options) 
 	// set context DialOption
 	dialOptions := []ftp.DialOption{
 		ftp.DialWithContext(ctx),
+		ftp.DialWithDisabledEPSV(isDisableOption(opts)),
 	}
-
-	// determine DisableEPSV DialOption
-	dialOptions = append(dialOptions, ftp.DialWithDisabledEPSV(isDisableOption(opts)))
 
 	// determine protocol-specific (FTPS/FTPeS) TLS DialOption, if any (defaults to plain FTP, no TLS)
 	switch protocol := fetchProtocol(opts); {

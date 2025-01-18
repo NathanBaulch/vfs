@@ -17,7 +17,6 @@ type testSuite struct {
 }
 
 func (s *testSuite) TestBackend() {
-	//
 	m1 := mocks.NewFileSystem(s.T())
 	Register("mock", m1)
 

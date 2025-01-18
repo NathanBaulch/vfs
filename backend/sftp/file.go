@@ -534,10 +534,7 @@ func (f *File) sftpRename(target *File) error {
 	// start timer once action is completed
 	defer f.fileSystem.connTimerStart()
 
-	if err := client.Rename(f.Path(), target.Path()); err != nil {
-		return err
-	}
-	return nil
+	return client.Rename(f.Path(), target.Path())
 }
 
 // readWriteSeekCloser is a read write seek closer interface representing capabilities needed from std libs sftp File struct.

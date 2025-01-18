@@ -101,15 +101,9 @@ func (r *retryObjectHandler) Update(ctx context.Context, attrs storage.ObjectAtt
 
 // Delete deletes the single specified object, wrapped in a retry.
 func (r *retryObjectHandler) Delete(ctx context.Context) error {
-	if err := r.Retry(func() error {
-		if retryErr := r.handler.Delete(ctx); retryErr != nil {
-			return retryErr
-		}
-		return nil
-	}); err != nil {
-		return err
-	}
-	return nil
+	return r.Retry(func() error {
+		return r.handler.Delete(ctx)
+	})
 }
 
 // WrappedCopierFrom creates a copier that can copy src to dst, wrapped in a retry.

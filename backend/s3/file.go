@@ -180,8 +180,10 @@ func (f *File) MoveToLocation(location vfs.Location) (vfs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = f.Delete()
-	return newFile, err
+	if err := f.Delete(); err != nil {
+		return nil, err
+	}
+	return newFile, nil
 }
 
 // CopyToLocation creates a copy of *File, using the file's current name as the new file's
@@ -236,7 +238,7 @@ func (f *File) Delete(opts ...options.DeleteOption) error {
 		}
 
 		for _, version := range objectVersions.Versions {
-			if _, err = client.DeleteObject(ctx, &s3.DeleteObjectInput{
+			if _, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
 				Key:       &f.key,
 				Bucket:    &f.bucket,
 				VersionId: version.VersionId,

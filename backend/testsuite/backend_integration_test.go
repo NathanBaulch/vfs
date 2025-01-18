@@ -62,13 +62,15 @@ func (s *vfsTestSuite) SetupSuite() {
 	}
 }
 
-// Test File
+// Test Scheme
 func (s *vfsTestSuite) TestScheme() {
 	for scheme, location := range s.testLocations {
-		fmt.Printf("************** TESTING scheme: %s **************\n", scheme)
-		s.fileSystem(location)
-		s.location(location)
-		s.file(location)
+		s.Run(scheme, func() {
+			fmt.Printf("************** TESTING scheme: %s **************\n", scheme)
+			s.fileSystem(location)
+			s.location(location)
+			s.file(location)
+		})
 	}
 }
 
@@ -527,16 +529,16 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 		dstLoc, err := testLoc.NewLocation("dstLoc/")
 		s.Require().NoError(err)
 		fmt.Printf("** location %s **\n", dstLoc)
-		defer func() {
-			// clean up dstLoc after test for OS
-			if dstLoc.FileSystem().Scheme() == "file" {
+		// clean up dstLoc after test for OS
+		if dstLoc.FileSystem().Scheme() == "file" {
+			defer func() {
 				exists, err := dstLoc.Exists()
 				s.Require().NoError(err)
 				if exists {
 					s.Require().NoError(os.RemoveAll(dstLoc.Path()), "failed to clean up file test dstLoc")
 				}
-			}
-		}()
+			}()
+		}
 
 		// CopyToLocation will copy the current file to the provided location.
 		//

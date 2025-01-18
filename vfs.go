@@ -46,7 +46,7 @@ type FileSystem interface {
 // Location represents a file system path which serves as a start point for directory-like functionality.  A location may
 // or may not actually exist on the file system.
 type Location interface {
-	// String returns the fully qualified absolute URI for the Location.  IE, file://bucket/some/path/
+	// Stringer returns the fully qualified absolute URI for the Location.  IE, file://bucket/some/path/
 	fmt.Stringer
 
 	// List returns a slice of strings representing the base names of the files found at the Location.

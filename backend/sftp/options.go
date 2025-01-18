@@ -128,7 +128,7 @@ func getClient(authority utils.Authority, opts *Options) (Client, io.Closer, err
 		host = fmt.Sprintf("%s:%d", host, 22)
 	}
 
-	// TODO begin timeout until session is created
+	// TODO: begin timeout until session is created
 	sshConn, err := ssh.Dial("tcp", host, config)
 	if err != nil {
 		return nil, nil, err

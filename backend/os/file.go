@@ -209,8 +209,7 @@ func (f *File) Write(p []byte) (n int, err error) {
 	if err != nil {
 		return 0, utils.WrapWriteError(err)
 	}
-	offset := int64(write)
-	f.cursorPos += offset
+	f.cursorPos += int64(write)
 
 	return write, nil
 }

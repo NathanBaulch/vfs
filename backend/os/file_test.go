@@ -741,8 +741,7 @@ func teardownTestFiles(baseLoc vfs.Location) error {
 
 func createDir(baseLoc vfs.Location, dirname string) error {
 	dir := path.Join(baseLoc.Path(), dirname)
-	perm := os.FileMode(0o755)
-	err := os.Mkdir(dir, perm)
+	err := os.Mkdir(dir, 0o750)
 	if err != nil {
 		_ = teardownTestFiles(baseLoc)
 	}

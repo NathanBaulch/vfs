@@ -5,11 +5,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/c2fo/vfs/v6/utils"
-
-	"github.com/fsouza/fake-gcs-server/fakestorage"
 )
 
 type locationTestSuite struct {
@@ -27,8 +26,8 @@ func (lt *locationTestSuite) TestList() {
 	var createObjects func(prefix string, level, levels int)
 	createObjects = func(prefix string, level, levels int) {
 		objectPrefixes = append(objectPrefixes, prefix)
-		for idx := 0; idx < fileCount; idx++ {
-			objectBaseName := fmt.Sprintf("f%d.txt", idx)
+		for i := 0; i < fileCount; i++ {
+			objectBaseName := fmt.Sprintf("f%d.txt", i)
 			objectName := fmt.Sprintf("%s%s", prefix, objectBaseName)
 			objectNames = append(objectNames, objectName)
 			objectBaseNameSet[objectBaseName] = struct{}{}
@@ -43,8 +42,8 @@ func (lt *locationTestSuite) TestList() {
 			})
 		}
 		if levels > 0 {
-			for idx := 0; idx < dirCount; idx++ {
-				createObjects(fmt.Sprintf("%sd%d/", prefix, idx), level+1, levels-1)
+			for i := 0; i < dirCount; i++ {
+				createObjects(fmt.Sprintf("%sd%d/", prefix, i), level+1, levels-1)
 			}
 		}
 	}

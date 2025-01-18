@@ -458,8 +458,10 @@ func (f *File) MoveToLocation(location vfs.Location) (vfs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = f.Delete()
-	return newFile, err
+	if err := f.Delete(); err != nil {
+		return nil, err
+	}
+	return newFile, nil
 }
 
 // MoveToFile puts the contents of File into the target vfs.File passed in using File.CopyToFile.
@@ -726,13 +728,13 @@ func (f *File) getObjectHandle() (objectHandleCopier, error) {
 // getObjectGenerationHandles returns Object generation structs for file
 func (f *File) getObjectGenerationHandles() ([]*storage.ObjectHandle, error) {
 	client, err := f.fileSystem.Client()
-	var handles []*storage.ObjectHandle
 	if err != nil {
 		return nil, err
 	}
 	it := client.Bucket(f.bucket).
 		Objects(f.fileSystem.ctx, &storage.Query{Versions: true, Prefix: utils.RemoveLeadingSlash(f.key)})
 
+	var handles []*storage.ObjectHandle
 	for {
 		attrs, err := it.Next()
 		if errors.Is(err, iterator.Done) {

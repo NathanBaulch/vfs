@@ -121,7 +121,7 @@ func (ts *fileSystemTestSuite) TestClientWithAutoDisconnect() {
 	getClientCount := 0
 	client := mocks.NewClient(ts.T())
 	client.EXPECT().ReadDir("/").Return([]os.FileInfo{}, nil).Times(3)
-	client.EXPECT().Close().Return(nil).Times(1)
+	client.EXPECT().Close().Return(nil).Once()
 
 	// setup location with auto-disconnect of one second
 	fs := &FileSystem{clientFactory: func(utils.Authority, *Options) (Client, io.Closer, error) {

@@ -28,10 +28,9 @@ type osWrapper struct {
 }
 
 func newOSWrapper(absPath string) *osWrapper {
-	exists := fileExists(absPath)
 	return &osWrapper{
 		filename: absPath,
-		exists:   exists,
+		exists:   fileExists(absPath),
 	}
 }
 

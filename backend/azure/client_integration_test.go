@@ -20,7 +20,7 @@ import (
 
 type ClientIntegrationTestSuite struct {
 	suite.Suite
-	testContainerURL *container.Client
+	testContainerCli *container.Client
 	accountName      string
 	accountKey       string
 }
@@ -33,26 +33,26 @@ func (s *ClientIntegrationTestSuite) SetupSuite() {
 
 	cli, err := container.NewClientWithSharedKeyCredential(fmt.Sprintf("https://%s.blob.core.windows.net", s.accountName), credential, nil)
 	s.Require().NoError(err)
-	s.testContainerURL = cli
+	s.testContainerCli = cli
 
 	ctx := context.Background()
-	_, err = s.testContainerURL.Create(ctx, nil)
+	_, err = s.testContainerCli.Create(ctx, nil)
 	s.Require().NoError(err)
 
 	// The create function claims to be synchronous but for some reason it does not exist for a little bit so
 	// we need to wait for it to be there.
-	_, err = s.testContainerURL.GetProperties(ctx, nil)
+	_, err = s.testContainerCli.GetProperties(ctx, nil)
 	for {
 		time.Sleep(2 * time.Second)
 		if err == nil || !bloberror.HasCode(err, bloberror.BlobNotFound) {
 			break
 		}
-		_, err = s.testContainerURL.GetProperties(ctx, nil)
+		_, err = s.testContainerCli.GetProperties(ctx, nil)
 	}
 }
 
 func (s *ClientIntegrationTestSuite) TearDownSuite() {
-	_, err := s.testContainerURL.Delete(context.Background(), nil)
+	_, err := s.testContainerCli.Delete(context.Background(), nil)
 	s.Require().NoError(err)
 }
 

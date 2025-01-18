@@ -186,15 +186,10 @@ func TouchCopyBuffered(writer io.Writer, reader io.Reader, bufferSize int) error
 	var err error
 
 	if bufferSize <= 0 {
-		// Use TouchCopyMinBufferSize
-		buffer = make([]byte, TouchCopyMinBufferSize)
-		size, err = io.CopyBuffer(writer, reader, buffer)
-	} else {
-		// Otherwise use provided bufferSize
-		buffer = make([]byte, bufferSize)
-		size, err = io.CopyBuffer(writer, reader, buffer)
+		bufferSize = TouchCopyMinBufferSize
 	}
-
+	buffer = make([]byte, bufferSize)
+	size, err = io.CopyBuffer(writer, reader, buffer)
 	if err != nil {
 		return err
 	}

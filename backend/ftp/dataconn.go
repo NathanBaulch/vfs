@@ -128,6 +128,7 @@ func (dc *dataConn) Close() error {
 			dc.R = nil
 			return err
 		}
+	default:
 	}
 
 	return nil
@@ -178,8 +179,7 @@ func openWriteConnection(client types.Client, f *File) (types.DataConn, error) {
 	pr, pw := io.Pipe()
 	errChan := make(chan error, 1)
 	go func() {
-		err := client.StorFrom(f.Path(), pr, uint64(f.offset))
-		errChan <- err
+		errChan <- client.StorFrom(f.Path(), pr, uint64(f.offset))
 		// close the pipe reader so that writes to the dataconn aren't blocking.
 		// error will occur when pipereader is already closed - nothing to do in that case.
 		_ = pr.Close()

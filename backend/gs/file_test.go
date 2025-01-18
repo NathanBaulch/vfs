@@ -317,11 +317,11 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 	}
 	var testCases []testCase
 
-	for idx := 0; idx <= (1<<3)-1; idx++ {
+	for i := 0; i <= (1<<3)-1; i++ {
 		testCases = append(testCases, testCase{
-			move:       (idx & (1 << 0)) != 0,
-			readFirst:  (idx & (1 << 1)) != 0,
-			sameBucket: (idx & (1 << 2)) != 0,
+			move:       (i & (1 << 0)) != 0,
+			readFirst:  (i & (1 << 1)) != 0,
+			sameBucket: (i & (1 << 2)) != 0,
 		})
 	}
 
@@ -409,11 +409,11 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 	}
 	var testCases []testCase
 
-	for idx := 0; idx <= (1<<3)-1; idx++ {
+	for i := 0; i <= (1<<3)-1; i++ {
 		testCases = append(testCases, testCase{
-			move:       (idx & (1 << 0)) != 0,
-			readFirst:  (idx & (1 << 1)) != 0,
-			sameBucket: (idx & (1 << 2)) != 0,
+			move:       (i & (1 << 0)) != 0,
+			readFirst:  (i & (1 << 1)) != 0,
+			sameBucket: (i & (1 << 2)) != 0,
 		})
 	}
 

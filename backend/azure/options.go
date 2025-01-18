@@ -3,9 +3,9 @@ package azure
 import (
 	"os"
 
-	"github.com/c2fo/vfs/v6"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+
+	"github.com/c2fo/vfs/v6"
 )
 
 // Options contains options necessary for the azure vfs implementation
@@ -85,6 +85,5 @@ func (o *Options) Credential() (any, error) {
 		return azblob.NewSharedKeyCredential(o.AccountName, o.AccountKey)
 	}
 
-	// 3. Return a nil credential
 	return nil, nil
 }

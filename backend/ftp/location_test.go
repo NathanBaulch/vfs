@@ -238,7 +238,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 	listErr := errors.New("some error")
 	lt.client.EXPECT().
 		List(locPath).
-		Return([]*ftp.Entry{}, listErr).
+		Return(nil, listErr).
 		Once()
 	fileList, err = loc.ListByPrefix(prefix)
 	lt.Require().ErrorIs(err, listErr, "err should be correct type")

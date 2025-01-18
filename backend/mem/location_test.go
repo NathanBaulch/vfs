@@ -198,19 +198,19 @@ func (s *memLocationTest) TestNewFileSameName() {
 
 	secondFile, err := location.NewFile(path.Base(sharedPath))
 	s.Require().NoError(err, "unexpected error creating a file")
-	expectedSlice := make([]byte, len(expectedText))
+	readSlice := make([]byte, len(expectedText))
 
 	// since secondFile references firstFile, reading will throw an error as we never closed or seeked firstFile
-	_, err = secondFile.Read(expectedSlice)
+	_, err = secondFile.Read(readSlice)
 	s.Require().Error(err, "expected read error since firstFile was never closed")
 
 	// after this call, we can expect to be able to read from secondFile since its reference, firstFile, was closed
 	s.Require().NoError(firstFile.Close(), "unexpected error closing file")
 
-	_, err = secondFile.Read(expectedSlice)
+	_, err = secondFile.Read(readSlice)
 	s.Require().NoError(err, "unexpected read error")
 
-	s.Equal(expectedText, string(expectedSlice))
+	s.Equal(expectedText, string(readSlice))
 }
 
 // TestChangeDir tests that we can change the directory on a location but that it doesn't change the file's location

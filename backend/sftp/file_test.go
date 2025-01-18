@@ -112,7 +112,7 @@ func (ts *fileTestSuite) TestSeek() {
 	ts.Require().NoError(err, "no error expected")
 }
 
-func (ts *fileTestSuite) Test_openFile() {
+func (ts *fileTestSuite) TestOpenFile() {
 	testCases := []struct {
 		name           string
 		flags          int
@@ -872,8 +872,7 @@ func (ts *fileTestSuite) TestSetDefaultPermissions() {
 		{
 			name: "No options provided",
 			client: func() *mocks.Client {
-				client := mocks.NewClient(ts.T())
-				return client
+				return mocks.NewClient(ts.T())
 			}(),
 			options:       nil,
 			expectedError: false,

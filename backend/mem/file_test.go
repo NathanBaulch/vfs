@@ -115,15 +115,15 @@ func (s *memFileTest) TestNewFileSameName() {
 	s.Require().NoError(err, "unexpected error writing to file")
 	secondFile, err := s.fileSystem.NewFile("", sharedPath)
 	s.Require().NoError(err, "unexpected error creating a file")
-	expectedSlice := make([]byte, len(expectedText))
+	readSlice := make([]byte, len(expectedText))
 	// since secondFile references firstFile, reading will throw an error as we never closed or seeked firstFile
-	_, err = secondFile.Read(expectedSlice)
+	_, err = secondFile.Read(readSlice)
 	s.Require().Error(err, "expected read error since firstFile was never closed")
 	// after this call, we can expect to be able to read from secondFile since its reference, firstFile, was closed
 	s.Require().NoError(firstFile.Close(), "unexpected error closing file")
-	_, err = secondFile.Read(expectedSlice)
+	_, err = secondFile.Read(readSlice)
 	s.Require().NoError(err, "unexpected read error")
-	s.Equal(expectedText, string(expectedSlice))
+	s.Equal(expectedText, string(readSlice))
 }
 
 // TestDelete deletes the receiver file, then creates another file and deletes it.
@@ -465,8 +465,6 @@ func (s *memFileTest) TestCopyToFileOS() {
 // non-empty one. Succeeds on the non-empty
 // file becoming empty
 func (s *memFileTest) TestEmptyCopyToFile() {
-	expectedText := ""
-	var expectedSlice []byte
 	otherFile, err := s.fileSystem.NewFile("", "/some/path/otherfile.txt")
 	s.Require().NoError(err, "unexpected error creating a file")
 
@@ -483,9 +481,10 @@ func (s *memFileTest) TestEmptyCopyToFile() {
 	// call to CopyToFile
 	s.Require().NoError(emptyFile.CopyToFile(otherFile), "CopyToFile failed unexpectedly")
 
-	_, err = otherFile.Read(expectedSlice)
+	var readSlice []byte
+	_, err = otherFile.Read(readSlice)
 	s.Require().ErrorIs(err, io.EOF, "expected EOF error")
-	s.Equal(expectedText, string(expectedSlice))
+	s.Empty(readSlice)
 }
 
 // TestMoveToLocation ensures that we can move files to specified locations
