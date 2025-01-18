@@ -14,7 +14,7 @@ func WithAllVersions() options.DeleteOption {
 type AllVersions struct{}
 
 // DeleteOptionName returns the name of AllVersions option
-func (w AllVersions) DeleteOptionName() string {
+func (AllVersions) DeleteOptionName() string {
 	return optionNameDeleteAllVersions
 }
 
@@ -30,6 +30,6 @@ func WithDeleteAllVersions() options.DeleteOption {
 type DeleteAllVersions struct{}
 
 // DeleteOptionName returns the name of DeleteAllVersions option
-func (w DeleteAllVersions) DeleteOptionName() string {
+func (DeleteAllVersions) DeleteOptionName() string {
 	return optionNameDeleteAllVersions
 }

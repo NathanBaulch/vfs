@@ -63,8 +63,8 @@ func NewClient(options *Options) (*DefaultClient, error) {
 	return &DefaultClient{credential}, nil
 }
 
-func (a *DefaultClient) newContainerClient(containerURL string) (*container.Client, error) {
-	switch cred := a.credential.(type) {
+func (c *DefaultClient) newContainerClient(containerURL string) (*container.Client, error) {
+	switch cred := c.credential.(type) {
 	case azcore.TokenCredential:
 		return container.NewClient(containerURL, cred, nil)
 	case *container.SharedKeyCredential:
@@ -75,8 +75,8 @@ func (a *DefaultClient) newContainerClient(containerURL string) (*container.Clie
 }
 
 // Properties fetches the properties for the blob specified by the parameters containerURI and filePath
-func (a *DefaultClient) Properties(containerURI, filePath string) (*BlobProperties, error) {
-	cli, err := a.newContainerClient(containerURI)
+func (c *DefaultClient) Properties(containerURI, filePath string) (*BlobProperties, error) {
+	cli, err := c.newContainerClient(containerURI)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +100,8 @@ func (a *DefaultClient) Properties(containerURI, filePath string) (*BlobProperti
 }
 
 // Upload uploads a new file to Azure Blob Storage
-func (a *DefaultClient) Upload(file vfs.File, content io.ReadSeeker, contentType string) error {
-	cli, err := a.newContainerClient(file.Location().(*Location).ContainerURL())
+func (c *DefaultClient) Upload(file vfs.File, content io.ReadSeeker, contentType string) error {
+	cli, err := c.newContainerClient(file.Location().(*Location).ContainerURL())
 	if err != nil {
 		return err
 	}
@@ -115,8 +115,8 @@ func (a *DefaultClient) Upload(file vfs.File, content io.ReadSeeker, contentType
 }
 
 // SetMetadata sets the given metadata for the blob
-func (a *DefaultClient) SetMetadata(file vfs.File, metadata map[string]*string) error {
-	cli, err := a.newContainerClient(file.Location().(*Location).ContainerURL())
+func (c *DefaultClient) SetMetadata(file vfs.File, metadata map[string]*string) error {
+	cli, err := c.newContainerClient(file.Location().(*Location).ContainerURL())
 	if err != nil {
 		return err
 	}
@@ -126,8 +126,8 @@ func (a *DefaultClient) SetMetadata(file vfs.File, metadata map[string]*string) 
 }
 
 // Download returns an io.ReadCloser for the given vfs.File
-func (a *DefaultClient) Download(file vfs.File) (io.ReadCloser, error) {
-	cli, err := a.newContainerClient(file.Location().(*Location).ContainerURL())
+func (c *DefaultClient) Download(file vfs.File) (io.ReadCloser, error) {
+	cli, err := c.newContainerClient(file.Location().(*Location).ContainerURL())
 	if err != nil {
 		return nil, err
 	}
@@ -142,13 +142,13 @@ func (a *DefaultClient) Download(file vfs.File) (io.ReadCloser, error) {
 // Copy copies srcFile to the destination tgtFile within Azure Blob Storage.  Note that in the case where we get
 // encoded spaces in the file name (i.e. %20) the '%' must be encoded or the copy command will return a not found
 // error.
-func (a *DefaultClient) Copy(srcFile, tgtFile vfs.File) error {
+func (c *DefaultClient) Copy(srcFile, tgtFile vfs.File) error {
 	// Can't use url.PathEscape here since that will escape everything (even the directory separators)
 	srcURL := strings.ReplaceAll(srcFile.URI(), "%", "%25")
 
 	tgtURL := tgtFile.Location().(*Location).ContainerURL()
 
-	cli, err := a.newContainerClient(tgtURL)
+	cli, err := c.newContainerClient(tgtURL)
 	if err != nil {
 		return err
 	}
@@ -172,8 +172,8 @@ func (a *DefaultClient) Copy(srcFile, tgtFile vfs.File) error {
 
 // List will return a listing of the contents of the given location.  Each item in the list will contain the full key
 // as specified by the azure blob (including the virtual 'path').
-func (a *DefaultClient) List(l vfs.Location) ([]string, error) {
-	cli, err := a.newContainerClient(l.(*Location).ContainerURL())
+func (c *DefaultClient) List(l vfs.Location) ([]string, error) {
+	cli, err := c.newContainerClient(l.(*Location).ContainerURL())
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (a *DefaultClient) List(l vfs.Location) ([]string, error) {
 }
 
 // Delete deletes the given file from Azure Blob Storage.
-func (a *DefaultClient) Delete(file vfs.File) error {
-	cli, err := a.newContainerClient(file.Location().(*Location).ContainerURL())
+func (c *DefaultClient) Delete(file vfs.File) error {
+	cli, err := c.newContainerClient(file.Location().(*Location).ContainerURL())
 	if err != nil {
 		return err
 	}
@@ -212,14 +212,14 @@ func (a *DefaultClient) Delete(file vfs.File) error {
 // First the file blob is deleted, then each version of the blob is deleted.
 // If soft deletion is enabled for blobs in the storage account, each version will be marked for deletion and will be
 // permanently deleted by Azure as per the soft deletion policy.
-func (a *DefaultClient) DeleteAllVersions(file vfs.File) error {
-	cli, err := a.newContainerClient(file.Location().(*Location).ContainerURL())
+func (c *DefaultClient) DeleteAllVersions(file vfs.File) error {
+	cli, err := c.newContainerClient(file.Location().(*Location).ContainerURL())
 	if err != nil {
 		return err
 	}
 	blobURL := cli.NewBlockBlobClient(utils.RemoveLeadingSlash(file.Path()))
 
-	versions, err := a.getBlobVersions(cli, utils.RemoveLeadingSlash(file.Path()))
+	versions, err := c.getBlobVersions(cli, utils.RemoveLeadingSlash(file.Path()))
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (a *DefaultClient) DeleteAllVersions(file vfs.File) error {
 	return err
 }
 
-func (a *DefaultClient) getBlobVersions(cli *container.Client, blobName string) ([]*string, error) {
+func (c *DefaultClient) getBlobVersions(cli *container.Client, blobName string) ([]*string, error) {
 	ctx := context.Background()
 	pager := cli.NewListBlobsFlatPager(&container.ListBlobsFlatOptions{
 		Prefix:  &blobName,

@@ -16,6 +16,6 @@ func WithContentType(contentType string) options.NewFileOption {
 type ContentType string
 
 // NewFileOptionName returns the name of ContentType option
-func (ct *ContentType) NewFileOptionName() string {
+func (*ContentType) NewFileOptionName() string {
 	return optionNameNewFileContentType
 }
