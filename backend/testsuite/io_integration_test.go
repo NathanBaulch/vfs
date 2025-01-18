@@ -345,7 +345,7 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 		},
 	}
 
-	defer s.teardownTestLocation(s.T(), testPath)
+	defer s.teardownTestLocation(testPath)
 	for _, tc := range testCases {
 		s.Run(tc.description, func() {
 			testFileName := "testfile.txt"
@@ -363,7 +363,7 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 				s.Require().NoError(err)
 
 				// Use vfs to execute the sequence of operations described by the description
-				actualContents, err := executeSequence(s.T(), file, tc.sequence) // Implement this function
+				actualContents, err := s.executeSequence(file, tc.sequence) // Implement this function
 
 				// Assert expected outcomes
 				if tc.expectFailure {
@@ -379,14 +379,14 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 }
 
 //nolint:gocyclo
-func executeSequence(t *testing.T, file readWriteSeekCloseDeleter, sequence string) (string, error) {
+func (s *ioTestSuite) executeSequence(file readWriteSeekCloseDeleter, sequence string) (string, error) {
 	// split sequence by semicolon
 	commands := strings.Split(sequence, ";")
 	var commandErr error
 SEQ:
 	for _, command := range commands {
 		// parse command
-		commandName, commandArgs := parseCommand(t, command)
+		commandName, commandArgs := s.parseCommand(command)
 
 		switch commandName {
 		case "R":
@@ -399,9 +399,7 @@ SEQ:
 			} else {
 				// convert arg 0 to uint64
 				bytesize, err := strconv.ParseUint(commandArgs[0], 10, 64)
-				if err != nil {
-					t.Fatalf("invalid bytesize: %s", commandArgs[0])
-				}
+				s.Require().NoError(err, "invalid bytesize: %s", commandArgs[0])
 
 				// Read file
 				b := make([]byte, bytesize)
@@ -418,18 +416,12 @@ SEQ:
 			}
 		case "S":
 			// expect 2 args for offset and whence
-			if len(commandArgs) != 2 {
-				t.Fatalf("invalid number of args for Seek: %d", len(commandArgs))
-			}
+			s.Len(commandArgs, 2, "invalid number of args for Seek: %d", len(commandArgs))
 			// convert args
 			offset, err := strconv.ParseInt(commandArgs[0], 10, 64)
-			if err != nil {
-				t.Fatalf("invalid offset: %s", commandArgs[0])
-			}
+			s.Require().NoError(err, "invalid offset: %s", commandArgs[0])
 			whence, err := strconv.Atoi(commandArgs[1])
-			if err != nil {
-				t.Fatalf("invalid whence: %s", commandArgs[1])
-			}
+			s.Require().NoError(err, "invalid whence: %s", commandArgs[1])
 			// Seek
 			_, commandErr = file.Seek(offset, whence)
 			if commandErr != nil {
@@ -454,34 +446,26 @@ SEQ:
 	case *osWrapper:
 		var err error
 		f, err = os.Open(assertedFile.URI())
-		if err != nil {
-			t.Fatalf("error opening file: %s", err.Error())
-		}
+		s.NoError(err, "error opening file")
 	case vfs.File:
 		var err error
 		f, err = assertedFile.Location().NewFile(assertedFile.Name())
-		if err != nil {
-			t.Fatalf("error opening file: %s", err.Error())
-		}
+		s.Require().NoError(err, "error opening file")
 	}
 	defer func() { _ = f.Close() }()
 	// Read entire file
 	contents, err := io.ReadAll(f)
-	if err != nil {
-		t.Fatalf("error reading file: %s", err.Error())
-	}
+	s.Require().NoError(err, "error reading file")
 	return string(contents), nil
 }
 
 var commandArgsRegex = regexp.MustCompile(`^([a-zA-Z0-9]+)\((.*)\)$`)
 
 // takes command string in the form of <command name>(<args>) and returns the command name and args
-func parseCommand(t *testing.T, command string) (string, []string) {
+func (s *ioTestSuite) parseCommand(command string) (string, []string) {
 	// parse command string
 	results := commandArgsRegex.FindStringSubmatch(command)
-	if len(results) != 3 {
-		t.Fatalf("invalid command string: %s", command)
-	}
+	s.Len(results, 3, "invalid command string: %s", command)
 
 	// split args by comma
 	args := strings.Split(results[2], ",")
@@ -517,7 +501,7 @@ func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (re
 	return f, nil
 }
 
-func (s *ioTestSuite) teardownTestLocation(t *testing.T, testPath string) {
+func (s *ioTestSuite) teardownTestLocation(testPath string) {
 	if strings.HasPrefix(testPath, "/") {
 		err := os.RemoveAll(testPath)
 		s.Require().NoError(err)
