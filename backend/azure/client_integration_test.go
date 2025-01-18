@@ -92,7 +92,7 @@ func (s *ClientIntegrationTestSuite) TestAllTheThings_FileWithNoPath() {
 	// list the location
 	list, err := client.List(f.Location())
 	s.Require().NoError(err)
-	s.Len(list, 2)
+	s.Require().Len(list, 2)
 	s.Equal("copy_of_test.txt", list[0])
 	s.Equal("test.txt", list[1])
 
@@ -132,7 +132,7 @@ func (s *ClientIntegrationTestSuite) TestAllTheThings_FileWithPath() {
 	// list the location
 	list, err := client.List(f.Location())
 	s.Require().NoError(err)
-	s.Len(list, 1)
+	s.Require().Len(list, 1)
 	s.Equal("foo/bar/test.txt", list[0])
 }
 

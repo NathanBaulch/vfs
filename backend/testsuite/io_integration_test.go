@@ -416,7 +416,7 @@ SEQ:
 			}
 		case "S":
 			// expect 2 args for offset and whence
-			s.Len(commandArgs, 2, "invalid number of args for Seek: %d", len(commandArgs))
+			s.Require().Len(commandArgs, 2, "invalid number of args for Seek: %d", len(commandArgs))
 			// convert args
 			offset, err := strconv.ParseInt(commandArgs[0], 10, 64)
 			s.Require().NoError(err, "invalid offset: %s", commandArgs[0])
@@ -465,7 +465,7 @@ var commandArgsRegex = regexp.MustCompile(`^([a-zA-Z0-9]+)\((.*)\)$`)
 func (s *ioTestSuite) parseCommand(command string) (string, []string) {
 	// parse command string
 	results := commandArgsRegex.FindStringSubmatch(command)
-	s.Len(results, 3, "invalid command string: %s", command)
+	s.Require().Len(results, 3, "invalid command string: %s", command)
 
 	// split args by comma
 	args := strings.Split(results[2], ",")

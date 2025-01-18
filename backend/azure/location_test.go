@@ -40,7 +40,7 @@ func (s *LocationTestSuite) TestListByPrefix() {
 	l, _ := fs.NewLocation("test-container", "/some/folder/")
 	listing, err := l.ListByPrefix("file")
 	s.Require().NoError(err)
-	s.Len(listing, 2)
+	s.Require().Len(listing, 2)
 	s.Equal("file1.txt", listing[0])
 	s.Equal("file2.txt", listing[1])
 }
@@ -52,7 +52,7 @@ func (s *LocationTestSuite) TestListByRegex() {
 	regex := regexp.MustCompile("file")
 	listing, err := l.ListByRegex(regex)
 	s.Require().NoError(err)
-	s.Len(listing, 2, "expect the 2 files with the substring 'file' to be returned")
+	s.Require().Len(listing, 2, "expect the 2 files with the substring 'file' to be returned")
 	s.Equal("file1.txt", listing[0])
 	s.Equal("file2.txt", listing[1])
 }

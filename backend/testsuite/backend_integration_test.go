@@ -319,7 +319,7 @@ func (s *vfsTestSuite) location(baseLoc vfs.Location) {
 
 	files, err = subLoc.List()
 	s.Require().NoError(err)
-	s.Len(files, 1, "list subLoc location")
+	s.Require().Len(files, 1, "list subLoc location")
 	s.Equal("that.txt", files[0], "returned basename")
 
 	files, err = cdTestLoc.List()
@@ -349,12 +349,12 @@ func (s *vfsTestSuite) location(baseLoc vfs.Location) {
 
 	files, err = srcLoc.ListByPrefix("s")
 	s.Require().NoError(err)
-	s.Len(files, 1, "list srcLoc location")
+	s.Require().Len(files, 1, "list srcLoc location")
 	s.Equal("self.txt", files[0], "returned only file basename, not subdir matching prefix")
 
 	files, err = srcLoc.ListByPrefix("somepath/t")
 	s.Require().NoError(err)
-	s.Len(files, 1, "list 'somepath' location relative to srcLoc")
+	s.Require().Len(files, 1, "list 'somepath' location relative to srcLoc")
 	s.Equal("that.txt", files[0], "returned only file basename, using relative prefix")
 
 	files, err = cdTestLoc.List()
