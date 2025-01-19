@@ -59,6 +59,7 @@ These methods are chainable: (*FileSystem) WithClient(client interface{})
     		  ftp.Options{
     			  Password: "s3cr3t",
     			  DisableEPSV: true,
+    			  WritingMDTM: true,
     			  Protocol: ftp.ProtocolFTPES,
     			  DialTimeout: 15 * time.Second,
     			  DebugWriter: os.Stdout,
@@ -101,6 +102,7 @@ The provided CopyToFile and CopyToLocation functions should be used instead in t
 			  ftp.Options{
 				  Password: "s3cr3t",
 				  DisableEPSV: true,
+    			  WritingMDTM: true,
 				  Protocol: ftp.ProtocolFTPES,
 				  DialTimeout: 15 * time.Second,
 				  DebugWriter: os.Stdout,
@@ -181,6 +183,8 @@ DebugWriter *io.Writer* - captures FTP command details to any writer.
 DialTimeout *time.Duration - sets timeout for connecting only.
 
 DisableEPSV bool - Extended Passive mode (EPSV) is attempted by default. Set to true to use regular Passive mode (PASV).
+
+WritingMDTM bool - ???
 
 ## Usage
 
@@ -550,6 +554,7 @@ type Options struct {
 	Password    string // env var VFS_FTP_PASSWORD
 	Protocol    string // env var VFS_FTP_PROTOCOL
 	DisableEPSV *bool  // env var VFS_DISABLE_EPSV
+	WritingMDTM *bool  // env var VFS_WRITING_MDTM
 	DebugWriter io.Writer
 	TLSConfig   *tls.Config
 	DialTimeout time.Duration

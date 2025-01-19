@@ -51,6 +51,7 @@ These methods are chainable:
 			  ftp.Options{
 				  Password: "s3cr3t",
 				  DisableEPSV: true,
+				  WritingMDTM: true,
 				  Protocol: ftp.ProtocolFTPES,
 				  DialTimeout: 15 * time.Second,
 				  DebugWriter: os.Stdout,
@@ -148,6 +149,8 @@ DebugWriter *io.Writer* - captures FTP command details to any writer.
 DialTimeout *time.Duration - sets timeout for connecting only.
 
 DisableEPSV bool - Extended Passive mode (EPSV) is attempted by default. Set to true to use regular Passive mode (PASV).
+
+WritingMDTM bool - ???
 
 IncludeInsecureCiphers bool - If set to true, includes insecure cipher suites in the TLS configuration.
 */

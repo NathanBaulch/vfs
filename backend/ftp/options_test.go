@@ -213,6 +213,88 @@ func (s *optionsSuite) TestIsDisableEPSV() {
 	}
 }
 
+func (s *optionsSuite) TestIsWritingMDTM() {
+	var trueVal = true
+	var falseVal = false
+	tests := []struct {
+		description string
+		options     Options
+		envVar      *string
+		expected    bool
+	}{
+		{
+			description: "check defaults",
+			expected:    false,
+		},
+		{
+			description: "env var is set but empty",
+			envVar:      ptrString(""),
+			expected:    false,
+		},
+		{
+			description: "env var is set and is a non-true value",
+			envVar:      ptrString("not expected"),
+			expected:    false,
+		},
+		{
+			description: "env var is set and is a `false` value",
+			envVar:      ptrString("false"),
+			expected:    false,
+		},
+		{
+			description: "env var is set and is '1' value",
+			envVar:      ptrString("1"),
+			expected:    true,
+		},
+		{
+			description: "env var is set and is 'true'",
+			envVar:      ptrString("true"),
+			expected:    true,
+		},
+		{
+			description: "Options is set to false'",
+			options: Options{
+				WritingMDTM: &falseVal,
+			},
+			expected: false,
+		},
+		{
+			description: "Options is set to true'",
+			options: Options{
+				WritingMDTM: &trueVal,
+			},
+			expected: true,
+		},
+		{
+			description: "env var is set true but Options is set to false'",
+			envVar:      ptrString("true"),
+			options: Options{
+				WritingMDTM: &falseVal,
+			},
+			expected: false,
+		},
+		{
+			description: "env var is set true but Options is set to false'",
+			envVar:      ptrString("false"),
+			options: Options{
+				WritingMDTM: &trueVal,
+			},
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.description, func() {
+			if test.envVar != nil {
+				err := os.Setenv(envWritingMDTM, *test.envVar)
+				s.NoError(err, test.description)
+			}
+
+			s.Equal(test.expected, isWritingMDTMOption(test.options), test.description)
+		})
+	}
+}
+
 func (s *optionsSuite) TestFetchTLSConfig() {
 	cfg := &tls.Config{
 		MinVersion:             tls.VersionTLS12,

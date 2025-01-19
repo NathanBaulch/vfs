@@ -257,9 +257,12 @@ func SeekTo(length, position, offset int64, whence int) (int64, error) {
 func EncodeURI(scheme, username, hostport, path string) string {
 	u := &url.URL{
 		Scheme: scheme,
-		User:   url.User(username),
 		Host:   hostport,
 		Path:   path,
+	}
+
+	if username != "" {
+		u.User = url.User(username)
 	}
 
 	return u.String()

@@ -413,7 +413,6 @@ func (lt *locationTestSuite) TestExists() {
 			Time:   time.Now().UTC(),
 		},
 	}
-	lt.client.On("List", locPath).Return(entries, nil).Once()
 	loc, err := lt.ftpfs.NewLocation(authority, locPath)
 	lt.NoError(err)
 	exists, err := loc.Exists()

@@ -20,6 +20,7 @@ type Options struct {
 	Password               string // env var VFS_FTP_PASSWORD
 	Protocol               string // env var VFS_FTP_PROTOCOL
 	DisableEPSV            *bool  // env var VFS_DISABLE_EPSV
+	WritingMDTM            *bool  // env var VFS_WRITING_MDTM
 	DebugWriter            io.Writer
 	TLSConfig              *tls.Config
 	DialTimeout            time.Duration
@@ -39,6 +40,7 @@ const (
 	defaultPort     uint16 = 21
 
 	envDisableEPSV = "VFS_FTP_DISABLE_EPSV"
+	envWritingMDTM = "VFS_FTP_WRITING_MDTM"
 	envProtocol    = "VFS_FTP_PROTOCOL"
 	envPassword    = "VFS_FTP_PASSWORD" //nolint:gosec
 )
@@ -113,6 +115,10 @@ func fetchDialOptions(ctx context.Context, auth utils.Authority, opts Options) [
 	// determine DisableEPSV DialOption
 	dialOptions = append(dialOptions, _ftp.DialWithDisabledEPSV(isDisableOption(opts)))
 
+	if isWritingMDTMOption(opts) {
+		dialOptions = append(dialOptions, _ftp.DialWithWritingMDTM(true))
+	}
+
 	// determine protocol-specific (FTPS/FTPeS) TLS DialOption, if any (defaults to plain FTP, no TLS)
 	switch protocol := fetchProtocol(opts); {
 	case strings.EqualFold(protocol, ProtocolFTPS):
@@ -152,6 +158,26 @@ func isDisableOption(opts Options) bool {
 	}
 
 	return disableEpsv
+}
+
+func isWritingMDTMOption(opts Options) bool {
+	// default to false, meaning EPSV stays enabled
+	writingMDTM := false
+
+	// override with env var, if any
+	if _, ok := os.LookupEnv(envWritingMDTM); ok {
+		setting := os.Getenv(envWritingMDTM)
+		if strings.EqualFold(setting, "true") || setting == "1" {
+			writingMDTM = true
+		}
+	}
+
+	// override with Options, if any
+	if opts.WritingMDTM != nil {
+		writingMDTM = *opts.WritingMDTM
+	}
+
+	return writingMDTM
 }
 
 func fetchTLSConfig(auth utils.Authority, opts Options) *tls.Config {

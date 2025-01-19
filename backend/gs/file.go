@@ -426,6 +426,9 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 			tf.opts = f.opts
 		}
 
+		if f.fileSystem.options == nil && tf.fileSystem.options == nil {
+			return f.copyWithinGCSToFile(tf)
+		}
 		opts, ok := tf.Location().FileSystem().(*FileSystem).options.(Options)
 		if ok {
 			if f.isSameAuth(&opts) {
