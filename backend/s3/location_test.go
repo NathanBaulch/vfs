@@ -23,7 +23,7 @@ type locationTestSuite struct {
 }
 
 func (lt *locationTestSuite) SetupTest() {
-	lt.s3cliMock = &mocks.Client{}
+	lt.s3cliMock = mocks.NewClient(lt.T())
 	lt.fs = &FileSystem{client: lt.s3cliMock}
 }
 
@@ -53,7 +53,6 @@ func (lt *locationTestSuite) TestList() {
 	for _, fileKey := range fileList {
 		lt.Contains(expectedFileList, fileKey, "All returned keys should be in expected file list.")
 	}
-	lt.s3cliMock.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestList_pagedCall() {
@@ -125,7 +124,6 @@ func (lt *locationTestSuite) TestListByPrefix() {
 	for _, fileKey := range fileList {
 		lt.Contains(expectedFileList, fileKey, "All returned keys should be in the expected list.")
 	}
-	lt.s3cliMock.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestListByRegex() {
@@ -155,7 +153,6 @@ func (lt *locationTestSuite) TestListByRegex() {
 	for _, fileKey := range fileList {
 		lt.Contains(expectedFileList, fileKey, "All returned keys should be in the expected list.")
 	}
-	lt.s3cliMock.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestVolume() {
@@ -214,7 +211,6 @@ func (lt *locationTestSuite) TestExists_true() {
 	exists, err := loc.Exists()
 	lt.Require().NoError(err, "No error expected from Exists")
 	lt.True(exists, "Call to Exists expected to return true.")
-	lt.s3cliMock.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestExists_false() {
@@ -227,7 +223,6 @@ func (lt *locationTestSuite) TestExists_false() {
 	exists, err := loc.Exists()
 	lt.Require().NoError(err, "No error expected from Exists")
 	lt.False(exists, "Call to Exists expected to return true.")
-	lt.s3cliMock.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestChangeDir() {
@@ -297,7 +292,6 @@ func (lt *locationTestSuite) TestDeleteFile() {
 
 	err = loc.DeleteFile("filename.txt")
 	lt.Require().NoError(err, "Successful delete should not return an error.")
-	lt.s3cliMock.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestDeleteFileWithAllVersionsOption() {
@@ -314,7 +308,6 @@ func (lt *locationTestSuite) TestDeleteFileWithAllVersionsOption() {
 
 	err = loc.DeleteFile("filename.txt", delete.WithAllVersions())
 	lt.Require().NoError(err, "Successful delete should not return an error.")
-	lt.s3cliMock.AssertExpectations(lt.T())
 	lt.s3cliMock.AssertNumberOfCalls(lt.T(), "DeleteObject", 3)
 }
 

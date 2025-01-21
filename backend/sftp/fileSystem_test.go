@@ -19,14 +19,14 @@ type fileSystemTestSuite struct {
 }
 
 func (ts *fileSystemTestSuite) SetupTest() {
-	client := &mocks.Client{}
+	client := mocks.NewClient(ts.T())
 	ts.sftpfs = &FileSystem{
 		sftpclient: client,
 	}
 }
 
 func (ts *fileSystemTestSuite) TestNewFileSystem() {
-	newFS := NewFileSystem().WithClient(&mocks.Client{})
+	newFS := NewFileSystem().WithClient(mocks.NewClient(ts.T()))
 	ts.NotNil(newFS, "Should return a new fileSystem for sftp")
 }
 
@@ -119,7 +119,7 @@ func (ts *fileSystemTestSuite) TestClient() {
 
 func (ts *fileSystemTestSuite) TestClientWithAutoDisconnect() {
 	getClientCount := 0
-	client := &mocks.Client{}
+	client := mocks.NewClient(ts.T())
 	client.EXPECT().ReadDir("/").Return([]os.FileInfo{}, nil).Times(3)
 	client.EXPECT().Close().Return(nil).Times(1)
 	defaultClientGetter = func(utils.Authority, *Options) (Client, io.Closer, error) {
@@ -147,7 +147,6 @@ func (ts *fileSystemTestSuite) TestClientWithAutoDisconnect() {
 	fs.connTimerStop()
 	fs.connTimer = nil
 	// list should've been called 3 times
-	client.AssertExpectations(ts.T())
 
 	// newClient should only have been called twice (because it was cached one time).
 	ts.Equal(2, getClientCount, "newClient should only have been called twice (because it was cached one time")

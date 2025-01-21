@@ -632,27 +632,27 @@ func (s *utilsSuite) TestPathToURI() {
 
 func (s *utilsSuite) TestGetURI() {
 	// set up mocks
-	mockFs1 := &mocks.FileSystem{}
+	mockFs1 := mocks.NewFileSystem(s.T())
 	mockFs1.EXPECT().Scheme().Return("file")
 
-	mockLoc1 := &mocks.Location{}
+	mockLoc1 := mocks.NewLocation(s.T())
 	mockLoc1.EXPECT().Path().Return("/some/path/to/")
 	mockLoc1.EXPECT().Volume().Return("")
 	mockLoc1.EXPECT().FileSystem().Return(mockFs1)
 
-	mockFile1 := &mocks.File{}
+	mockFile1 := mocks.NewFile(s.T())
 	mockFile1.EXPECT().Path().Return("/some/path/to/file.txt")
 	mockFile1.EXPECT().Location().Return(mockLoc1)
 
-	mockFs2 := &mocks.FileSystem{}
+	mockFs2 := mocks.NewFileSystem(s.T())
 	mockFs2.EXPECT().Scheme().Return("s3")
 
-	mockLoc2 := &mocks.Location{}
+	mockLoc2 := mocks.NewLocation(s.T())
 	mockLoc2.EXPECT().Path().Return("/this/path/to/")
 	mockLoc2.EXPECT().Volume().Return("mybucket")
 	mockLoc2.EXPECT().FileSystem().Return(mockFs2)
 
-	mockFile2 := &mocks.File{}
+	mockFile2 := mocks.NewFile(s.T())
 	mockFile2.EXPECT().Path().Return("/this/path/to/file.txt")
 	mockFile2.EXPECT().Location().Return(mockLoc2)
 

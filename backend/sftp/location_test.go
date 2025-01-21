@@ -19,7 +19,7 @@ type locationTestSuite struct {
 }
 
 func (lt *locationTestSuite) SetupTest() {
-	lt.client = &mocks.Client{}
+	lt.client = mocks.NewClient(lt.T())
 	lt.sftpfs = &FileSystem{
 		sftpclient: lt.client,
 	}
@@ -28,14 +28,13 @@ func (lt *locationTestSuite) SetupTest() {
 func (lt *locationTestSuite) TestList() {
 	expectedFileList := []string{"file.txt", "file2.txt"}
 
-	file1 := &mocks.FileInfo{}
+	file1 := mocks.NewFileInfo(lt.T())
 	file1.EXPECT().Name().Return("file2.txt")
 	file1.EXPECT().IsDir().Return(false)
-	file2 := &mocks.FileInfo{}
+	file2 := mocks.NewFileInfo(lt.T())
 	file2.EXPECT().Name().Return("file2.txt")
 	file2.EXPECT().IsDir().Return(false)
-	subdir1 := &mocks.FileInfo{}
-	subdir1.EXPECT().Name().Return("subdir")
+	subdir1 := mocks.NewFileInfo(lt.T())
 	subdir1.EXPECT().IsDir().Return(true)
 	keyListFromAPI := []*mocks.FileInfo{subdir1, file1, file2}
 	authority := "host.com"
@@ -62,24 +61,21 @@ func (lt *locationTestSuite) TestList() {
 	fileList, err = loc.List()
 	lt.Require().NoError(err, "Shouldn't return an error on file not found.")
 	lt.Empty(fileList, "Should return no files on file not found")
-
-	lt.client.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestListByPrefix() {
 	expectedFileList := []string{"file.txt", "file2.txt"}
 
-	file1 := &mocks.FileInfo{}
+	file1 := mocks.NewFileInfo(lt.T())
 	file1.EXPECT().Name().Return("file2.txt")
 	file1.EXPECT().IsDir().Return(false)
-	file2 := &mocks.FileInfo{}
+	file2 := mocks.NewFileInfo(lt.T())
 	file2.EXPECT().Name().Return("file2.txt")
 	file2.EXPECT().IsDir().Return(false)
-	file3 := &mocks.FileInfo{}
+	file3 := mocks.NewFileInfo(lt.T())
 	file3.EXPECT().Name().Return("my_file.txt")
 	file3.EXPECT().IsDir().Return(false)
-	subdir1 := &mocks.FileInfo{}
-	subdir1.EXPECT().Name().Return("filedir")
+	subdir1 := mocks.NewFileInfo(lt.T())
 	subdir1.EXPECT().IsDir().Return(true)
 	keyListFromAPI := []*mocks.FileInfo{subdir1, file1, file2, file3}
 	authority := "host.com"
@@ -94,26 +90,21 @@ func (lt *locationTestSuite) TestListByPrefix() {
 	for _, fileKey := range fileList {
 		lt.Contains(expectedFileList, fileKey, "All returned keys should be in the expected list.")
 	}
-	lt.client.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestListByRegex() {
 	expectedFileList := []string{"file1.txt", "file2.txt", "stuff.txt"}
 
-	file1 := &mocks.FileInfo{}
+	file1 := mocks.NewFileInfo(lt.T())
 	file1.EXPECT().Name().Return("file2.txt")
 	file1.EXPECT().IsDir().Return(false)
-	file2 := &mocks.FileInfo{}
+	file2 := mocks.NewFileInfo(lt.T())
 	file2.EXPECT().Name().Return("file2.txt")
 	file2.EXPECT().IsDir().Return(false)
-	file3 := &mocks.FileInfo{}
-	file3.EXPECT().Name().Return("file.jpg")
-	file3.EXPECT().IsDir().Return(false)
-	file4 := &mocks.FileInfo{}
+	file4 := mocks.NewFileInfo(lt.T())
 	file4.EXPECT().Name().Return("stuff.txt")
 	file4.EXPECT().IsDir().Return(false)
-	subdir1 := &mocks.FileInfo{}
-	subdir1.EXPECT().Name().Return("subdirtxt")
+	subdir1 := mocks.NewFileInfo(lt.T())
 	subdir1.EXPECT().IsDir().Return(true)
 	keyListFromAPI := []*mocks.FileInfo{subdir1, file1, file2, file4}
 	authority := "host.com"
@@ -129,7 +120,6 @@ func (lt *locationTestSuite) TestListByRegex() {
 	for _, fileKey := range fileList {
 		lt.Contains(expectedFileList, fileKey, "All returned keys should be in the expected list.")
 	}
-	lt.client.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestURI() {
@@ -221,8 +211,7 @@ func (lt *locationTestSuite) TestExists() {
 
 	// location exists
 	locPath := "/"
-	dir1 := &mocks.FileInfo{}
-	dir1.EXPECT().Name().Return(locPath)
+	dir1 := mocks.NewFileInfo(lt.T())
 	dir1.EXPECT().IsDir().Return(true)
 	lt.client.EXPECT().Stat(locPath).Return(dir1, nil).Once()
 	loc, err := lt.sftpfs.NewLocation(authority, locPath)
@@ -233,7 +222,7 @@ func (lt *locationTestSuite) TestExists() {
 
 	// locations does not exist
 	locPath = "/my/dir/"
-	dir1 = &mocks.FileInfo{}
+	dir1 = mocks.NewFileInfo(lt.T())
 	lt.client.EXPECT().Stat(locPath).Return(dir1, os.ErrNotExist).Once()
 	loc, err = lt.sftpfs.NewLocation(authority, locPath)
 	lt.Require().NoError(err)
@@ -250,8 +239,7 @@ func (lt *locationTestSuite) TestExists() {
 	lt.False(exists, "Call to Exists expected to return false.")
 
 	// check for not dir -- this shouldn't be possible since NewLocation won't accept non-absolute directories
-	dir1 = &mocks.FileInfo{}
-	dir1.EXPECT().Name().Return(locPath)
+	dir1 = mocks.NewFileInfo(lt.T())
 	dir1.EXPECT().IsDir().Return(false) // set isdir false
 	lt.client.EXPECT().Stat(locPath).Return(dir1, nil).Once()
 	loc, err = lt.sftpfs.NewLocation(authority, locPath)
@@ -259,8 +247,6 @@ func (lt *locationTestSuite) TestExists() {
 	exists, err = loc.Exists()
 	lt.Require().NoError(err, "No error expected from Exists")
 	lt.False(exists, "Call to Exists expected to return false.")
-
-	lt.client.AssertExpectations(lt.T())
 }
 
 func (lt *locationTestSuite) TestChangeDir() {
@@ -330,8 +316,6 @@ func (lt *locationTestSuite) TestDeleteFile() {
 	lt.client.EXPECT().Remove("/old/filename.txt").Return(os.ErrNotExist).Once()
 	err = loc.DeleteFile("filename.txt")
 	lt.Require().Error(err, "failed delete")
-
-	lt.client.AssertExpectations(lt.T())
 }
 
 func TestLocation(t *testing.T) {

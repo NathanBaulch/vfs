@@ -17,7 +17,7 @@ type fileSystemTestSuite struct {
 }
 
 func (ts *fileSystemTestSuite) SetupTest() {
-	client := &mocks.Client{}
+	client := mocks.NewClient(ts.T())
 	ts.ftpfs = &FileSystem{
 		ftpclient: client,
 	}

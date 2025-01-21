@@ -180,8 +180,8 @@ func (s *osFileTest) TestSeek() {
 
 func (s *osFileTest) TestCopyToLocation() {
 	expectedText := "hello world"
-	otherFs := &mocks.FileSystem{}
-	otherFile := &mocks.File{}
+	otherFs := mocks.NewFileSystem(s.T())
+	otherFile := mocks.NewFile(s.T())
 
 	// Expected behavior
 	otherFile.EXPECT().Write([]byte(expectedText)).Return(len(expectedText), nil).Once()
@@ -192,14 +192,12 @@ func (s *osFileTest) TestCopyToLocation() {
 
 	_, err := s.testFile.CopyToLocation(&location)
 	s.Require().NoError(err)
-
-	otherFile.AssertExpectations(s.T())
 }
 
 func (s *osFileTest) TestCopyToFile() {
 	expectedText := "hello world"
-	otherFs := &mocks.FileSystem{}
-	otherFile := &mocks.File{}
+	otherFs := mocks.NewFileSystem(s.T())
+	otherFile := mocks.NewFile(s.T())
 
 	location := Location{name: "/some/path", fileSystem: otherFs}
 
@@ -213,14 +211,12 @@ func (s *osFileTest) TestCopyToFile() {
 
 	err := s.testFile.CopyToFile(otherFile)
 	s.Require().NoError(err)
-
-	otherFile.AssertExpectations(s.T())
 }
 
 func (s *osFileTest) TestEmptyCopyToFile() {
 	expectedText := ""
-	otherFs := &mocks.FileSystem{}
-	otherFile := &mocks.File{}
+	otherFs := mocks.NewFileSystem(s.T())
+	otherFile := mocks.NewFile(s.T())
 
 	location := Location{name: "/some/path", fileSystem: otherFs}
 
@@ -237,14 +233,12 @@ func (s *osFileTest) TestEmptyCopyToFile() {
 
 	err = emptyFile.CopyToFile(otherFile)
 	s.Require().NoError(err)
-
-	otherFile.AssertExpectations(s.T())
 }
 
 func (s *osFileTest) TestCopyToLocationIgnoreExtraSeparator() {
 	expectedText := "hello world"
-	otherFs := &mocks.FileSystem{}
-	otherFile := &mocks.File{}
+	otherFs := mocks.NewFileSystem(s.T())
+	otherFile := mocks.NewFile(s.T())
 
 	// Expected behavior
 	otherFile.EXPECT().Write(mock.Anything).Return(len(expectedText), nil)
@@ -299,24 +293,23 @@ func (s *osFileTest) TestMoveToLocation() {
 	s.False(origFound)
 
 	// test non-scheme MoveToLocation
-	mockLocation := &mocks.Location{}
-	mockfs := &mocks.FileSystem{}
+	mockLocation := mocks.NewLocation(s.T())
+	mockfs := mocks.NewFileSystem(s.T())
 
 	// Expected behavior
 	mockfs.EXPECT().Scheme().Return("mock")
-	fsMockFile := &mocks.File{}
+	fsMockFile := mocks.NewFile(s.T())
 	fsMockFile.EXPECT().Write(mock.Anything).Return(10, nil)
 	fsMockFile.EXPECT().Close().Return(nil)
 	mockfs.EXPECT().NewFile(mock.Anything, mock.Anything).Return(fsMockFile, nil)
 	mockLocation.EXPECT().FileSystem().Return(mockfs)
 	mockLocation.EXPECT().Volume().Return("")
 	mockLocation.EXPECT().Path().Return("/some/path/to/")
-	mockFile := &mocks.File{}
+	mockFile := mocks.NewFile(s.T())
 	mockFile.EXPECT().Location().Return(mockLocation)
 	mockFile.EXPECT().Name().Return("/some/path/to/move.txt")
 	mockFile.EXPECT().Location().Return(mockLocation)
 	mockLocation.EXPECT().NewFile(mock.Anything).Return(mockFile, nil)
-	mockfs.EXPECT().NewLocation(mock.Anything, mock.Anything).Return(mockLocation, nil)
 
 	_, err = movedFile.MoveToLocation(mockLocation)
 	s.Require().NoError(err)
@@ -437,13 +430,13 @@ func (s *osFileTest) TestMoveToFile() {
 	s.Equal(text, string(data))
 
 	// test non-scheme MoveToFile
-	mockFile := &mocks.File{}
-	mockLocation := &mocks.Location{}
-	mockfs := &mocks.FileSystem{}
+	mockFile := mocks.NewFile(s.T())
+	mockLocation := mocks.NewLocation(s.T())
+	mockfs := mocks.NewFileSystem(s.T())
 
 	// Expected behavior
 	mockfs.EXPECT().Scheme().Return("mock")
-	fsMockFile := &mocks.File{}
+	fsMockFile := mocks.NewFile(s.T())
 	fsMockFile.EXPECT().Write(mock.Anything).Return(13, nil)
 	fsMockFile.EXPECT().Close().Return(nil)
 	mockfs.EXPECT().NewFile(mock.Anything, mock.Anything).Return(fsMockFile, nil)
@@ -453,7 +446,6 @@ func (s *osFileTest) TestMoveToFile() {
 	mockFile.EXPECT().Location().Return(mockLocation)
 	mockFile.EXPECT().Name().Return("/some/path/to/file.txt")
 	mockFile.EXPECT().Location().Return(mockLocation)
-	mockfs.EXPECT().NewLocation(mock.Anything, mock.Anything).Return(mockLocation, nil)
 
 	s.Require().NoError(file2.MoveToFile(mockFile))
 }
