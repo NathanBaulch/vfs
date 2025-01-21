@@ -170,10 +170,10 @@ func (s *osFileTest) TestRead() {
 func (s *osFileTest) TestSeek() {
 	expectedText := "world"
 	data := make([]byte, len(expectedText))
-	_, serr := s.testFile.Seek(6, io.SeekStart)
-	s.Require().NoError(serr, "seek error not expected")
-	_, rerr := s.testFile.Read(data)
-	s.Require().NoError(rerr, "read error not expected")
+	_, err := s.testFile.Seek(6, io.SeekStart)
+	s.Require().NoError(err, "seek error not expected")
+	_, err = s.testFile.Read(data)
+	s.Require().NoError(err, "read error not expected")
 	s.Equal(expectedText, string(data))
 	s.Require().NoError(s.testFile.Close())
 }
@@ -268,26 +268,26 @@ func (s *osFileTest) TestCopyToLocationIgnoreExtraSeparator() {
 
 func (s *osFileTest) TestMoveToLocation() {
 	expectedText := "moved file"
-	dir, terr := os.MkdirTemp(filepath.Join(osLocationPath(s.tmploc), "test_files"), "example")
-	s.Require().NoError(terr)
+	dir, err := os.MkdirTemp(filepath.Join(osLocationPath(s.tmploc), "test_files"), "example")
+	s.Require().NoError(err)
 
 	origFileName := filepath.Join(dir, "test_files", "move.txt")
-	file, nerr := s.fileSystem.NewFile("", origFileName)
-	s.Require().NoError(nerr)
+	file, err := s.fileSystem.NewFile("", origFileName)
+	s.Require().NoError(err)
 
 	defer func() {
 		err := os.RemoveAll(dir)
 		s.Require().NoError(err, "remove all error not expected")
 	}()
 
-	_, werr := file.Write([]byte(expectedText))
-	s.Require().NoError(werr, "write error not expected")
+	_, err = file.Write([]byte(expectedText))
+	s.Require().NoError(err, "write error not expected")
 
-	cerr := file.Close()
-	s.Require().NoError(cerr, "close error not expected")
+	err = file.Close()
+	s.Require().NoError(err, "close error not expected")
 
-	found, eerr := file.Exists()
-	s.Require().NoError(eerr, "exists error not expected")
+	found, err := file.Exists()
+	s.Require().NoError(err, "exists error not expected")
 	s.True(found)
 
 	// setup location
@@ -302,8 +302,8 @@ func (s *osFileTest) TestMoveToLocation() {
 
 	// ensure the original file no longer exists
 	origFile, _ := s.fileSystem.NewFile(file.Location().Volume(), origFileName)
-	origFound, eerr := origFile.Exists()
-	s.Require().NoError(eerr, "exists error not expected")
+	origFound, err := origFile.Exists()
+	s.Require().NoError(err, "exists error not expected")
 	s.False(origFound)
 
 	// test non-scheme MoveToLocation
@@ -400,8 +400,8 @@ func (s *osFileTest) TestOsCopy() {
 }
 
 func (s *osFileTest) TestMoveToFile() {
-	dir, terr := os.MkdirTemp(filepath.Join(osLocationPath(s.tmploc), "test_files"), "example")
-	s.Require().NoError(terr)
+	dir, err := os.MkdirTemp(filepath.Join(osLocationPath(s.tmploc), "test_files"), "example")
+	s.Require().NoError(err)
 
 	file1, err := s.fileSystem.NewFile("", path.Join(dir, "original.txt"))
 	s.Require().NoError(err)
@@ -415,10 +415,10 @@ func (s *osFileTest) TestMoveToFile() {
 	}()
 
 	text := "original file"
-	_, werr := file1.Write([]byte(text))
-	s.Require().NoError(werr, "write error not expected")
-	cerr := file1.Close()
-	s.Require().NoError(cerr, "close error not expected")
+	_, err = file1.Write([]byte(text))
+	s.Require().NoError(err, "write error not expected")
+	err = file1.Close()
+	s.Require().NoError(err, "close error not expected")
 
 	found1, eErr1 := file1.Exists()
 	s.True(found1)
@@ -428,8 +428,8 @@ func (s *osFileTest) TestMoveToFile() {
 	s.False(found2)
 	s.Require().NoError(eErr2, "exists error not expected")
 
-	merr := file1.MoveToFile(file2)
-	s.Require().NoError(merr)
+	err = file1.MoveToFile(file2)
+	s.Require().NoError(err)
 
 	f1Exists, err := file1.Exists()
 	s.Require().NoError(err)
@@ -439,10 +439,10 @@ func (s *osFileTest) TestMoveToFile() {
 	s.True(f2Exists)
 
 	data := make([]byte, len(text))
-	_, rerr := file2.Read(data)
-	s.Require().NoError(rerr, "read error not expected")
-	cErr := file2.Close()
-	s.Require().NoError(cErr, "close error not expected")
+	_, err = file2.Read(data)
+	s.Require().NoError(err, "read error not expected")
+	err = file2.Close()
+	s.Require().NoError(err, "close error not expected")
 	s.Equal(text, string(data))
 
 	// test non-scheme MoveToFile
@@ -474,20 +474,20 @@ func (s *osFileTest) TestWrite() {
 	file, err := s.tmploc.NewFile("test_files/new.txt")
 	s.Require().NoError(err)
 
-	_, werr := file.Write([]byte(expectedText))
-	s.Require().NoError(werr, "write error not expected")
+	_, err = file.Write([]byte(expectedText))
+	s.Require().NoError(err, "write error not expected")
 
-	_, serr := file.Seek(0, io.SeekStart)
-	s.Require().NoError(serr, "seek error not expected")
-	_, rerr := file.Read(data)
-	s.Require().NoError(rerr, "read error not expected")
-	cerr := file.Close()
-	s.Require().NoError(cerr, "close error not expected")
+	_, err = file.Seek(0, io.SeekStart)
+	s.Require().NoError(err, "seek error not expected")
+	_, err = file.Read(data)
+	s.Require().NoError(err, "read error not expected")
+	err = file.Close()
+	s.Require().NoError(err, "close error not expected")
 
 	s.Equal(expectedText, string(data))
 
-	found, eErr := file.Exists()
-	s.Require().NoError(eErr, "exists error not expected")
+	found, err := file.Exists()
+	s.Require().NoError(err, "exists error not expected")
 	s.True(found)
 
 	err = file.Delete()
@@ -515,18 +515,18 @@ func (s *osFileTest) TestCursor() {
 	s.Require().NoError(err)
 
 	expectedText := "mary had \na little lamb\n"
-	write, werr := file.Write([]byte(expectedText))
-	s.Require().NoError(werr, "write error not expected")
+	write, err := file.Write([]byte(expectedText))
+	s.Require().NoError(err, "write error not expected")
 	s.Equal(24, write)
 	s.Require().NoError(file.Close())
 
-	_, serr := file.Seek(5, io.SeekStart) // cursor 5 - opens fd to orig file
-	s.Require().NoError(serr)
+	_, err = file.Seek(5, io.SeekStart) // cursor 5 - opens fd to orig file
+	s.Require().NoError(err)
 	s.Equal(int64(5), file.(*File).cursorPos)
 
 	data := make([]byte, 3)
-	sz, rerr := file.Read(data) // cursor 8 - orig file - data: "had"
-	s.Require().NoError(rerr)
+	sz, err := file.Read(data) // cursor 8 - orig file - data: "had"
+	s.Require().NoError(err)
 	s.Equal(int64(8), file.(*File).cursorPos)
 	s.Equal("had", string(data)) // orig file contents = "had"
 
@@ -536,18 +536,18 @@ func (s *osFileTest) TestCursor() {
 	s.Require().NoError(serr2)
 
 	// because seek and/or read were called before write, write is now in in-place edit mode (not truncate-write)
-	sz, werr = file.Write([]byte("has")) // cursor 8 - tempfile copy of orig - write on tempfile has occurred
-	s.Require().NoError(werr)
+	sz, err = file.Write([]byte("has")) // cursor 8 - tempfile copy of orig - write on tempfile has occurred
+	s.Require().NoError(err)
 	s.Equal(int64(8), file.(*File).cursorPos)
 	s.Equal(3, sz)
 
-	_, serr = file.Seek(5, io.SeekStart) // cursor 5 - in temp file
-	s.Require().NoError(serr)
+	_, err = file.Seek(5, io.SeekStart) // cursor 5 - in temp file
+	s.Require().NoError(err)
 	s.Equal(int64(5), file.(*File).cursorPos)
 
 	data = make([]byte, 3)
-	sz, rerr = file.Read(data)
-	s.Require().NoError(rerr)
+	sz, err = file.Read(data)
+	s.Require().NoError(err)
 	s.Equal(int64(8), file.(*File).cursorPos)
 	s.Equal("has", string(data)) // tempFile contents = "has"
 	s.Equal(3, sz)
@@ -567,8 +567,8 @@ func (s *osFileTest) TestCursor() {
 	s.Require().NoError(err)
 
 	expectedText = "the quick brown"
-	write, werr = file.Write([]byte(expectedText))
-	s.Require().NoError(werr, "write error not expected")
+	write, err = file.Write([]byte(expectedText))
+	s.Require().NoError(err, "write error not expected")
 	s.Equal(15, write)
 
 	s.Require().NoError(file.Close())
@@ -579,26 +579,26 @@ func (s *osFileTest) TestCursor() {
 	s.Equal(5, overwrite)
 
 	data = make([]byte, 5)
-	_, serr = file.Seek(0, io.SeekStart) // cursor 0 of tempfile
-	s.Require().NoError(serr)
+	_, err = file.Seek(0, io.SeekStart) // cursor 0 of tempfile
+	s.Require().NoError(err)
 
-	_, rerr = file.Read(data) // cursor 5 of tempfile - data: "hello"
-	s.Require().NoError(rerr)
+	_, err = file.Read(data) // cursor 5 of tempfile - data: "hello"
+	s.Require().NoError(err)
 	s.Equal("hello", string(data))
 
 	data = make([]byte, 3)
-	sought, serr := file.Seek(-3, 2) // cursor 3 from end of tempfile
-	s.Require().NoError(serr)
+	sought, err := file.Seek(-3, 2) // cursor 3 from end of tempfile
+	s.Require().NoError(err)
 	s.Equal(int64(2), sought) // seek returns position relative to beginning of file
 
-	rd, rerr = file.Read(data) // cursor 0 from end of tempfile - data: "llo"
-	s.Require().NoError(rerr)
+	rd, err = file.Read(data) // cursor 0 from end of tempfile - data: "llo"
+	s.Require().NoError(err)
 	s.Equal(3, rd)
 	s.Equal("llo", string(data))
 	s.Equal(int64(5), file.(*File).cursorPos)
 
-	_, serr = file.Seek(0, io.SeekStart)
-	s.Require().NoError(serr)
+	_, err = file.Seek(0, io.SeekStart)
+	s.Require().NoError(err)
 	final = make([]byte, 5)
 	rd, err = file.Read(final)
 	s.Require().NoError(err)

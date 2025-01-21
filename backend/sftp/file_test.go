@@ -63,8 +63,8 @@ func (ts *fileTestSuite) TestRead() {
 	localFile := &bytes.Buffer{}
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
-	b, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
-	ts.Require().NoError(copyErr, "no error expected")
+	b, err := io.CopyBuffer(localFile, sftpfile, buffer)
+	ts.Require().NoError(err, "no error expected")
 	ts.Equal(int64(12), b, "byte count after copy")
 	ts.Require().NoError(sftpfile.Close(), "no error expected")
 	ts.Equal(localFile.String(), contents, "Copying an sftp file to a buffer should fill buffer with localfile's contents")
@@ -90,28 +90,28 @@ func (ts *fileTestSuite) TestSeek() {
 		sftpfile:  &nopWriteCloser{strings.NewReader(contents)},
 	}
 	// perform test
-	_, seekErr := sftpfile.Seek(6, io.SeekStart)
-	ts.Require().NoError(seekErr, "no error expected")
+	_, err = sftpfile.Seek(6, io.SeekStart)
+	ts.Require().NoError(err, "no error expected")
 
 	localFile := &bytes.Buffer{}
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
-	_, copyErr := io.CopyBuffer(localFile, sftpfile, buffer)
-	ts.Require().NoError(copyErr, "no error expected")
+	_, err = io.CopyBuffer(localFile, sftpfile, buffer)
+	ts.Require().NoError(err, "no error expected")
 
 	ts.Equal("world!", localFile.String(), "Seeking should move the sftp file cursor as expected")
 
 	localFile = &bytes.Buffer{}
-	_, seekErr2 := sftpfile.Seek(0, io.SeekStart)
-	ts.Require().NoError(seekErr2, "no error expected")
+	_, err = sftpfile.Seek(0, io.SeekStart)
+	ts.Require().NoError(err, "no error expected")
 
 	buffer = make([]byte, utils.TouchCopyMinBufferSize)
 	_, copyErr2 := io.CopyBuffer(localFile, sftpfile, buffer)
 	ts.Require().NoError(copyErr2, "no error expected")
 	ts.Equal(contents, localFile.String(), "Subsequent calls to seek work on temp sftp file as expected")
 
-	closeErr := sftpfile.Close()
-	ts.Require().NoError(closeErr, "no error expected")
+	err = sftpfile.Close()
+	ts.Require().NoError(err, "no error expected")
 	client.AssertExpectations(ts.T())
 }
 
@@ -849,8 +849,8 @@ func (ts *fileTestSuite) TestLastModifiedFail() {
 	myErr := errors.New("some error")
 	file1.On("ModTime").Return(time.Time{}, myErr)
 	ts.sftpMock.On("Stat", ts.testFile.Path()).Return(nil, myErr)
-	m, e := ts.testFile.LastModified()
-	ts.Require().Error(e, "got error as expected")
+	m, err := ts.testFile.LastModified()
+	ts.Require().Error(err, "got error as expected")
 	ts.Nil(m, "nil ModTime returned")
 }
 

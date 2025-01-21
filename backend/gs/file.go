@@ -442,11 +442,11 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 		return err
 	}
 	// Close target to flush and ensure that cursor isn't at the end of the file when the caller reopens for read
-	if cerr := file.Close(); cerr != nil {
-		return cerr
+	if err := file.Close(); err != nil {
+		return err
 	}
-	// Close file (f) reader
-	return err
+
+	return nil
 }
 
 // MoveToLocation works by first calling File.CopyToLocation(vfs.Location) then, if that
@@ -458,8 +458,8 @@ func (f *File) MoveToLocation(location vfs.Location) (vfs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	delErr := f.Delete()
-	return newFile, delErr
+	err = f.Delete()
+	return newFile, err
 }
 
 // MoveToFile puts the contents of File into the target vfs.File passed in using File.CopyToFile.
@@ -698,8 +698,8 @@ func (f *File) copyToLocalTempReader(tmpFile *os.File) error {
 	}
 
 	if err := outputReader.Close(); err != nil {
-		if cerr := tmpFile.Close(); cerr != nil {
-			return cerr
+		if err := tmpFile.Close(); err != nil {
+			return err
 		}
 		return err
 	}
@@ -767,13 +767,13 @@ func (f *File) copyWithinGCSToFile(targetFile *File) error {
 	}
 	// Copy content and modify metadata.
 	copier := tHandle.WrappedCopierFrom(fHandle.ObjectHandle())
-	attrs, gerr := f.getObjectAttrs()
-	if gerr != nil {
-		return gerr
+	attrs, err := f.getObjectAttrs()
+	if err != nil {
+		return err
 	}
 	copier.ContentType(attrs.ContentType)
 
 	// Just copy content.
-	_, cerr := copier.Run(f.fileSystem.ctx)
-	return cerr
+	_, err = copier.Run(f.fileSystem.ctx)
+	return err
 }

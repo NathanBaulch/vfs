@@ -184,8 +184,8 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	}()
 
 	// validate seek is at 0,0 before doing copy
-	if verr := backend.ValidateCopySeekPosition(f); verr != nil {
-		return verr
+	if err := backend.ValidateCopySeekPosition(f); err != nil {
+		return err
 	}
 
 	azFile, ok := file.(*File)
@@ -205,15 +205,15 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 		fileBufferSize = f.fileSystem.options.FileBufferSize
 	}
 
-	if terr := utils.TouchCopyBuffered(file, f, fileBufferSize); terr != nil {
-		return terr
+	if err := utils.TouchCopyBuffered(file, f, fileBufferSize); err != nil {
+		return err
 	}
 
-	if cerr := file.Close(); cerr != nil {
-		return cerr
+	if err := file.Close(); err != nil {
+		return err
 	}
 
-	return err
+	return nil
 }
 
 // MoveToLocation copies the receiver to the passed location.  After the copy succeeds, the original is deleted.
@@ -366,20 +366,20 @@ func (f *File) checkTempFile() error {
 			return err
 		}
 		if !exists {
-			tf, tfErr := os.CreateTemp("", fmt.Sprintf("%s.%d", path.Base(f.Name()), time.Now().UnixNano()))
-			if tfErr != nil {
-				return tfErr
+			tf, err := os.CreateTemp("", fmt.Sprintf("%s.%d", path.Base(f.Name()), time.Now().UnixNano()))
+			if err != nil {
+				return err
 			}
 			f.tempFile = tf
 		} else {
-			reader, dlErr := client.Download(f)
-			if dlErr != nil {
-				return dlErr
+			reader, err := client.Download(f)
+			if err != nil {
+				return err
 			}
 
-			tf, tfErr := os.CreateTemp("", fmt.Sprintf("%s.%d", path.Base(f.Name()), time.Now().UnixNano()))
-			if tfErr != nil {
-				return tfErr
+			tf, err := os.CreateTemp("", fmt.Sprintf("%s.%d", path.Base(f.Name()), time.Now().UnixNano()))
+			if err != nil {
+				return err
 			}
 
 			buffer := make([]byte, utils.TouchCopyMinBufferSize)

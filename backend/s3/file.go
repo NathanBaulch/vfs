@@ -180,8 +180,8 @@ func (f *File) MoveToLocation(location vfs.Location) (vfs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	delErr := f.Delete()
-	return newFile, delErr
+	err = f.Delete()
+	return newFile, err
 }
 
 // CopyToLocation creates a copy of *File, using the file's current name as the new file's

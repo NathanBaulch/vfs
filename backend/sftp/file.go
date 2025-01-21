@@ -232,11 +232,11 @@ func (f *File) CopyToFile(file vfs.File) (err error) {
 	}
 
 	// Close target to flush and ensure that cursor isn't at the end of the file when the caller reopens for read
-	if cerr := file.Close(); cerr != nil {
-		return cerr
+	if err := file.Close(); err != nil {
+		return err
 	}
 
-	return err
+	return nil
 }
 
 // CopyToLocation creates a copy of *File, using the file's current path as the new file's

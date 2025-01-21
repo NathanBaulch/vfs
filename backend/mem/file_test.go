@@ -28,8 +28,8 @@ type memFileTest struct {
 
 func (s *memFileTest) SetupTest() {
 	memfs := NewFileSystem()
-	file, nerr := memfs.NewFile("C", "/test_files/test.txt")
-	s.Require().NoError(nerr, "unexpected error creating file")
+	file, err := memfs.NewFile("C", "/test_files/test.txt")
+	s.Require().NoError(err, "unexpected error creating file")
 
 	// initializing our test file. casting it, and bringing it into existence by calling Touch() on it
 	s.testFile = file.(*File)
@@ -296,8 +296,8 @@ func (s *memFileTest) TestCopyToLocation() {
 	readSlice1 := make([]byte, len(expectedText))
 	readSlice2 := make([]byte, len(expectedText))
 
-	copiedFile, cerr := s.testFile.CopyToLocation(newFile.Location())
-	s.Require().NoError(cerr, "CopyToLocation unexpectedly failed")
+	copiedFile, err := s.testFile.CopyToLocation(newFile.Location())
+	s.Require().NoError(err, "CopyToLocation unexpectedly failed")
 
 	s.Require().NoError(copiedFile.Touch(), "unexpected error touching file")
 	s.NotNil(copiedFile)
@@ -390,8 +390,8 @@ func (s *memFileTest) TestCopyToLocationOS() {
 	s.Require().NoError(err, "unexpected read error")
 	s.Equal(readSlice2, readSlice) // both reads should be the same
 	s.Require().NoError(copiedFile.Close())
-	cleanErr := os.RemoveAll(dir) // clean up
-	s.Require().NoError(cleanErr, "unexpected error cleaning up osFiles")
+	err = os.RemoveAll(dir) // clean up
+	s.Require().NoError(err, "unexpected error cleaning up osFiles")
 }
 
 // TestCopyToFile tests "CopyToFile()" between two files both in the in-memory FileSystem
@@ -462,8 +462,8 @@ func (s *memFileTest) TestEmptyCopyToFile() {
 	s.Require().NoError(err, "unexpected Write error")
 	s.Require().NoError(otherFile.Close(), "unexpected close error")
 
-	emptyFile, nerr := s.fileSystem.NewFile("C", "/test_files/empty.txt")
-	s.Require().NoError(nerr, "file creation was not successful so it does not exist")
+	emptyFile, err := s.fileSystem.NewFile("C", "/test_files/empty.txt")
+	s.Require().NoError(err, "file creation was not successful so it does not exist")
 	_, err = emptyFile.Write([]byte(""))
 	s.Require().NoError(err, "unexpected Write error")
 

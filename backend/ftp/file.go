@@ -280,11 +280,11 @@ func (f *File) CopyToFile(file vfs.File) (err error) { //nolint:gocyclo
 			return err
 		}
 		// Close target to flush and ensure that cursor isn't at the end of the file when the caller reopens for read
-		if cerr := file.Close(); cerr != nil {
-			return cerr
+		if err := file.Close(); err != nil {
+			return err
 		}
 
-		return err
+		return nil
 	}
 }
 

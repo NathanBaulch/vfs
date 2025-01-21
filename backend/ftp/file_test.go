@@ -70,16 +70,16 @@ func (ts *fileTestSuite) TestRead() {
 	}
 	// test successful read
 	localFile := &bytes.Buffer{}
-	b, copyErr := io.Copy(localFile, ftpfile)
-	ts.Require().NoError(copyErr, "no error expected")
+	b, err := io.Copy(localFile, ftpfile)
+	ts.Require().NoError(err, "no error expected")
 	ts.Len(contents, int(b), "byte count after copy")
 	ts.Equal(contents, localFile.String(), "Copying an ftp file to a buffer should fill buffer with localfile's contents")
 
 	// test read error
 	myReadErr := errors.New("some read error")
 	dc.AssertReadErr(myReadErr)
-	cnt, rErr := ftpfile.Read(make([]byte, 1))
-	ts.Require().ErrorIs(rErr, myReadErr, "error is a read error")
+	cnt, err := ftpfile.Read(make([]byte, 1))
+	ts.Require().ErrorIs(err, myReadErr, "error is a read error")
 	ts.Zero(cnt, "byte count is 0")
 
 	// get dataconn error
@@ -162,8 +162,8 @@ func (ts *fileTestSuite) TestWrite() {
 	// test write failure
 	myWriteErr := errors.New("some write error")
 	dataConn.AssertWriteErr(myWriteErr)
-	count, wErr := file.Write([]byte(contents))
-	ts.Require().ErrorIs(wErr, myWriteErr, "error is a write error")
+	count, err = file.Write([]byte(contents))
+	ts.Require().ErrorIs(err, myWriteErr, "error is a write error")
 	ts.Zero(count, "byte count is 0")
 
 	// get client error

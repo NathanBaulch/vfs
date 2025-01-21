@@ -274,10 +274,8 @@ func (f *File) CopyToLocation(location vfs.Location) (vfs.File, error) {
 			memFile := object.i.(*memFile)
 			file := deepCopy(memFile)
 
-			cerr := f.CopyToFile(file)
-
-			if cerr != nil {
-				return nil, cerr
+			if err := f.CopyToFile(file); err != nil {
+				return nil, err
 			}
 			return file, nil
 		}
@@ -336,11 +334,10 @@ func (f *File) CopyToFile(target vfs.File) (err error) {
 	if _, err := target.Write(f.memFile.contents); err != nil {
 		return err
 	}
-	cerr := target.Close()
-	if cerr != nil {
-		return cerr
+	if err := target.Close(); err != nil {
+		return err
 	}
-	return err
+	return nil
 }
 
 // MoveToLocation moves the receiver file to the passed in location. It does so by
@@ -374,13 +371,11 @@ func (f *File) MoveToLocation(location vfs.Location) (vfs.File, error) {
 				memFile := object.i.(*memFile)
 				f.memFile.location.fileSystem.mu.Unlock()
 				file := deepCopy(memFile)
-				err := f.CopyToFile(file)
-				if err != nil {
+				if err := f.CopyToFile(file); err != nil {
 					return nil, err
 				}
 
-				err = f.Delete()
-				if err != nil {
+				if err := f.Delete(); err != nil {
 					return nil, err
 				}
 

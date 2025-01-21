@@ -67,10 +67,10 @@ func (ts *fileTestSuite) TestRead() {
 		On("GetObject", matchContext, mock.AnythingOfType("*s3.GetObjectInput")).
 		Return(&s3.GetObjectOutput{Body: io.NopCloser(strings.NewReader(contents))}, nil).
 		Once()
-	_, copyErr := io.Copy(localFile, file)
-	ts.Require().NoError(copyErr, "no error expected")
-	closeErr := file.Close()
-	ts.Require().NoError(closeErr, "no error expected")
+	_, err = io.Copy(localFile, file)
+	ts.Require().NoError(err, "no error expected")
+	err = file.Close()
+	ts.Require().NoError(err, "no error expected")
 	ts.Equal(contents, localFile.String(), "Copying an s3 file to a buffer should fill buffer with file's contents")
 
 	// test read with error
@@ -83,10 +83,10 @@ func (ts *fileTestSuite) TestRead() {
 		On("GetObject", matchContext, mock.AnythingOfType("*s3.GetObjectInput")).
 		Return(nil, someErr).
 		Once()
-	_, copyErr = io.Copy(localFile, file)
-	ts.Require().ErrorIs(copyErr, someErr, "error expected")
-	closeErr = file.Close()
-	ts.Require().NoError(closeErr, "no error expected")
+	_, err = io.Copy(localFile, file)
+	ts.Require().ErrorIs(err, someErr, "error expected")
+	err = file.Close()
+	ts.Require().NoError(err, "no error expected")
 }
 
 func (ts *fileTestSuite) TestWrite() {
@@ -418,8 +418,8 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	}
 
 	defer func() {
-		closeErr := f.Close()
-		ts.Require().NoError(closeErr, "no error expected")
+		err := f.Close()
+		ts.Require().NoError(err, "no error expected")
 	}()
 
 	l := &Location{
@@ -454,8 +454,8 @@ func (ts *fileTestSuite) TestTouch() {
 		key:    "/new/file/path/hello.txt",
 	}
 
-	terr := file.Touch()
-	ts.Require().NoError(terr, "Shouldn't return error creating test s3.File instance.")
+	err := file.Touch()
+	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 
 	s3Mock1.AssertExpectations(ts.T())
 
@@ -507,8 +507,8 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 
 	defer func() {
-		closeErr := file.Close()
-		ts.Require().NoError(closeErr, "no error expected")
+		err := file.Close()
+		ts.Require().NoError(err, "no error expected")
 	}()
 
 	_, err = file.MoveToLocation(location)
@@ -545,11 +545,11 @@ func (ts *fileTestSuite) TestMoveToLocationFail() {
 	file, err := fs.NewFile("bucket", "/hello.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 
-	_, merr := file.MoveToLocation(location)
-	ts.Require().Error(merr, "MoveToLocation error not expected")
+	_, err = file.MoveToLocation(location)
+	ts.Require().Error(err, "MoveToLocation error not expected")
 
-	closeErr := file.Close()
-	ts.Require().NoError(closeErr, "no close error expected")
+	err = file.Close()
+	ts.Require().NoError(err, "no close error expected")
 
 	s3cliMock.AssertExpectations(ts.T())
 	s3cliMock.AssertNotCalled(ts.T(), "DeleteObject", matchContext, mock.AnythingOfType("*s3.DeleteObjectInput"))
@@ -746,9 +746,9 @@ func (ts *fileTestSuite) TestWriteOperations() {
 			Run(func(args mock.Arguments) {
 				input := args.Get(1).(*s3.PutObjectInput)
 				// Read from the input.Body (which is a PipeReader) to simulate actual upload
-				b, readErr := io.ReadAll(input.Body)
-				if readErr != nil {
-					panic(readErr)
+				b, err := io.ReadAll(input.Body)
+				if err != nil {
+					panic(err)
 				}
 				contents = utils.Ptr(string(b))
 			}).
@@ -889,8 +889,8 @@ func (ts *fileTestSuite) TestWriteOperations() {
 
 			// TODO: is this even needed?
 			if tc.validate != nil {
-				validationErr := tc.validate(file)
-				ts.Require().NoError(validationErr)
+				err := tc.validate(file)
+				ts.Require().NoError(err)
 			}
 
 			s3Mock.AssertExpectations(ts.T())

@@ -102,10 +102,10 @@ func (ts *fileTestSuite) TestRead() {
 	localFile := &bytes.Buffer{}
 
 	buffer := make([]byte, utils.TouchCopyMinBufferSize)
-	_, copyErr := io.CopyBuffer(localFile, file, buffer)
-	ts.Require().NoError(copyErr, "no error expected")
-	closeErr := file.Close()
-	ts.Require().NoError(closeErr, "no error expected")
+	_, err = io.CopyBuffer(localFile, file, buffer)
+	ts.Require().NoError(err, "no error expected")
+	err = file.Close()
+	ts.Require().NoError(err, "no error expected")
 
 	ts.Equal(localFile.String(), contents, "Copying an gs file to a buffer should fill buffer with file's contents")
 }
