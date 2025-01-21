@@ -7,7 +7,6 @@ import (
 	"path"
 	"testing"
 
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/c2fo/vfs/v6"
@@ -634,28 +633,28 @@ func (s *utilsSuite) TestPathToURI() {
 func (s *utilsSuite) TestGetURI() {
 	// set up mocks
 	mockFs1 := &mocks.FileSystem{}
-	mockFs1.On("Scheme", mock.Anything).Return("file")
+	mockFs1.EXPECT().Scheme().Return("file")
 
 	mockLoc1 := &mocks.Location{}
-	mockLoc1.On("Path").Return("/some/path/to/")
-	mockLoc1.On("Volume", mock.Anything).Return("")
-	mockLoc1.On("FileSystem", mock.Anything).Return(mockFs1)
+	mockLoc1.EXPECT().Path().Return("/some/path/to/")
+	mockLoc1.EXPECT().Volume().Return("")
+	mockLoc1.EXPECT().FileSystem().Return(mockFs1)
 
 	mockFile1 := &mocks.File{}
-	mockFile1.On("Path").Return("/some/path/to/file.txt")
-	mockFile1.On("Location").Return(mockLoc1)
+	mockFile1.EXPECT().Path().Return("/some/path/to/file.txt")
+	mockFile1.EXPECT().Location().Return(mockLoc1)
 
 	mockFs2 := &mocks.FileSystem{}
-	mockFs2.On("Scheme", mock.Anything).Return("s3")
+	mockFs2.EXPECT().Scheme().Return("s3")
 
 	mockLoc2 := &mocks.Location{}
-	mockLoc2.On("Path").Return("/this/path/to/")
-	mockLoc2.On("Volume", mock.Anything).Return("mybucket")
-	mockLoc2.On("FileSystem", mock.Anything).Return(mockFs2)
+	mockLoc2.EXPECT().Path().Return("/this/path/to/")
+	mockLoc2.EXPECT().Volume().Return("mybucket")
+	mockLoc2.EXPECT().FileSystem().Return(mockFs2)
 
 	mockFile2 := &mocks.File{}
-	mockFile2.On("Path").Return("/this/path/to/file.txt")
-	mockFile2.On("Location").Return(mockLoc2)
+	mockFile2.EXPECT().Path().Return("/this/path/to/file.txt")
+	mockFile2.EXPECT().Location().Return(mockLoc2)
 
 	// GetFileURI
 	s.Equal("file:///some/path/to/file.txt", utils.GetFileURI(mockFile1), "os file uri matches")

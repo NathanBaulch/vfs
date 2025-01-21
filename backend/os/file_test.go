@@ -184,18 +184,16 @@ func (s *osFileTest) TestCopyToLocation() {
 	otherFile := &mocks.File{}
 
 	// Expected behavior
-	otherFile.On("Write", mock.Anything).Return(len(expectedText), nil)
-	otherFile.On("Close").Return(nil)
-	otherFs.On("NewFile", mock.Anything, mock.Anything).Return(otherFile, nil)
+	otherFile.EXPECT().Write([]byte(expectedText)).Return(len(expectedText), nil).Once()
+	otherFile.EXPECT().Close().Return(nil)
+	otherFs.EXPECT().NewFile("", "/some/path/test.txt").Return(otherFile, nil).Once()
 
 	location := Location{name: "/some/path", fileSystem: otherFs}
 
 	_, err := s.testFile.CopyToLocation(&location)
 	s.Require().NoError(err)
 
-	otherFs.AssertCalled(s.T(), "NewFile", "", "/some/path/test.txt")
 	otherFile.AssertExpectations(s.T())
-	otherFile.AssertCalled(s.T(), "Write", []uint8(expectedText))
 }
 
 func (s *osFileTest) TestCopyToFile() {
@@ -206,19 +204,17 @@ func (s *osFileTest) TestCopyToFile() {
 	location := Location{name: "/some/path", fileSystem: otherFs}
 
 	// Expected behavior
-	otherFile.On("Write", mock.Anything).Return(len(expectedText), nil)
-	otherFile.On("Close").Return(nil)
-	otherFile.On("Name").Return("other.txt")
-	otherFile.On("Location").Return(&location)
+	otherFile.EXPECT().Write([]byte(expectedText)).Return(len(expectedText), nil).Once()
+	otherFile.EXPECT().Close().Return(nil)
+	otherFile.EXPECT().Name().Return("other.txt")
+	otherFile.EXPECT().Location().Return(&location)
 
-	otherFs.On("NewFile", mock.Anything, mock.Anything).Return(otherFile, nil)
+	otherFs.EXPECT().NewFile("", "/some/path/other.txt").Return(otherFile, nil).Once()
 
 	err := s.testFile.CopyToFile(otherFile)
 	s.Require().NoError(err)
 
-	otherFs.AssertCalled(s.T(), "NewFile", "", "/some/path/other.txt")
 	otherFile.AssertExpectations(s.T())
-	otherFile.AssertCalled(s.T(), "Write", []uint8(expectedText))
 }
 
 func (s *osFileTest) TestEmptyCopyToFile() {
@@ -229,12 +225,12 @@ func (s *osFileTest) TestEmptyCopyToFile() {
 	location := Location{name: "/some/path", fileSystem: otherFs}
 
 	// Expected behavior
-	otherFile.On("Write", mock.Anything).Return(len(expectedText), nil)
-	otherFile.On("Close").Return(nil)
-	otherFile.On("Name").Return("other.txt")
-	otherFile.On("Location").Return(&location)
+	otherFile.EXPECT().Write([]byte(expectedText)).Return(len(expectedText), nil).Once().Once()
+	otherFile.EXPECT().Close().Return(nil)
+	otherFile.EXPECT().Name().Return("other.txt")
+	otherFile.EXPECT().Location().Return(&location)
 
-	otherFs.On("NewFile", mock.Anything, mock.Anything).Return(otherFile, nil)
+	otherFs.EXPECT().NewFile("", "/some/path/other.txt").Return(otherFile, nil).Once().Once()
 
 	emptyFile, err := s.tmploc.NewFile("test_files/empty.txt")
 	s.Require().NoError(err, "No file was opened")
@@ -242,9 +238,7 @@ func (s *osFileTest) TestEmptyCopyToFile() {
 	err = emptyFile.CopyToFile(otherFile)
 	s.Require().NoError(err)
 
-	otherFs.AssertCalled(s.T(), "NewFile", "", "/some/path/other.txt")
 	otherFile.AssertExpectations(s.T())
-	otherFile.AssertCalled(s.T(), "Write", []uint8(expectedText))
 }
 
 func (s *osFileTest) TestCopyToLocationIgnoreExtraSeparator() {
@@ -253,17 +247,15 @@ func (s *osFileTest) TestCopyToLocationIgnoreExtraSeparator() {
 	otherFile := &mocks.File{}
 
 	// Expected behavior
-	otherFile.On("Write", mock.Anything).Return(len(expectedText), nil)
-	otherFile.On("Close").Return(nil)
-	otherFs.On("NewFile", mock.Anything, mock.Anything).Return(otherFile, nil)
+	otherFile.EXPECT().Write(mock.Anything).Return(len(expectedText), nil)
+	otherFile.EXPECT().Close().Return(nil)
+	otherFs.EXPECT().NewFile("", "/some/path/test.txt").Return(otherFile, nil).Once()
 
 	// Add trailing slash
 	location := Location{name: "/some/path/", fileSystem: otherFs}
 
 	_, err := s.testFile.CopyToLocation(&location)
 	s.Require().NoError(err)
-
-	otherFs.AssertCalled(s.T(), "NewFile", "", "/some/path/test.txt")
 }
 
 func (s *osFileTest) TestMoveToLocation() {
@@ -311,21 +303,20 @@ func (s *osFileTest) TestMoveToLocation() {
 	mockfs := &mocks.FileSystem{}
 
 	// Expected behavior
-	mockfs.On("Scheme").Return("mock")
+	mockfs.EXPECT().Scheme().Return("mock")
 	fsMockFile := &mocks.File{}
-	fsMockFile.On("Write", mock.Anything).Return(10, nil)
-	fsMockFile.On("Close").Return(nil)
-	mockfs.On("NewFile", mock.Anything, mock.Anything).Return(fsMockFile, nil)
-	mockLocation.On("FileSystem").Return(mockfs)
-	mockLocation.On("Volume").Return("")
-	mockLocation.On("Path").Return("/some/path/to/")
-	mockLocation.On("Close").Return(nil)
+	fsMockFile.EXPECT().Write(mock.Anything).Return(10, nil)
+	fsMockFile.EXPECT().Close().Return(nil)
+	mockfs.EXPECT().NewFile(mock.Anything, mock.Anything).Return(fsMockFile, nil)
+	mockLocation.EXPECT().FileSystem().Return(mockfs)
+	mockLocation.EXPECT().Volume().Return("")
+	mockLocation.EXPECT().Path().Return("/some/path/to/")
 	mockFile := &mocks.File{}
-	mockFile.On("Location").Return(mockLocation, nil)
-	mockFile.On("Name").Return("/some/path/to/move.txt")
-	mockFile.On("Location").Return(mockLocation, nil)
-	mockLocation.On("NewFile", mock.Anything).Return(mockFile, nil)
-	mockfs.On("NewLocation", mock.Anything, mock.Anything).Return(mockLocation)
+	mockFile.EXPECT().Location().Return(mockLocation)
+	mockFile.EXPECT().Name().Return("/some/path/to/move.txt")
+	mockFile.EXPECT().Location().Return(mockLocation)
+	mockLocation.EXPECT().NewFile(mock.Anything).Return(mockFile, nil)
+	mockfs.EXPECT().NewLocation(mock.Anything, mock.Anything).Return(mockLocation, nil)
 
 	_, err = movedFile.MoveToLocation(mockLocation)
 	s.Require().NoError(err)
@@ -451,19 +442,18 @@ func (s *osFileTest) TestMoveToFile() {
 	mockfs := &mocks.FileSystem{}
 
 	// Expected behavior
-	mockfs.On("Scheme").Return("mock")
+	mockfs.EXPECT().Scheme().Return("mock")
 	fsMockFile := &mocks.File{}
-	fsMockFile.On("Write", mock.Anything).Return(13, nil)
-	fsMockFile.On("Close").Return(nil)
-	mockfs.On("NewFile", mock.Anything, mock.Anything).Return(fsMockFile, nil)
-	mockLocation.On("FileSystem").Return(mockfs)
-	mockLocation.On("Volume").Return("")
-	mockLocation.On("Path").Return("/some/path/to/")
-	mockLocation.On("Close").Return(nil)
-	mockFile.On("Location").Return(mockLocation, nil)
-	mockFile.On("Name").Return("/some/path/to/file.txt")
-	mockFile.On("Location").Return(mockLocation, nil)
-	mockfs.On("NewLocation", mock.Anything, mock.Anything).Return(mockLocation)
+	fsMockFile.EXPECT().Write(mock.Anything).Return(13, nil)
+	fsMockFile.EXPECT().Close().Return(nil)
+	mockfs.EXPECT().NewFile(mock.Anything, mock.Anything).Return(fsMockFile, nil)
+	mockLocation.EXPECT().FileSystem().Return(mockfs)
+	mockLocation.EXPECT().Volume().Return("")
+	mockLocation.EXPECT().Path().Return("/some/path/to/")
+	mockFile.EXPECT().Location().Return(mockLocation)
+	mockFile.EXPECT().Name().Return("/some/path/to/file.txt")
+	mockFile.EXPECT().Location().Return(mockLocation)
+	mockfs.EXPECT().NewLocation(mock.Anything, mock.Anything).Return(mockLocation, nil)
 
 	s.Require().NoError(file2.MoveToFile(mockFile))
 }
