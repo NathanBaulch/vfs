@@ -124,14 +124,14 @@ func (s *memFileTest) TestDelete() {
 	s.Require().NoError(err, "unexpected creation error")
 	s.Require().NoError(otherFile.Touch(), "unexpected error touching file")
 	existence, err := otherFile.Exists()
-	s.True(existence)
 	s.Require().NoError(err, "unexpected existence error")
+	s.True(existence)
 
 	// deleting otherFile and ensuring it no longer exists
 	s.Require().NoError(otherFile.Delete(), "Delete unexpectedly failed")
 	existence1, err := otherFile.Exists()
-	s.False(existence1)
 	s.Require().NoError(err, "unexpected existence error")
+	s.False(existence1)
 }
 
 // TestExists1 uses "Exists()" to check for existence of our receiver's file then creates a file and does the same thing.
@@ -244,9 +244,9 @@ func (s *memFileTest) TestOpenFile() {
 	expectedText := "hello world"
 
 	_, err := s.testFile.Write([]byte(expectedText))
-	data := make([]byte, len(expectedText))
 	s.Require().NoError(err, "write error not expected")
 
+	data := make([]byte, len(expectedText))
 	_, err = s.testFile.Read(data)
 	s.Require().Error(err, "read error expected")
 	s.NotEqual(expectedText, string(data))
@@ -402,8 +402,8 @@ func (s *memFileTest) TestCopyToFile() {
 	readSlice1 := make([]byte, len(expectedText))
 	readSlice2 := make([]byte, len(expectedText))
 	num, err := s.testFile.Write([]byte(expectedText))
-	s.NotZero(num)
 	s.Require().NoError(err, "no error expected from Write but got one")
+	s.NotZero(num)
 	s.Require().NoError(s.testFile.Close(), "unexpected error closing a file")
 
 	s.Require().NoError(otherFile.Touch(), "unexpected error touching file")
@@ -432,8 +432,8 @@ func (s *memFileTest) TestCopyToFileOS() {
 	_, err = osFile.Write([]byte{})
 	s.Require().NoError(err, "unexpected error writing zero bytes to osFile")
 	num, err := s.testFile.Write([]byte(expectedText))
-	s.NotZero(num)
 	s.Require().NoError(err, "no error expected from Write but got one")
+	s.NotZero(num)
 	s.Require().NoError(s.testFile.Close(), "unexpected error closing a file")
 
 	err = s.testFile.CopyToFile(osFile)

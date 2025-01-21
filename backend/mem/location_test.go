@@ -291,8 +291,8 @@ func (s *memLocationTest) TestDeleteFile() {
 	s.Require().Error(otherFile.Location().DeleteFile(otherFile.Name()), "expected existence error") // want to catch the delete error
 	s.Require().NoError(otherFile.Touch(), "unexpected error touching file")                         // bring it to existence with a touch
 	existence, eerr := otherFile.Exists()
-	s.True(existence)
 	s.Require().NoError(eerr, "unexpected existence error")
+	s.True(existence)
 
 	// deleting otherFile
 	s.Require().NoError(otherFile.Location().DeleteFile(otherFile.Name()), "unexpected existence error")

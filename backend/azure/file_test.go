@@ -70,8 +70,8 @@ func (s *FileTestSuite) TestWrite() {
 	fs := NewFileSystem().WithClient(&client)
 
 	f, err := fs.NewFile("test-container", "/foo.txt")
-	s.NotNil(f)
 	s.Require().NoError(err)
+	s.NotNil(f)
 	n, err := f.Write([]byte(" Aaaaand, Goodbye!"))
 	s.Require().NoError(err)
 	s.Equal(18, n)

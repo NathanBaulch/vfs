@@ -220,9 +220,8 @@ func (ts *fileTestSuite) TestWrite() {
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
 	count, err := file.Write([]byte(contents))
-
-	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 	ts.Require().NoError(err, "Error should be nil when calling Write")
+	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 }
 
 func (ts *fileTestSuite) TestWriteWithContentType() {
@@ -311,8 +310,8 @@ func (ts *fileTestSuite) TestExists() {
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
 	exists, err := file.Exists()
-	ts.True(exists, "Should return true for exists based on this setup")
 	ts.Require().NoError(err, "Shouldn't return an error when exists is true")
+	ts.True(exists, "Should return true for exists based on this setup")
 }
 
 func (ts *fileTestSuite) TestNotExists() {
@@ -324,8 +323,8 @@ func (ts *fileTestSuite) TestNotExists() {
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
 	exists, err := file.Exists()
-	ts.False(exists, "Should return false for exists based on setup")
 	ts.Require().NoError(err, "Error from key not existing should be hidden since it just confirms it doesn't")
+	ts.False(exists, "Should return false for exists based on setup")
 }
 
 func (ts *fileTestSuite) TestMoveAndCopy() {

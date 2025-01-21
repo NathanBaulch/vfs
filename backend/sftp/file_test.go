@@ -215,8 +215,8 @@ func (ts *fileTestSuite) TestExists() {
 	ts.sftpMock.On("Stat", sftpfile.Path()).Return(nil, nil).Once()
 
 	exists, err := sftpfile.Exists()
-	ts.True(exists, "Should return true for exists based on this setup")
 	ts.Require().NoError(err, "Shouldn't return an error when exists is true")
+	ts.True(exists, "Should return true for exists based on this setup")
 }
 
 func (ts *fileTestSuite) TestNotExists() {
@@ -226,8 +226,8 @@ func (ts *fileTestSuite) TestNotExists() {
 	ts.sftpMock.On("MkdirAll", sftpfile.Location().Path()).Return(nil).Once()
 	ts.sftpMock.On("Stat", sftpfile.Path()).Return(nil, os.ErrNotExist).Once()
 	exists, err := sftpfile.Exists()
-	ts.False(exists, "Should return false for exists based on setup")
 	ts.Require().NoError(err, "Error from key not existing should be hidden since it just confirms it doesn't")
+	ts.False(exists, "Should return false for exists based on setup")
 }
 
 func (ts *fileTestSuite) TestCopyToFile() {

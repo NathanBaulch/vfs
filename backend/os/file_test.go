@@ -32,8 +32,8 @@ func (s *osFileTest) SetupSuite() {
 	fs := &FileSystem{}
 	s.fileSystem = fs
 	dir, err := os.MkdirTemp("", "os_file_test")
-	dir = utils.EnsureTrailingSlash(dir)
 	s.Require().NoError(err)
+	dir = utils.EnsureTrailingSlash(dir)
 	s.tmploc, err = fs.NewLocation("", dir)
 	s.Require().NoError(err)
 	setupTestFiles(s.tmploc)
@@ -521,8 +521,8 @@ func (s *osFileTest) TestCursor() {
 	s.Require().NoError(file.Close())
 
 	_, serr := file.Seek(5, io.SeekStart) // cursor 5 - opens fd to orig file
-	s.Equal(int64(5), file.(*File).cursorPos)
 	s.Require().NoError(serr)
+	s.Equal(int64(5), file.(*File).cursorPos)
 
 	data := make([]byte, 3)
 	sz, rerr := file.Read(data) // cursor 8 - orig file - data: "had"
@@ -542,8 +542,8 @@ func (s *osFileTest) TestCursor() {
 	s.Equal(3, sz)
 
 	_, serr = file.Seek(5, io.SeekStart) // cursor 5 - in temp file
-	s.Equal(int64(5), file.(*File).cursorPos)
 	s.Require().NoError(serr)
+	s.Equal(int64(5), file.(*File).cursorPos)
 
 	data = make([]byte, 3)
 	sz, rerr = file.Read(data)

@@ -95,9 +95,8 @@ func (ts *fileTestSuite) TestWrite() {
 
 	contents := []byte("Hello world!")
 	count, err := file.Write(contents)
-
-	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 	ts.Require().NoError(err, "Error should be nil when calling Write")
+	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
 }
 
 func (ts *fileTestSuite) TestSeek() {
@@ -209,8 +208,8 @@ func (ts *fileTestSuite) TestExists() {
 	s3cliMock.On("HeadObject", matchContext, mock.AnythingOfType("*s3.HeadObjectInput")).Return(&s3.HeadObjectOutput{}, nil)
 
 	exists, err := file.Exists()
-	ts.True(exists, "Should return true for exists based on this setup")
 	ts.Require().NoError(err, "Shouldn't return an error when exists is true")
+	ts.True(exists, "Should return true for exists based on this setup")
 }
 
 func (ts *fileTestSuite) TestNotExists() {
@@ -221,8 +220,8 @@ func (ts *fileTestSuite) TestNotExists() {
 		Return(&s3.HeadObjectOutput{}, &types.NotFound{})
 
 	exists, err := file.Exists()
-	ts.False(exists, "Should return false for exists based on setup")
 	ts.Require().NoError(err, "Error from key not existing should be hidden since it just confirms it doesn't")
+	ts.False(exists, "Should return false for exists based on setup")
 }
 
 func (ts *fileTestSuite) TestCopyToFile() {
