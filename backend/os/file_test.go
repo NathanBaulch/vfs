@@ -36,11 +36,11 @@ func (s *osFileTest) SetupSuite() {
 	dir = utils.EnsureTrailingSlash(dir)
 	s.tmploc, err = fs.NewLocation("", dir)
 	s.Require().NoError(err)
-	setupTestFiles(s.tmploc)
+	s.Require().NoError(setupTestFiles(s.tmploc))
 }
 
 func (s *osFileTest) TearDownSuite() {
-	teardownTestFiles(s.tmploc)
+	s.Require().NoError(teardownTestFiles(s.tmploc))
 }
 
 func (s *osFileTest) SetupTest() {
@@ -699,58 +699,70 @@ func TestOSFile(t *testing.T) {
 /*
 Setup TEST FILES
 */
-func setupTestFiles(baseLoc vfs.Location) {
+func setupTestFiles(baseLoc vfs.Location) error {
 	// setup "test_files" dir
-	createDir(baseLoc, "test_files")
+	if err := createDir(baseLoc, "test_files"); err != nil {
+		return err
+	}
 
 	// setup "test_files/test.txt"
-	writeStringFile(baseLoc, "test_files/empty.txt", ``)
+	if err := writeStringFile(baseLoc, "test_files/empty.txt", ``); err != nil {
+		return err
+	}
 
 	// setup "test_files/test.txt"
-	writeStringFile(baseLoc, "test_files/prefix-file.txt", `hello, Dave`)
+	if err := writeStringFile(baseLoc, "test_files/prefix-file.txt", `hello, Dave`); err != nil {
+		return err
+	}
 
 	// setup "test_files/test.txt"
-	writeStringFile(baseLoc, "test_files/test.txt", `hello world`)
+	if err := writeStringFile(baseLoc, "test_files/test.txt", `hello world`); err != nil {
+		return err
+	}
 
 	// setup "test_files/subdir" dir
-	createDir(baseLoc, "test_files/subdir")
+	if err := createDir(baseLoc, "test_files/subdir"); err != nil {
+		return err
+	}
 
 	// setup "test_files/subdir/test.txt"
-	writeStringFile(baseLoc, "test_files/subdir/test.txt", `hello world too`)
-}
-
-func teardownTestFiles(baseLoc vfs.Location) {
-	err := os.RemoveAll(baseLoc.Path())
-	if err != nil {
-		panic(err)
+	if err := writeStringFile(baseLoc, "test_files/subdir/test.txt", `hello world too`); err != nil {
+		return err
 	}
+
+	return nil
 }
 
-func createDir(baseLoc vfs.Location, dirname string) {
+func teardownTestFiles(baseLoc vfs.Location) error {
+	return os.RemoveAll(baseLoc.Path())
+}
+
+func createDir(baseLoc vfs.Location, dirname string) error {
 	dir := path.Join(baseLoc.Path(), dirname)
 	perm := os.FileMode(0o755)
 	err := os.Mkdir(dir, perm)
 	if err != nil {
-		teardownTestFiles(baseLoc)
-		panic(err)
+		_ = teardownTestFiles(baseLoc)
 	}
+	return err
 }
 
-func writeStringFile(baseLoc vfs.Location, filename, data string) {
+func writeStringFile(baseLoc vfs.Location, filename, data string) error {
 	file := path.Join(baseLoc.Path(), filename)
 	f, err := os.Create(file) //nolint:gosec
 	if err != nil {
-		teardownTestFiles(baseLoc)
-		panic(err)
+		_ = teardownTestFiles(baseLoc)
+		return err
 	}
 	_, err = f.WriteString(data)
 	if err != nil {
-		teardownTestFiles(baseLoc)
-		panic(err)
+		_ = teardownTestFiles(baseLoc)
+		return err
 	}
 	err = f.Close()
 	if err != nil {
-		teardownTestFiles(baseLoc)
-		panic(err)
+		_ = teardownTestFiles(baseLoc)
+		return err
 	}
+	return nil
 }

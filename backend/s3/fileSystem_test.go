@@ -23,9 +23,7 @@ type mockClient struct {
 
 func (ts *fileSystemTestSuite) SetupTest() {
 	cfg, err := config.LoadDefaultConfig(context.Background())
-	if err != nil {
-		panic(err)
-	}
+	ts.Require().NoError(err)
 	client := mockClient{s3.NewFromConfig(cfg)}
 	s3fs = &FileSystem{client: client}
 }

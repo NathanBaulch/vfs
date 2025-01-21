@@ -702,9 +702,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 			RunAndReturn(func(_ context.Context, input *s3.PutObjectInput, _ ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
 				// Read from the input.Body (which is a PipeReader) to simulate actual upload
 				b, err := io.ReadAll(input.Body)
-				if err != nil {
-					panic(err)
-				}
+				ts.Require().NoError(err)
 				contents = utils.Ptr(string(b))
 				return &s3.PutObjectOutput{}, nil
 			})

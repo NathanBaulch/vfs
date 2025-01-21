@@ -3,7 +3,6 @@ package gs
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"testing"
@@ -21,59 +20,42 @@ type fileTestSuite struct {
 	suite.Suite
 }
 
-func objectExists(bucket *storage.BucketHandle, objectName string) bool {
-	objectHandle := bucket.Object(objectName)
+func (ts *fileTestSuite) assertFileExists(fs *FileSystem, bucket *storage.BucketHandle, name string, content []byte) {
+	objectHandle := bucket.Object(name)
 	_, err := objectHandle.Attrs(context.Background())
-	if err != nil {
-		if errors.Is(err, storage.ErrObjectNotExist) {
-			return false
-		}
-		panic(err)
-	}
-	return true
-}
+	ts.Require().NoError(err)
 
-func mustReadObject(bucket *storage.BucketHandle, objectName string) []byte {
-	objectHandle := bucket.Object(objectName)
 	reader, err := objectHandle.NewReader(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	defer func(reader *storage.Reader) {
+	ts.Require().NoError(err)
+	defer func() {
 		err := reader.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(reader)
+		ts.Require().NoError(err)
+	}()
 	data, err := io.ReadAll(reader)
-	if err != nil {
-		panic(err)
-	}
-	return data
-}
+	ts.Require().NoError(err)
+	ts.Equal(content, data)
 
-func fsFileNameExists(fs *FileSystem, bucketName, objectName string) bool {
-	file, err := fs.NewFile(bucketName, "/"+objectName)
-	if err != nil {
-		panic(err)
-	}
+	file, err := fs.NewFile(bucket.BucketName(), "/"+name)
+	ts.Require().NoError(err)
 	exists, err := file.Exists()
-	if err != nil {
-		panic(err)
-	}
-	return exists
+	ts.Require().NoError(err)
+	ts.Require().True(exists)
+
+	data, err = io.ReadAll(file)
+	ts.Require().NoError(err)
+	ts.Equal(content, data)
 }
 
-func fsMustReadFileName(fs *FileSystem, bucketName, objectName string) []byte {
-	file, err := fs.NewFile(bucketName, "/"+objectName)
-	if err != nil {
-		panic(err)
-	}
-	data, err := io.ReadAll(file)
-	if err != nil {
-		panic(err)
-	}
-	return data
+func (ts *fileTestSuite) assertFileNotExists(fs *FileSystem, bucket *storage.BucketHandle, name string) {
+	objectHandle := bucket.Object(name)
+	_, err := objectHandle.Attrs(context.Background())
+	ts.Require().ErrorIs(err, storage.ErrObjectNotExist)
+
+	file, err := fs.NewFile(bucket.BucketName(), "/"+name)
+	ts.Require().NoError(err)
+	exists, err := file.Exists()
+	ts.Require().NoError(err)
+	ts.Require().False(exists)
 }
 
 func (ts *fileTestSuite) TestRead() {
@@ -138,7 +120,7 @@ func (ts *fileTestSuite) TestDelete() {
 	ts.Require().NoError(err, "Shouldn't fail deleting the file")
 
 	bucket := client.Bucket(bucketName)
-	ts.False(objectExists(bucket, objectName))
+	ts.assertFileNotExists(fs, bucket, objectName)
 }
 
 func (ts *fileTestSuite) TestDeleteError() {
@@ -202,7 +184,7 @@ func (ts *fileTestSuite) TestDeleteRemoveAllVersions() {
 	ts.Require().NoError(err, "Shouldn't fail deleting the file")
 
 	bucket := client.Bucket(bucketName)
-	ts.False(objectExists(bucket, objectName))
+	ts.assertFileNotExists(fs, bucket, objectName)
 	handles, err = f.getObjectGenerationHandles()
 	ts.Require().NoError(err, "Shouldn't fail getting object generation handles")
 	ts.Nil(handles)
@@ -383,13 +365,8 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 			sourceBucket := client.Bucket(sourceBucketName)
 			targetBucket := client.Bucket(targetBucketName)
 
-			ts.True(objectExists(sourceBucket, sourceName), "source should exist")
-			ts.True(fsFileNameExists(fs, sourceBucketName, sourceName), "source should exist")
-			ts.Equal(content, mustReadObject(sourceBucket, sourceName))
-			ts.Equal(content, fsMustReadFileName(fs, sourceBucketName, sourceName))
-
-			ts.False(objectExists(targetBucket, targetName), "target should not exist")
-			ts.False(fsFileNameExists(fs, sourceBucketName, targetName), "target should not exist")
+			ts.assertFileExists(fs, sourceBucket, sourceName, content)
+			ts.assertFileNotExists(fs, targetBucket, targetName)
 
 			sourceFile, err := fs.NewFile(sourceBucketName, "/"+sourceName)
 			ts.Require().NoError(err)
@@ -413,19 +390,12 @@ func (ts *fileTestSuite) TestMoveAndCopy() {
 				ts.Require().NoError(err, "Error shouldn't be returned from successful operation")
 
 				if tc.move {
-					ts.False(objectExists(sourceBucket, sourceName), "source should not exist")
-					ts.False(fsFileNameExists(fs, sourceBucketName, sourceName), "source should not exist")
+					ts.assertFileNotExists(fs, sourceBucket, sourceName)
 				} else {
-					ts.True(objectExists(sourceBucket, sourceName), "source should exist")
-					ts.True(fsFileNameExists(fs, sourceBucketName, sourceName), "source should exist")
-					ts.Equal(content, mustReadObject(sourceBucket, sourceName))
-					ts.Equal(content, fsMustReadFileName(fs, sourceBucketName, sourceName))
+					ts.assertFileExists(fs, sourceBucket, sourceName, content)
 				}
 
-				ts.True(objectExists(targetBucket, targetName), "target should exist")
-				ts.True(fsFileNameExists(fs, targetBucketName, targetName), "target should exist")
-				ts.Equal(content, mustReadObject(targetBucket, targetName))
-				ts.Equal(content, fsMustReadFileName(fs, targetBucketName, targetName))
+				ts.assertFileExists(fs, targetBucket, targetName, content)
 			}
 		})
 	}
@@ -488,13 +458,8 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 			sourceBucket := client.Bucket(sourceBucketName)
 			targetBucket := client.Bucket(targetBucketName)
 
-			ts.True(objectExists(sourceBucket, sourceName), "source should exist")
-			ts.True(fsFileNameExists(fs, sourceBucketName, sourceName), "source should exist")
-			ts.Equal(content, mustReadObject(sourceBucket, sourceName))
-			ts.Equal(content, fsMustReadFileName(fs, sourceBucketName, sourceName))
-
-			ts.False(objectExists(targetBucket, targetName), "target should not exist")
-			ts.False(fsFileNameExists(fs, sourceBucketName, targetName), "target should not exist")
+			ts.assertFileExists(fs, sourceBucket, sourceName, content)
+			ts.assertFileNotExists(fs, targetBucket, targetName)
 
 			sourceFile, err := fs.NewFile(sourceBucketName, "/"+sourceName)
 			ts.Require().NoError(err)
@@ -518,19 +483,12 @@ func (ts *fileTestSuite) TestMoveAndCopyBuffered() {
 				ts.Require().NoError(err, "Error shouldn't be returned from successful operation")
 
 				if tc.move {
-					ts.False(objectExists(sourceBucket, sourceName), "source should not exist")
-					ts.False(fsFileNameExists(fs, sourceBucketName, sourceName), "source should not exist")
+					ts.assertFileNotExists(fs, sourceBucket, sourceName)
 				} else {
-					ts.True(objectExists(sourceBucket, sourceName), "source should exist")
-					ts.True(fsFileNameExists(fs, sourceBucketName, sourceName), "source should exist")
-					ts.Equal(content, mustReadObject(sourceBucket, sourceName))
-					ts.Equal(content, fsMustReadFileName(fs, sourceBucketName, sourceName))
+					ts.assertFileExists(fs, sourceBucket, sourceName, content)
 				}
 
-				ts.True(objectExists(targetBucket, targetName), "target should exist")
-				ts.True(fsFileNameExists(fs, targetBucketName, targetName), "target should exist")
-				ts.Equal(content, mustReadObject(targetBucket, targetName))
-				ts.Equal(content, fsMustReadFileName(fs, targetBucketName, targetName))
+				ts.assertFileExists(fs, targetBucket, targetName, content)
 			}
 		})
 	}

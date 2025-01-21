@@ -31,11 +31,11 @@ func (s *osLocationTest) SetupSuite() {
 	dir = utils.EnsureTrailingSlash(dir)
 	s.tmploc, err = fs.NewLocation("", dir)
 	s.Require().NoError(err)
-	setupTestFiles(s.tmploc)
+	s.Require().NoError(setupTestFiles(s.tmploc))
 }
 
 func (s *osLocationTest) TearDownSuite() {
-	teardownTestFiles(s.tmploc)
+	s.Require().NoError(teardownTestFiles(s.tmploc))
 }
 
 func (s *osLocationTest) SetupTest() {

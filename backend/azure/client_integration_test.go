@@ -29,9 +29,7 @@ func (s *ClientIntegrationTestSuite) SetupSuite() {
 	s.accountName, s.accountKey = os.Getenv("VFS_AZURE_STORAGE_ACCOUNT"), os.Getenv("VFS_AZURE_STORAGE_ACCESS_KEY")
 
 	credential, err := azblob.NewSharedKeyCredential(s.accountName, s.accountKey)
-	if err != nil {
-		panic(err)
-	}
+	s.Require().NoError(err)
 
 	cli, err := container.NewClientWithSharedKeyCredential(fmt.Sprintf("https://%s.blob.core.windows.net", s.accountName), credential, nil)
 	s.Require().NoError(err)

@@ -671,9 +671,7 @@ func (s *utilsSuite) TestTouchCopy() {
 	s.Require().NoError(err, "unexpected temp file setup error")
 	defer func() {
 		err := os.Remove(tmpfile.Name())
-		if err != nil {
-			panic(err)
-		}
+		s.Require().NoError(err)
 	}()
 
 	_, err = tmpfile.Write([]byte{})
@@ -706,9 +704,7 @@ func (s *utilsSuite) TestTouchCopy() {
 	s.Require().NoError(err, "unexpected error running TouchCopy()")
 	defer func() {
 		err := writer.Delete()
-		if err != nil {
-			panic(err)
-		}
+		s.Require().NoError(err)
 	}()
 	s.Require().NoError(writer.Close())
 
@@ -747,9 +743,7 @@ func (s *utilsSuite) TestTouchCopyBufferedDefaultBufferSize() {
 	s.Require().NoError(err, "unexpected temp file setup error")
 	defer func() {
 		err := os.Remove(tmpfile.Name())
-		if err != nil {
-			panic(err)
-		}
+		s.Require().NoError(err)
 	}()
 
 	_, err = tmpfile.Write([]byte{})
@@ -782,9 +776,7 @@ func (s *utilsSuite) TestTouchCopyBufferedDefaultBufferSize() {
 	s.Require().NoError(err, "unexpected error running TouchCopyBuffered()")
 	defer func() {
 		err := writer.Delete()
-		if err != nil {
-			panic(err)
-		}
+		s.Require().NoError(err)
 	}()
 	s.Require().NoError(writer.Close())
 
@@ -823,9 +815,7 @@ func (s *utilsSuite) TestTouchCopyBufferedNonDefaultBufferSize() {
 	s.Require().NoError(err, "unexpected temp file setup error")
 	defer func() {
 		err := os.Remove(tmpfile.Name())
-		if err != nil {
-			panic(err)
-		}
+		s.Require().NoError(err)
 	}()
 
 	_, err = tmpfile.Write([]byte{})
@@ -858,9 +848,7 @@ func (s *utilsSuite) TestTouchCopyBufferedNonDefaultBufferSize() {
 	s.Require().NoError(err, "unexpected error running TouchCopyBuffered()")
 	defer func() {
 		err := writer.Delete()
-		if err != nil {
-			panic(err)
-		}
+		s.Require().NoError(err)
 	}()
 	s.Require().NoError(writer.Close())
 
