@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	fs "github.com/dsoprea/go-utility/v2/filesystem"
-	_ftp "github.com/jlaffaye/ftp"
+	rifs "github.com/dsoprea/go-utility/v2/filesystem"
+	"github.com/jlaffaye/ftp"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -334,10 +334,10 @@ func (ts *fileTestSuite) TestExists_noMlst() {
 	ftpfile, err := ts.fs.NewFile("user@host.com", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name: ts.testFile.Name(),
-			Type: _ftp.EntryTypeFile,
+			Type: ftp.EntryTypeFile,
 		},
 	}
 	ts.ftpClientMock.EXPECT().
@@ -366,9 +366,9 @@ func (ts *fileTestSuite) TestExists_mlst() {
 	ftpfile, err := ts.fs.NewFile("user@host.com", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
-	entry := &_ftp.Entry{
+	entry := &ftp.Entry{
 		Name: ts.testFile.Name(),
-		Type: _ftp.EntryTypeFile,
+		Type: ftp.EntryTypeFile,
 	}
 	ts.ftpClientMock.EXPECT().
 		IsTimePreciseInList().
@@ -607,10 +607,10 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 	targetFile.fileSystem.dataconn = fakeWriteDataConn
 
 	// successfully MoveToFile for same authorities (rename) - dir exists
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name: path.Base(targetFile.Location().Path()),
-			Type: _ftp.EntryTypeFolder,
+			Type: ftp.EntryTypeFolder,
 		},
 	}
 	tgtMockFTPClient.EXPECT().
@@ -714,20 +714,20 @@ func (ts *fileTestSuite) TestTouch_exists() {
 		path:      filepath,
 	}
 
-	entry := &_ftp.Entry{
+	entry := &ftp.Entry{
 		Name: file.Name(),
-		Type: _ftp.EntryTypeFile,
+		Type: ftp.EntryTypeFile,
 	}
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name: file.Name(),
-			Type: _ftp.EntryTypeFolder,
+			Type: ftp.EntryTypeFolder,
 		},
 	}
-	parentEntries := []*_ftp.Entry{
+	parentEntries := []*ftp.Entry{
 		{
 			Name: "some",
-			Type: _ftp.EntryTypeFolder,
+			Type: ftp.EntryTypeFolder,
 		},
 	}
 
@@ -881,10 +881,10 @@ func (ts *fileTestSuite) TestTouch_notExists() {
 	dataConnGetterFunc = getDataConn
 	client.EXPECT().
 		List("/"). // initial exists check
-		Return([]*_ftp.Entry{
+		Return([]*ftp.Entry{
 			{
 				Name: "some",
-				Type: _ftp.EntryTypeFolder,
+				Type: ftp.EntryTypeFolder,
 			},
 		}, nil).
 		Once()
@@ -894,7 +894,7 @@ func (ts *fileTestSuite) TestTouch_notExists() {
 		Once()
 	client.EXPECT().
 		GetEntry(file.Path()). // initial exists check
-		Return(&_ftp.Entry{}, errors.New("550")).
+		Return(&ftp.Entry{}, errors.New("550")).
 		Once()
 	wErr := errors.New("some write error")
 	// error in StorFrom should cause future writes to error because of a closed pipe
@@ -947,9 +947,9 @@ func (ts *fileTestSuite) TestDelete() {
 
 func (ts *fileTestSuite) TestLastModified() {
 	now := time.Now()
-	entry := &_ftp.Entry{
+	entry := &ftp.Entry{
 		Name: ts.testFile.Name(),
-		Type: _ftp.EntryTypeFile,
+		Type: ftp.EntryTypeFile,
 		Time: now,
 	}
 
@@ -973,7 +973,7 @@ func (ts *fileTestSuite) TestLastModified() {
 		Once()
 	ts.ftpClientMock.EXPECT().
 		GetEntry(ts.testFile.Path()).
-		Return(&_ftp.Entry{}, errors.New("550 file unavailable")).
+		Return(&ftp.Entry{}, errors.New("550 file unavailable")).
 		Once()
 	modTime, err = ts.testFile.LastModified()
 	ts.Require().ErrorIs(err, os.ErrNotExist, "err should be os.ErrNotExist")
@@ -1008,9 +1008,9 @@ func (ts *fileTestSuite) TestName() {
 
 func (ts *fileTestSuite) TestSize() {
 	contentLength := uint64(100)
-	entry := &_ftp.Entry{
+	entry := &ftp.Entry{
 		Name: ts.testFile.Name(),
-		Type: _ftp.EntryTypeFile,
+		Type: ftp.EntryTypeFile,
 		Size: contentLength,
 	}
 	ts.ftpClientMock.EXPECT().
@@ -1033,7 +1033,7 @@ func (ts *fileTestSuite) TestSize() {
 		Once()
 	ts.ftpClientMock.EXPECT().
 		GetEntry(ts.testFile.Path()).
-		Return(&_ftp.Entry{}, myErr).
+		Return(&ftp.Entry{}, myErr).
 		Once()
 	size, err = ts.testFile.Size()
 	ts.Require().ErrorIs(err, myErr, "got correct error")
@@ -1084,7 +1084,7 @@ func (ts *fileTestSuite) TestNewFile() {
 
 // fakeDataConn implements a types.DataConn
 type fakeDataConn struct {
-	rw               *fs.SeekableBuffer
+	rw               *rifs.SeekableBuffer
 	mode             types.OpenType
 	closeErr         error
 	writeErr         error
@@ -1100,9 +1100,9 @@ func (f *fakeDataConn) Delete(string) error {
 	return f.singleOpErr
 }
 
-func (f *fakeDataConn) GetEntry(string) (*_ftp.Entry, error) {
+func (f *fakeDataConn) GetEntry(string) (*ftp.Entry, error) {
 	if f.exists {
-		return &_ftp.Entry{
+		return &ftp.Entry{
 			Size: f.size,
 		}, f.singleOpErr
 	} else {
@@ -1110,11 +1110,11 @@ func (f *fakeDataConn) GetEntry(string) (*_ftp.Entry, error) {
 	}
 }
 
-func (f *fakeDataConn) List(string) ([]*_ftp.Entry, error) {
+func (f *fakeDataConn) List(string) ([]*ftp.Entry, error) {
 	if f.exists {
-		return []*_ftp.Entry{
+		return []*ftp.Entry{
 			{
-				Type: _ftp.EntryTypeFolder,
+				Type: ftp.EntryTypeFolder,
 			},
 		}, f.singleOpErr
 	}
@@ -1165,7 +1165,7 @@ func (f *fakeDataConn) Mode() types.OpenType {
 }
 
 func newFakeDataConn(mode types.OpenType) *fakeDataConn {
-	buf := fs.NewSeekableBuffer()
+	buf := rifs.NewSeekableBuffer()
 	return &fakeDataConn{
 		mode: mode,
 		rw:   buf,

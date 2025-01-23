@@ -16,7 +16,7 @@ import (
 
 	"github.com/c2fo/vfs/v6"
 	"github.com/c2fo/vfs/v6/backend/sftp/mocks"
-	_mocks "github.com/c2fo/vfs/v6/mocks"
+	vfsmocks "github.com/c2fo/vfs/v6/mocks"
 	"github.com/c2fo/vfs/v6/utils"
 )
 
@@ -319,7 +319,7 @@ func (ts *fileTestSuite) TestCopyToFileBuffered() {
 		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
-	targetMockLocation := &_mocks.Location{}
+	targetMockLocation := &vfsmocks.Location{}
 	targetMockLocation.EXPECT().NewFile(mock.Anything).Return(targetFile, nil)
 
 	// run tests
@@ -369,7 +369,7 @@ func (ts *fileTestSuite) TestCopyToFileEmpty() {
 		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
-	targetMockLocation := &_mocks.Location{}
+	targetMockLocation := &vfsmocks.Location{}
 	targetMockLocation.EXPECT().NewFile(mock.Anything).Return(targetFile, nil)
 
 	// run tests
@@ -420,7 +420,7 @@ func (ts *fileTestSuite) TestCopyToFileEmptyBuffered() {
 		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
-	targetMockLocation := &_mocks.Location{}
+	targetMockLocation := &vfsmocks.Location{}
 	targetMockLocation.EXPECT().NewFile(mock.Anything).Return(targetFile, nil)
 
 	// run tests
@@ -471,7 +471,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
-	targetMockLocation := &_mocks.Location{}
+	targetMockLocation := &vfsmocks.Location{}
 	targetMockLocation.EXPECT().NewFile(mock.Anything).Return(targetFile, nil)
 
 	// run tests
@@ -659,7 +659,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 		opener:    func(Client, string, int) (readWriteSeekCloser, error) { return targetSftpFile, nil },
 	}
 
-	targetMockLocation := &_mocks.Location{}
+	targetMockLocation := &vfsmocks.Location{}
 	targetMockLocation.EXPECT().NewFile(mock.Anything).Return(targetFile, nil)
 
 	// run tests

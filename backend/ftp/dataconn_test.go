@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -54,7 +54,7 @@ func (s *dataConnSuite) TestGetDataConn_openForRead() {
 	// dataconn is nil - open for read
 	s.client.EXPECT().
 		RetrFrom(s.ftpFile.Path(), uint64(0)).
-		Return(&_ftp.Response{}, nil).
+		Return(&ftp.Response{}, nil).
 		Once()
 	dc, err := getDataConn(context.Background(), utils.Authority{}, s.ftpFile.fileSystem, s.ftpFile, types.OpenRead)
 	s.Require().NoError(err, "no error expected")
@@ -124,9 +124,9 @@ func (s *dataConnSuite) TestGetDataConn_WriteLocationNotExistsFails() {
 }
 
 func (s *dataConnSuite) TestGetDataConn_errorWriting() {
-	entries := []*_ftp.Entry{{
+	entries := []*ftp.Entry{{
 		Name: "some",
-		Type: _ftp.EntryTypeFolder,
+		Type: ftp.EntryTypeFolder,
 	}}
 	someErr := errors.New("some error")
 
@@ -147,9 +147,9 @@ func (s *dataConnSuite) TestGetDataConn_errorWriting() {
 }
 
 func (s *dataConnSuite) TestGetDataConn_writeSuccess() {
-	entries := []*_ftp.Entry{{
+	entries := []*ftp.Entry{{
 		Name: "some",
-		Type: _ftp.EntryTypeFolder,
+		Type: ftp.EntryTypeFolder,
 	}}
 
 	// dataconn is nil - open for write - success
@@ -182,9 +182,9 @@ func (s *dataConnSuite) TestGetDataConn_readAfterWriteError() {
 
 func (s *dataConnSuite) TestGetDataConn_writeAfterReadSuccess() {
 	// open dataconn for write after dataconn for read exists
-	entries := []*_ftp.Entry{{
+	entries := []*ftp.Entry{{
 		Name: "some",
-		Type: _ftp.EntryTypeFolder,
+		Type: ftp.EntryTypeFolder,
 	}}
 	s.ftpFile.fileSystem.dataconn = &dataConn{
 		mode: types.OpenRead,

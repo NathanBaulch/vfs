@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 
 	"github.com/c2fo/vfs/v6"
 	"github.com/c2fo/vfs/v6/backend/ftp/types"
@@ -32,7 +32,7 @@ func (l *Location) List() ([]string, error) {
 
 	entries, err := dc.List(l.Path())
 	if err != nil {
-		if strings.HasPrefix(err.Error(), strconv.Itoa(_ftp.StatusFileUnavailable)) {
+		if strings.HasPrefix(err.Error(), strconv.Itoa(ftp.StatusFileUnavailable)) {
 			// in this case the directory does not exist
 			return nil, nil
 		}
@@ -40,7 +40,7 @@ func (l *Location) List() ([]string, error) {
 	}
 	var filenames []string
 	for _, entry := range entries {
-		if entry.Type == _ftp.EntryTypeFile {
+		if entry.Type == ftp.EntryTypeFile {
 			filenames = append(filenames, entry.Name)
 		}
 	}
@@ -91,7 +91,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	entries, err := dc.List(fullpath)
 	if err != nil {
 		// fullpath does not exist, is not an error here
-		if strings.HasPrefix(err.Error(), strconv.Itoa(_ftp.StatusFileUnavailable)) {
+		if strings.HasPrefix(err.Error(), strconv.Itoa(ftp.StatusFileUnavailable)) {
 			// in this case the directory does not exist
 			return []string{}, nil
 		}
@@ -101,7 +101,7 @@ func (l *Location) ListByPrefix(prefix string) ([]string, error) {
 	var filenames []string
 	for _, entry := range entries {
 		// find entries that match prefix and are files
-		if entry.Type == _ftp.EntryTypeFile && strings.HasPrefix(entry.Name, baseprefix) {
+		if entry.Type == ftp.EntryTypeFile && strings.HasPrefix(entry.Name, baseprefix) {
 			filenames = append(filenames, entry.Name)
 		}
 	}
@@ -149,7 +149,7 @@ func (l *Location) Exists() (bool, error) {
 
 	entries, err := dc.List(parentDir)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), strconv.Itoa(_ftp.StatusFileUnavailable)) {
+		if strings.HasPrefix(err.Error(), strconv.Itoa(ftp.StatusFileUnavailable)) {
 			// in this case the directory does not exist
 			return false, nil
 		}
@@ -157,7 +157,7 @@ func (l *Location) Exists() (bool, error) {
 	}
 
 	for _, entry := range entries {
-		if entry.Name == locBasename && entry.Type == _ftp.EntryTypeFolder {
+		if entry.Name == locBasename && entry.Type == ftp.EntryTypeFolder {
 			return true, nil
 		}
 	}

@@ -4,7 +4,7 @@ import (
 	"io"
 	"time"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 )
 
 // OpenType represents the mode(read or write) that we open a file for.
@@ -23,8 +23,8 @@ const (
 type DataConn interface {
 	Mode() OpenType
 	Delete(path string) error
-	GetEntry(p string) (*_ftp.Entry, error)
-	List(p string) ([]*_ftp.Entry, error) // NLST for just names
+	GetEntry(p string) (*ftp.Entry, error)
+	List(p string) ([]*ftp.Entry, error) // NLST for just names
 	MakeDir(path string) error
 	Rename(from, to string) error
 	IsSetTimeSupported() bool
@@ -36,13 +36,13 @@ type DataConn interface {
 // Client is an interface to make it easier to test
 type Client interface {
 	Delete(path string) error
-	GetEntry(p string) (*_ftp.Entry, error)
-	List(p string) ([]*_ftp.Entry, error) // NLST for just names
+	GetEntry(p string) (*ftp.Entry, error)
+	List(p string) ([]*ftp.Entry, error) // NLST for just names
 	Login(user, password string) error
 	MakeDir(path string) error
 	Quit() error
 	Rename(from, to string) error
-	RetrFrom(path string, offset uint64) (*_ftp.Response, error)
+	RetrFrom(path string, offset uint64) (*ftp.Response, error)
 	StorFrom(path string, r io.Reader, offset uint64) error
 	IsSetTimeSupported() bool
 	SetTime(path string, t time.Time) error

@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/mitchellh/go-homedir"
-	_sftp "github.com/pkg/sftp"
+	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/knownhosts"
 
@@ -134,7 +134,7 @@ func getClient(authority utils.Authority, opts *Options) (Client, io.Closer, err
 		return nil, nil, err
 	}
 
-	sftpClient, err := _sftp.NewClient(sshConn)
+	sftpClient, err := sftp.NewClient(sshConn)
 	if err != nil {
 		return nil, nil, err
 	}

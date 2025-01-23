@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/c2fo/vfs/v6/backend/ftp/mocks"
@@ -28,23 +28,23 @@ func (lt *locationTestSuite) SetupTest() {
 func (lt *locationTestSuite) TestList() {
 	expectedFileList := []string{"file1.txt", "file2.txt"}
 
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name:   "file1.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   "file2.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   "subdir",
 			Target: "",
-			Type:   _ftp.EntryTypeFolder,
+			Type:   ftp.EntryTypeFolder,
 			Time:   time.Now().UTC(),
 		},
 	}
@@ -62,13 +62,13 @@ func (lt *locationTestSuite) TestList() {
 	}
 
 	// file not found (location doesn't exist)
-	lt.client.EXPECT().List(locPath).Return([]*_ftp.Entry{}, errors.New("some error")).Once()
+	lt.client.EXPECT().List(locPath).Return([]*ftp.Entry{}, errors.New("some error")).Once()
 	fileList, err = loc.List()
 	lt.Require().Error(err, "should return error")
 	lt.Empty(fileList, "Should return no files on error")
 
 	// file not found (location doesn't exist)
-	lt.client.EXPECT().List(locPath).Return([]*_ftp.Entry{}, errors.New("550")).Once()
+	lt.client.EXPECT().List(locPath).Return([]*ftp.Entry{}, errors.New("550")).Once()
 	fileList, err = loc.List()
 	lt.Require().NoError(err, "Shouldn't return an error on file not found.")
 	lt.Empty(fileList, "Should return no files on file not found")
@@ -84,38 +84,38 @@ func (lt *locationTestSuite) TestList() {
 }
 
 func (lt *locationTestSuite) TestListByPrefix() {
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name: "myFile1.txt",
-			Type: _ftp.EntryTypeFile,
+			Type: ftp.EntryTypeFile,
 		},
 		{
 			Name: "myFile2.txt",
-			Type: _ftp.EntryTypeFile,
+			Type: ftp.EntryTypeFile,
 		},
 		{
 			Name: "mom.csv",
-			Type: _ftp.EntryTypeFile,
+			Type: ftp.EntryTypeFile,
 		},
 		{
 			Name: "NOTmyFiles.txt",
-			Type: _ftp.EntryTypeFile,
+			Type: ftp.EntryTypeFile,
 		},
 		{
 			Name: ".config.json",
-			Type: _ftp.EntryTypeFile,
+			Type: ftp.EntryTypeFile,
 		},
 		{
 			Name: "myDir",
-			Type: _ftp.EntryTypeFolder,
+			Type: ftp.EntryTypeFolder,
 		},
 		{
 			Name: "otherDir",
-			Type: _ftp.EntryTypeFolder,
+			Type: ftp.EntryTypeFolder,
 		},
 		{
 			Name: ".aws",
-			Type: _ftp.EntryTypeFolder,
+			Type: ftp.EntryTypeFolder,
 		},
 	}
 	testCases := []struct {
@@ -123,7 +123,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 		path          string
 		prefix        string
 		resolvedPath  string
-		allEntries    []*_ftp.Entry
+		allEntries    []*ftp.Entry
 		expectedFiles []string
 	}{
 		{
@@ -237,7 +237,7 @@ func (lt *locationTestSuite) TestListByPrefix() {
 	listErr := errors.New("some error")
 	lt.client.EXPECT().
 		List(locPath).
-		Return([]*_ftp.Entry{}, listErr).
+		Return([]*ftp.Entry{}, listErr).
 		Once()
 	fileList, err = loc.ListByPrefix(prefix)
 	lt.Require().ErrorIs(err, listErr, "err should be correct type")
@@ -247,35 +247,35 @@ func (lt *locationTestSuite) TestListByPrefix() {
 func (lt *locationTestSuite) TestListByRegex() {
 	expectedFileList := []string{"file1.txt", "file2.txt", "stuff.txt"}
 
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name:   "file1.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   "file2.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   "file.jpg",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   "stuff.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   "subdirtxt",
 			Target: "",
-			Type:   _ftp.EntryTypeFolder,
+			Type:   ftp.EntryTypeFolder,
 			Time:   time.Now().UTC(),
 		},
 	}
@@ -385,17 +385,17 @@ func (lt *locationTestSuite) TestExists() {
 
 	// location exists
 	locPath := "/"
-	entries := []*_ftp.Entry{
+	entries := []*ftp.Entry{
 		{
 			Name:   "file.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   locPath,
 			Target: "",
-			Type:   _ftp.EntryTypeFolder,
+			Type:   ftp.EntryTypeFolder,
 			Time:   time.Now().UTC(),
 		},
 	}
@@ -408,11 +408,11 @@ func (lt *locationTestSuite) TestExists() {
 
 	// locations does not exist
 	locPath = "/my/dir/"
-	entries = []*_ftp.Entry{
+	entries = []*ftp.Entry{
 		{
 			Name:   "file.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 	}
@@ -432,17 +432,17 @@ func (lt *locationTestSuite) TestExists() {
 	lt.False(exists, "Call to Exists expected to return false.")
 
 	// check for not dir -- this shouldn't be possible since NewLocation won't accept non-absolute directories
-	entries = []*_ftp.Entry{
+	entries = []*ftp.Entry{
 		{
 			Name:   "file.txt",
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 		{
 			Name:   locPath,
 			Target: "",
-			Type:   _ftp.EntryTypeFile,
+			Type:   ftp.EntryTypeFile,
 			Time:   time.Now().UTC(),
 		},
 	}

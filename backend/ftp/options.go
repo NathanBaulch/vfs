@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 
 	"github.com/c2fo/vfs/v6/backend/ftp/types"
 	"github.com/c2fo/vfs/v6/utils"
@@ -45,7 +45,7 @@ const (
 
 func getClient(ctx context.Context, authority utils.Authority, opts *Options) (types.Client, error) {
 	// dial connection
-	c, err := _ftp.Dial(fetchHostPortString(authority), fetchDialOptions(ctx, authority, opts)...)
+	c, err := ftp.Dial(fetchHostPortString(authority), fetchDialOptions(ctx, authority, opts)...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,21 +104,21 @@ func fetchHostPortString(auth utils.Authority) string {
 	return fmt.Sprintf("%s:%d", host, port)
 }
 
-func fetchDialOptions(ctx context.Context, auth utils.Authority, opts *Options) []_ftp.DialOption {
+func fetchDialOptions(ctx context.Context, auth utils.Authority, opts *Options) []ftp.DialOption {
 	// set context DialOption
-	dialOptions := []_ftp.DialOption{
-		_ftp.DialWithContext(ctx),
+	dialOptions := []ftp.DialOption{
+		ftp.DialWithContext(ctx),
 	}
 
 	// determine DisableEPSV DialOption
-	dialOptions = append(dialOptions, _ftp.DialWithDisabledEPSV(isDisableOption(opts)))
+	dialOptions = append(dialOptions, ftp.DialWithDisabledEPSV(isDisableOption(opts)))
 
 	// determine protocol-specific (FTPS/FTPeS) TLS DialOption, if any (defaults to plain FTP, no TLS)
 	switch protocol := fetchProtocol(opts); {
 	case strings.EqualFold(protocol, ProtocolFTPS):
-		dialOptions = append(dialOptions, _ftp.DialWithTLS(fetchTLSConfig(auth, opts)))
+		dialOptions = append(dialOptions, ftp.DialWithTLS(fetchTLSConfig(auth, opts)))
 	case strings.EqualFold(protocol, ProtocolFTPES):
-		dialOptions = append(dialOptions, _ftp.DialWithExplicitTLS(fetchTLSConfig(auth, opts)))
+		dialOptions = append(dialOptions, ftp.DialWithExplicitTLS(fetchTLSConfig(auth, opts)))
 	}
 
 	if opts == nil {
@@ -127,12 +127,12 @@ func fetchDialOptions(ctx context.Context, auth utils.Authority, opts *Options) 
 
 	// determine debug writer DialOption, if any
 	if opts.DebugWriter != nil {
-		dialOptions = append(dialOptions, _ftp.DialWithDebugOutput(opts.DebugWriter))
+		dialOptions = append(dialOptions, ftp.DialWithDebugOutput(opts.DebugWriter))
 	}
 
 	// determine dial timeout DialOption
 	if opts.DialTimeout.Seconds() > 0 {
-		dialOptions = append(dialOptions, _ftp.DialWithTimeout(opts.DialTimeout))
+		dialOptions = append(dialOptions, ftp.DialWithTimeout(opts.DialTimeout))
 	}
 
 	return dialOptions

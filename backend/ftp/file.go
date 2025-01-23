@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 
 	"github.com/c2fo/vfs/v6"
 	"github.com/c2fo/vfs/v6/backend"
@@ -50,7 +50,7 @@ func (f *File) LastModified() (*time.Time, error) {
 	return &entry.Time, nil
 }
 
-func (f *File) stat(ctx context.Context) (*_ftp.Entry, error) {
+func (f *File) stat(ctx context.Context) (*ftp.Entry, error) {
 	dc, err := f.fileSystem.DataConn(ctx, f.authority, types.SingleOp, f)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (f *File) stat(ctx context.Context) (*_ftp.Entry, error) {
 	if dc.IsTimePreciseInList() {
 		entry, err := dc.GetEntry(f.Path())
 		if err != nil {
-			if strings.HasPrefix(err.Error(), strconv.Itoa(_ftp.StatusFileUnavailable)) {
+			if strings.HasPrefix(err.Error(), strconv.Itoa(ftp.StatusFileUnavailable)) {
 				return nil, os.ErrNotExist
 			}
 			return nil, err
@@ -69,7 +69,7 @@ func (f *File) stat(ctx context.Context) (*_ftp.Entry, error) {
 	} else {
 		entries, err := dc.List(f.Path())
 		if err != nil {
-			if strings.HasPrefix(err.Error(), strconv.Itoa(_ftp.StatusFileUnavailable)) {
+			if strings.HasPrefix(err.Error(), strconv.Itoa(ftp.StatusFileUnavailable)) {
 				return nil, os.ErrNotExist
 			}
 			return nil, err

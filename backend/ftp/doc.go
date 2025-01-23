@@ -41,8 +41,8 @@ These methods are chainable:
 		  fs := backend.Backend(ftp.Scheme)
 		  fs = fs.(*ftp.FileSystem)
 
-		  // to pass specific client implementing types.Client interface (in this case, _ftp github.com/jlaffaye/ftp)
-		  client, _ := _ftp.Dial("server.com:21")
+		  // to pass specific client implementing types.Client interface (in this case, ftp github.com/jlaffaye/ftp)
+		  client, _ := ftp.Dial("server.com:21")
 		  fs = fs.WithClient(client)
 
 		  // to pass in client options. See Options for more info.  Note that changes to Options will make nil any client.

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	_sftp "github.com/pkg/sftp"
+	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 
 	"github.com/c2fo/vfs/v6"
@@ -190,9 +190,9 @@ func init() {
 type Client interface {
 	Chmod(path string, mode os.FileMode) error
 	Chtimes(path string, atime, mtime time.Time) error
-	Create(path string) (*_sftp.File, error)
+	Create(path string) (*sftp.File, error)
 	MkdirAll(path string) error
-	OpenFile(path string, f int) (*_sftp.File, error)
+	OpenFile(path string, f int) (*sftp.File, error)
 	ReadDir(p string) ([]os.FileInfo, error)
 	Remove(path string) error
 	Rename(oldname, newname string) error

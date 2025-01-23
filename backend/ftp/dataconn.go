@@ -7,7 +7,7 @@ import (
 	"net/textproto"
 	"time"
 
-	_ftp "github.com/jlaffaye/ftp"
+	"github.com/jlaffaye/ftp"
 
 	"github.com/c2fo/vfs/v6/backend/ftp/types"
 	"github.com/c2fo/vfs/v6/utils"
@@ -33,7 +33,7 @@ func (dc *dataConn) Delete(path string) error {
 // GetEntry attempts to retrieve the ftp entry for
 // a file at the given path. Only allowed
 // in a single op connection.
-func (dc *dataConn) GetEntry(p string) (*_ftp.Entry, error) {
+func (dc *dataConn) GetEntry(p string) (*ftp.Entry, error) {
 	if dc.mode != types.SingleOp {
 		return nil, singleOpInvalidDataconnType
 	}
@@ -41,7 +41,7 @@ func (dc *dataConn) GetEntry(p string) (*_ftp.Entry, error) {
 }
 
 // List conducts an FTP list for the given path. Only allowed in a single op connection.
-func (dc *dataConn) List(p string) ([]*_ftp.Entry, error) {
+func (dc *dataConn) List(p string) ([]*ftp.Entry, error) {
 	if dc.mode != types.SingleOp {
 		return nil, singleOpInvalidDataconnType
 	}
@@ -194,7 +194,7 @@ func openWriteConnection(client types.Client, f *File) (types.DataConn, error) {
 		err := client.MakeDir(f.Location().Path())
 		if err != nil {
 			var e *textproto.Error
-			if !(errors.As(err, &e) && e.Code == _ftp.StatusFileUnavailable) {
+			if !(errors.As(err, &e) && e.Code == ftp.StatusFileUnavailable) {
 				// Return if the error is not because the directory already exists
 				return nil, err
 			}
