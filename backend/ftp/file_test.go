@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	rifs "github.com/dsoprea/go-utility/v2/filesystem"
 	"github.com/jlaffaye/ftp"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -1084,7 +1083,7 @@ func (ts *fileTestSuite) TestNewFile() {
 
 // fakeDataConn implements a types.DataConn
 type fakeDataConn struct {
-	rw               *rifs.SeekableBuffer
+	rw               *readWriteSeeker
 	mode             types.OpenType
 	closeErr         error
 	writeErr         error
@@ -1165,10 +1164,9 @@ func (f *fakeDataConn) Mode() types.OpenType {
 }
 
 func newFakeDataConn(mode types.OpenType) *fakeDataConn {
-	buf := rifs.NewSeekableBuffer()
 	return &fakeDataConn{
 		mode: mode,
-		rw:   buf,
+		rw:   &readWriteSeeker{},
 	}
 }
 
