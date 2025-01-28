@@ -62,7 +62,8 @@ func (s *osFileTest) TestExists() {
 	otherFile, err := s.tmploc.NewFile("test_files/foo.txt")
 	s.Require().NoError(err, "Failed to check for file existence")
 
-	otherFileExists, _ := otherFile.Exists()
+	otherFileExists, err := otherFile.Exists()
+	s.Require().NoError(err)
 	s.False(otherFileExists)
 }
 
@@ -287,7 +288,8 @@ func (s *osFileTest) TestMoveToLocation() {
 	s.Equal(location.Path(), movedFile.Location().Path(), "ensure file location changed")
 
 	// ensure the original file no longer exists
-	origFile, _ := s.fileSystem.NewFile(file.Location().Volume(), origFileName)
+	origFile, err := s.fileSystem.NewFile(file.Location().Volume(), origFileName)
+	s.Require().NoError(err)
 	origFound, err := origFile.Exists()
 	s.Require().NoError(err, "exists error not expected")
 	s.False(origFound)

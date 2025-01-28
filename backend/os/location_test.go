@@ -48,7 +48,8 @@ func (s *osLocationTest) SetupTest() {
 
 func (s *osLocationTest) TestList() {
 	expected := []string{"empty.txt", "prefix-file.txt", "test.txt"}
-	actual, _ := s.testFile.Location().List()
+	actual, err := s.testFile.Location().List()
+	s.Require().NoError(err)
 	s.Equal(expected, actual)
 }
 
@@ -76,30 +77,36 @@ func (s *osLocationTest) TestList_NonExistentDirectory() {
 
 func (s *osLocationTest) TestListByPrefix() {
 	expected := []string{"prefix-file.txt"}
-	actual, _ := s.testFile.Location().ListByPrefix("prefix")
+	actual, err := s.testFile.Location().ListByPrefix("prefix")
+	s.Require().NoError(err)
 	s.Equal(expected, actual)
 }
 
 func (s *osLocationTest) TestListByRegex() {
 	expected := []string{"prefix-file.txt"}
 	regex := regexp.MustCompile("-+")
-	actual, _ := s.testFile.Location().ListByRegex(regex)
+	actual, err := s.testFile.Location().ListByRegex(regex)
+	s.Require().NoError(err)
 	s.Equal(expected, actual)
 }
 
 func (s *osLocationTest) TestExists() {
-	otherFile, _ := s.tmploc.NewFile("foo/foo.txt")
+	otherFile, err := s.tmploc.NewFile("foo/foo.txt")
+	s.Require().NoError(err)
 	s.True(s.testFile.Location().Exists())
 	s.False(otherFile.Location().Exists())
 }
 
 func (s *osLocationTest) TestNewLocation() {
-	otherFile, _ := s.fileSystem.NewFile("", "/foo/foo.txt")
+	otherFile, err := s.fileSystem.NewFile("", "/foo/foo.txt")
+	s.Require().NoError(err)
 	fileLocation := otherFile.Location()
-	subDir, _ := fileLocation.NewLocation("other/")
+	subDir, err := fileLocation.NewLocation("other/")
+	s.Require().NoError(err)
 	s.Equal("/foo/other/", subDir.Path())
 
-	relDir, _ := subDir.NewLocation("../../bar/")
+	relDir, err := subDir.NewLocation("../../bar/")
+	s.Require().NoError(err)
 	s.Equal("/bar/", relDir.Path(), "relative dot path works")
 }
 
@@ -107,15 +114,17 @@ func (s *osLocationTest) TestNewFile() {
 	loc, err := s.fileSystem.NewLocation("", "/foo/bar/baz/")
 	s.Require().NoError(err)
 
-	newfile, _ := loc.NewFile("../../bam/this.txt")
+	newfile, err := loc.NewFile("../../bam/this.txt")
+	s.Require().NoError(err)
 	s.Equal("/foo/bam/this.txt", newfile.Path(), "relative dot path works")
 }
 
 func (s *osLocationTest) TestChangeDir() {
-	otherFile, _ := s.tmploc.NewFile("foo/foo.txt")
+	otherFile, err := s.tmploc.NewFile("foo/foo.txt")
+	s.Require().NoError(err)
 	fileLocation := otherFile.Location()
 	cwd := fileLocation.Path()
-	err := fileLocation.ChangeDir("other/")
+	err = fileLocation.ChangeDir("other/")
 	s.Require().NoError(err, "change dir error not expected")
 	s.Equal(fileLocation.Path(), utils.EnsureTrailingSlash(path.Join(cwd, "other")))
 }
@@ -128,7 +137,8 @@ func (s *osLocationTest) TestVolume() {
 }
 
 func (s *osLocationTest) TestPath() {
-	file, _ := s.fileSystem.NewFile("", "/some/file/test.txt")
+	file, err := s.fileSystem.NewFile("", "/some/file/test.txt")
+	s.Require().NoError(err)
 	location := file.Location()
 	s.Equal("/some/file/", location.Path())
 
@@ -137,14 +147,16 @@ func (s *osLocationTest) TestPath() {
 }
 
 func (s *osLocationTest) TestURI() {
-	file, _ := s.fileSystem.NewFile("", "/some/file/test.txt")
+	file, err := s.fileSystem.NewFile("", "/some/file/test.txt")
+	s.Require().NoError(err)
 	location := file.Location()
 	expected := "file:///some/file/"
 	s.Equal(expected, location.URI(), "%s does not match %s", location.URI(), expected)
 }
 
 func (s *osLocationTest) TestStringer() {
-	file, _ := s.fileSystem.NewFile("", "/some/file/test.txt")
+	file, err := s.fileSystem.NewFile("", "/some/file/test.txt")
+	s.Require().NoError(err)
 	location := file.Location()
 	s.Equal("file:///some/file/", location.String())
 }

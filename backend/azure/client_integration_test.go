@@ -184,8 +184,10 @@ func (s *ClientIntegrationTestSuite) TestProperties_Location() {
 	fs := NewFileSystem()
 	f, err := fs.NewFile("test-container", "/foo/bar/test.txt")
 	s.Require().NoError(err)
-	l, _ := fs.NewLocation("test-container", "/")
-	client, _ := fs.Client()
+	l, err := fs.NewLocation("test-container", "/")
+	s.Require().NoError(err)
+	client, err := fs.Client()
+	s.Require().NoError(err)
 
 	err = client.Upload(f, strings.NewReader("Hello world!"), "")
 	s.Require().NoError(err, "The file should be successfully uploaded to azure so we shouldn't get an error")

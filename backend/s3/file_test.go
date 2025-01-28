@@ -608,20 +608,23 @@ func (ts *fileTestSuite) TestPath() {
 func (ts *fileTestSuite) TestURI() {
 	s3cliMock = mocks.NewClient(ts.T())
 	fs = FileSystem{client: s3cliMock}
-	file, _ := fs.NewFile("mybucket", "/some/file/test.txt")
+	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.Require().NoError(err)
 	expected := "s3://mybucket/some/file/test.txt"
 	ts.Equal(expected, file.URI(), "%s does not match %s", file.URI(), expected)
 }
 
 func (ts *fileTestSuite) TestStringer() {
 	fs = FileSystem{client: mocks.NewClient(ts.T())}
-	file, _ := fs.NewFile("mybucket", "/some/file/test.txt")
+	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.Require().NoError(err)
 	ts.Equal("s3://mybucket/some/file/test.txt", file.String())
 }
 
 func (ts *fileTestSuite) TestUploadInput() {
 	fs = FileSystem{client: mocks.NewClient(ts.T())}
-	file, _ := fs.NewFile("mybucket", "/some/file/test.txt")
+	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.Require().NoError(err)
 	ts.Equal(types.ServerSideEncryptionAes256, uploadInput(file.(*File)).ServerSideEncryption, "sse was set")
 	ts.Equal("some/file/test.txt", *uploadInput(file.(*File)).Key, "key was set")
 	ts.Equal("mybucket", *uploadInput(file.(*File)).Bucket, "bucket was set")
@@ -630,7 +633,8 @@ func (ts *fileTestSuite) TestUploadInput() {
 func (ts *fileTestSuite) TestUploadInputDisableSSE() {
 	fs := NewFileSystem().
 		WithOptions(Options{DisableServerSideEncryption: true})
-	file, _ := fs.NewFile("mybucket", "/some/file/test.txt")
+	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.Require().NoError(err)
 	input := uploadInput(file.(*File))
 	ts.Empty(input.ServerSideEncryption, "sse was disabled")
 	ts.Equal("some/file/test.txt", *input.Key, "key was set")
@@ -639,7 +643,8 @@ func (ts *fileTestSuite) TestUploadInputDisableSSE() {
 
 func (ts *fileTestSuite) TestUploadInputContentType() {
 	fs = FileSystem{client: mocks.NewClient(ts.T())}
-	file, _ := fs.NewFile("mybucket", "/some/file/test.txt", newfile.WithContentType("text/plain"))
+	file, err := fs.NewFile("mybucket", "/some/file/test.txt", newfile.WithContentType("text/plain"))
+	ts.Require().NoError(err)
 	input := uploadInput(file.(*File))
 	ts.Equal("text/plain", *input.ContentType)
 }

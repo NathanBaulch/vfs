@@ -37,7 +37,7 @@ func (o *optionsTestSuite) TestGetClient() {
 	o.Truef(client.(*s3.Client).Options().UsePathStyle, "region is set")
 
 	// env var
-	_ = os.Setenv("AWS_DEFAULT_REGION", "set-by-envvar")
+	o.Require().NoError(os.Setenv("AWS_DEFAULT_REGION", "set-by-envvar"))
 	client, err = getClient(nil)
 	o.Require().NoError(err)
 	o.NotNil(client, "client is set")

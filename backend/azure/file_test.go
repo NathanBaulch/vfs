@@ -22,16 +22,18 @@ type FileTestSuite struct {
 func (s *FileTestSuite) TestClose() {
 	client := MockAzureClient{}
 	fs := NewFileSystem().WithClient(&client)
-	f, _ := fs.NewFile("test-container", "/foo.txt")
+	f, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
 	s.Require().NoError(f.Close())
 }
 
 func (s *FileTestSuite) TestClose_FlushTempFile() {
 	client := MockAzureClient{PropertiesError: blobNotFoundErr}
 	fs := NewFileSystem().WithClient(&client)
-	f, _ := fs.NewFile("test-container", "/foo.txt")
+	f, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
 
-	_, err := f.Write([]byte("Hello, World!"))
+	_, err = f.Write([]byte("Hello, World!"))
 	s.Require().NoError(err)
 	s.Require().NoError(f.Close())
 }
@@ -79,13 +81,17 @@ func (s *FileTestSuite) TestWrite() {
 
 func (s *FileTestSuite) TestString() {
 	fs := NewFileSystem().WithOptions(Options{AccountName: "test-account"})
-	l, _ := fs.NewLocation("temp", "/foo/bar/")
-	f, _ := l.NewFile("blah.txt")
+	l, err := fs.NewLocation("temp", "/foo/bar/")
+	s.Require().NoError(err)
+	f, err := l.NewFile("blah.txt")
+	s.Require().NoError(err)
 	s.Equal("https://test-account.blob.core.windows.net/temp/foo/bar/blah.txt", f.String())
 
 	fs = NewFileSystem().WithOptions(Options{AccountName: "test-account"})
-	l, _ = fs.NewLocation("folder", "/blah/")
-	f, _ = l.NewFile("file.txt")
+	l, err = fs.NewLocation("folder", "/blah/")
+	s.Require().NoError(err)
+	f, err = l.NewFile("file.txt")
+	s.Require().NoError(err)
 	s.Equal("https://test-account.blob.core.windows.net/folder/blah/file.txt", f.String())
 }
 
@@ -114,15 +120,18 @@ func (s *FileTestSuite) TestExists_NonExistentFile() {
 func (s *FileTestSuite) TestCloseWithContentType() {
 	client := MockAzureClient{PropertiesError: blobNotFoundErr}
 	fs := NewFileSystem().WithClient(&client)
-	f, _ := fs.NewFile("test-container", "/foo.txt", newfile.WithContentType("text/plain"))
-	_, _ = f.Write([]byte("Hello, World!"))
+	f, err := fs.NewFile("test-container", "/foo.txt", newfile.WithContentType("text/plain"))
+	s.Require().NoError(err)
+	_, err = f.Write([]byte("Hello, World!"))
+	s.Require().NoError(err)
 	s.Require().NoError(f.Close())
 	s.Equal("text/plain", client.UploadContentType)
 }
 
 func (s *FileTestSuite) TestLocation() {
 	fs := NewFileSystem().WithOptions(Options{AccountName: "test-account"})
-	f, _ := fs.NewFile("test-container", "/file.txt")
+	f, err := fs.NewFile("test-container", "/file.txt")
+	s.Require().NoError(err)
 	l := f.Location()
 	s.NotNil(l)
 	s.Equal("https://test-account.blob.core.windows.net/test-container/", l.URI())
@@ -132,8 +141,10 @@ func (s *FileTestSuite) TestCopyToLocation() {
 	fooReader := io.NopCloser(strings.NewReader("blah"))
 	client := MockAzureClient{ExpectedResult: fooReader}
 	fs := NewFileSystem().WithClient(&client)
-	source, _ := fs.NewFile("test-container", "/foo.txt")
-	targetLoc, _ := fs.NewLocation("test-container", "/new/folder/")
+	source, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	targetLoc, err := fs.NewLocation("test-container", "/new/folder/")
+	s.Require().NoError(err)
 	copiedFile, err := source.CopyToLocation(targetLoc)
 	s.Require().NoError(err)
 	s.NotNil(copiedFile)
@@ -144,10 +155,12 @@ func (s *FileTestSuite) TestCopyToFile() {
 	fooReader := io.NopCloser(strings.NewReader("blah"))
 	client := MockAzureClient{ExpectedResult: fooReader}
 	fs := NewFileSystem().WithClient(&client)
-	source, _ := fs.NewFile("test-container", "/foo.txt")
-	target, _ := fs.NewFile("test-container", "/bar.txt")
+	source, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	target, err := fs.NewFile("test-container", "/bar.txt")
+	s.Require().NoError(err)
 
-	err := source.CopyToFile(target)
+	err = source.CopyToFile(target)
 	s.Require().NoError(err)
 }
 
@@ -156,10 +169,12 @@ func (s *FileTestSuite) TestCopyToFileBuffered() {
 	client := MockAzureClient{ExpectedResult: fooReader}
 	opts := Options{FileBufferSize: 2 * utils.TouchCopyMinBufferSize}
 	fs := NewFileSystem().WithOptions(opts).WithClient(&client)
-	source, _ := fs.NewFile("test-container", "/foo.txt")
-	target, _ := fs.NewFile("test-container", "/bar.txt")
+	source, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	target, err := fs.NewFile("test-container", "/bar.txt")
+	s.Require().NoError(err)
 
-	err := source.CopyToFile(target)
+	err = source.CopyToFile(target)
 	s.Require().NoError(err)
 }
 
@@ -167,8 +182,10 @@ func (s *FileTestSuite) TestMoveToLocation() {
 	fooReader := io.NopCloser(strings.NewReader("blah"))
 	client := MockAzureClient{ExpectedResult: fooReader}
 	fs := NewFileSystem().WithClient(&client)
-	source, _ := fs.NewFile("test-container", "/foo.txt")
-	target, _ := fs.NewLocation("test-container", "/new/folder/")
+	source, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	target, err := fs.NewLocation("test-container", "/new/folder/")
+	s.Require().NoError(err)
 
 	movedFile, err := source.MoveToLocation(target)
 	s.Require().NoError(err)
@@ -180,9 +197,11 @@ func (s *FileTestSuite) TestMoveToFile() {
 	fooReader := io.NopCloser(strings.NewReader("blah"))
 	client := MockAzureClient{ExpectedResult: fooReader}
 	fs := NewFileSystem().WithClient(&client)
-	source, _ := fs.NewFile("test-container", "/foo.txt")
-	target, _ := fs.NewFile("test-container", "/bar.txt")
-	err := source.MoveToFile(target)
+	source, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	target, err := fs.NewFile("test-container", "/bar.txt")
+	s.Require().NoError(err)
+	err = source.MoveToFile(target)
 	s.Require().NoError(err)
 }
 
@@ -259,10 +278,12 @@ func (s *FileTestSuite) TestSize_NonExistentFile() {
 
 func (s *FileTestSuite) TestPath() {
 	fs := NewFileSystem().WithOptions(Options{AccountName: "test-account"})
-	f, _ := fs.NewFile("test-container", "/foo/bar/blah.txt")
+	f, err := fs.NewFile("test-container", "/foo/bar/blah.txt")
+	s.Require().NoError(err)
 	s.Equal("/foo/bar/blah.txt", f.Path())
 
-	f, _ = fs.NewFile("test-container", "/test/file.txt")
+	f, err = fs.NewFile("test-container", "/test/file.txt")
+	s.Require().NoError(err)
 	s.Equal("/test/file.txt", f.Path())
 }
 
@@ -304,11 +325,13 @@ func (s *FileTestSuite) TestTouchWithContentType() {
 
 func (s *FileTestSuite) TestURI() {
 	fs := NewFileSystem().WithOptions(Options{AccountName: "test-container"})
-	f, _ := fs.NewFile("temp", "/foo/bar/blah.txt")
+	f, err := fs.NewFile("temp", "/foo/bar/blah.txt")
+	s.Require().NoError(err)
 	s.Equal("https://test-container.blob.core.windows.net/temp/foo/bar/blah.txt", f.URI())
 
 	fs = NewFileSystem().WithOptions(Options{AccountName: "test-container"})
-	f, _ = fs.NewFile("folder", "/blah/file.txt")
+	f, err = fs.NewFile("folder", "/blah/file.txt")
+	s.Require().NoError(err)
 	s.Equal("https://test-container.blob.core.windows.net/folder/blah/file.txt", f.URI())
 }
 
@@ -376,8 +399,10 @@ func (s *FileTestSuite) TestIsSameAuth_SameAcctKey() {
 		AccountKey:  "bar",
 	})
 
-	f1, _ := fs.NewFile("test-container", "/foo.txt")
-	f2, _ := fs.NewFile("test-container", "/bar.txt")
+	f1, err := fs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	f2, err := fs.NewFile("test-container", "/bar.txt")
+	s.Require().NoError(err)
 	sourceFile := f1.(*File)
 	targetFile := f2.(*File)
 
@@ -395,8 +420,10 @@ func (s *FileTestSuite) TestIsSameAuth_DifferentAcctKey() {
 		AccountKey:  "blahblah",
 	})
 
-	src, _ := sourceFs.NewFile("test-container", "/foo.txt")
-	tgt, _ := targetFs.NewFile("test-container", "/bar.txt")
+	src, err := sourceFs.NewFile("test-container", "/foo.txt")
+	s.Require().NoError(err)
+	tgt, err := targetFs.NewFile("test-container", "/bar.txt")
+	s.Require().NoError(err)
 	sourceFile := src.(*File)
 	targetFile := tgt.(*File)
 

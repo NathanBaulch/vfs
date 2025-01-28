@@ -354,8 +354,8 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 			file, err := s.setupTestFile(tc.fileAlreadyExists, testPath, testFileName) // Implement this setup function
 			defer func() {
 				if file != nil {
-					_ = file.Close()
-					_ = file.Delete()
+					s.Require().NoError(file.Close())
+					s.Require().NoError(file.Delete())
 				}
 			}()
 			s.Require().NoError(err)
@@ -449,7 +449,7 @@ SEQ:
 		f, err = assertedFile.Location().NewFile(assertedFile.Name())
 		s.Require().NoError(err, "error opening file")
 	}
-	defer func() { _ = f.Close() }()
+	defer func() { s.Require().NoError(f.Close()) }()
 	// Read entire file
 	contents, err := io.ReadAll(f)
 	s.Require().NoError(err, "error reading file")

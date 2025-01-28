@@ -40,7 +40,19 @@ func (s *memFileTest) SetupTest() {
 func (s *memFileTest) TearDownTest() {
 	err := s.testFile.Close()
 	s.Require().NoError(err, "close error not expected")
-	_ = s.testFile.Delete()
+
+	exists, err := s.testFile.Exists()
+	s.Require().NoError(err)
+	if exists {
+		s.Require().NoError(s.testFile.Delete())
+	}
+}
+
+func (s *memFileTest) TearDownSuite() {
+	if _, err := os.Stat("test_files/new.txt"); !os.IsNotExist(err) {
+		s.Require().NoError(err)
+		s.Require().NoError(os.Remove("test_files/new.txt"))
+	}
 }
 
 // TestZBR ensures that we can always read zero bytes
@@ -508,11 +520,13 @@ func (s *memFileTest) TestMoveToLocation2() {
 	s.Require().NoError(err, "unexpected write error")
 	s.Require().NoError(otherFile.Close(), "unexpected close error")
 	str1 := newFile.Path()
-	file, _ := otherFile.MoveToLocation(newFile.Location())
+	file, err := otherFile.MoveToLocation(newFile.Location())
+	s.Require().NoError(err)
 	str2 := file.Path()
 	s.Equal(path.Base(str1), path.Base(str2))
 
-	exists, _ := otherFile.Exists()
+	exists, err := otherFile.Exists()
+	s.Require().NoError(err)
 	s.False(exists)
 	readSlice := make([]byte, len(expectedText))
 
@@ -657,7 +671,8 @@ func (s *memFileTest) TestLastModified() {
 	s.Require().NoError(err, "write did not work as expected!")
 	s.Require().NoError(s.testFile.Close(), "close error not expected")
 
-	t, _ := s.testFile.LastModified()
+	t, err := s.testFile.LastModified()
+	s.Require().NoError(err)
 	firstTime := *t
 	time.Sleep(time.Second)
 	_, err = s.testFile.Write([]byte("hey!"))
@@ -757,5 +772,4 @@ func (s *memFileTest) TestFileNewWrite() {
 
 func TestMemFile(t *testing.T) {
 	suite.Run(t, &memFileTest{})
-	_ = os.Remove("test_files/new.txt")
 }

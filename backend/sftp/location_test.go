@@ -186,10 +186,12 @@ func (lt *locationTestSuite) TestNewFile() {
 	lt.Require().NoError(err)
 	lt.Equal("/some/path/to/", loc.Path(), "Path() should return the path on location.")
 
-	newfile, _ := loc.NewFile("a/file.txt")
+	newfile, err := loc.NewFile("a/file.txt")
+	lt.Require().NoError(err)
 	lt.Equal("/some/path/to/a/file.txt", newfile.Path(), "NewFile relative path works")
 
-	newrelfile, _ := loc.NewFile("../../where/file.txt")
+	newrelfile, err := loc.NewFile("../../where/file.txt")
+	lt.Require().NoError(err)
 	lt.Equal("/some/where/file.txt", newrelfile.Path(), "Newfile relative dot path works")
 
 	// test nil pointer

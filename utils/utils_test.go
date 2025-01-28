@@ -718,8 +718,9 @@ func (s *utilsSuite) TestTouchCopy() {
 	// TouchCopy on file that actually has data
 	_, err = reader.Write([]byte("blah"))
 	s.Require().NoError(err)
-	_ = reader.Close()
-	_, _ = reader.Seek(0, io.SeekStart)
+	s.Require().NoError(reader.Close())
+	_, err = reader.Seek(0, io.SeekStart)
+	s.Require().NoError(err)
 
 	err = utils.TouchCopy(writer, reader)
 	s.Require().NoError(err, "unexpected error running TouchCopy()")
@@ -790,8 +791,9 @@ func (s *utilsSuite) TestTouchCopyBufferedDefaultBufferSize() {
 	// TouchCopyBuffered on file that actually has data
 	_, err = reader.Write([]byte("blah"))
 	s.Require().NoError(err)
-	_ = reader.Close()
-	_, _ = reader.Seek(0, io.SeekStart)
+	s.Require().NoError(reader.Close())
+	_, err = reader.Seek(0, io.SeekStart)
+	s.Require().NoError(err)
 
 	err = utils.TouchCopyBuffered(writer, reader, 0)
 	s.Require().NoError(err, "unexpected error running TouchCopyBuffered()")
@@ -862,8 +864,9 @@ func (s *utilsSuite) TestTouchCopyBufferedNonDefaultBufferSize() {
 	// TouchCopyBuffered on file that actually has data
 	_, err = reader.Write([]byte("blah"))
 	s.Require().NoError(err)
-	_ = reader.Close()
-	_, _ = reader.Seek(0, io.SeekStart)
+	s.Require().NoError(reader.Close())
+	_, err = reader.Seek(0, io.SeekStart)
+	s.Require().NoError(err)
 
 	err = utils.TouchCopyBuffered(writer, reader, 1048576)
 	s.Require().NoError(err, "unexpected error running TouchCopyBuffered()")

@@ -41,7 +41,8 @@ func (s *memLocationTest) TestFSName() {
 // TestList tests that a location is capable of finding all files that exist there
 func (s *memLocationTest) TestList() {
 	expected := []string{"test.txt"}
-	actual, _ := s.testFile.Location().List()
+	actual, err := s.testFile.Location().List()
+	s.Require().NoError(err)
 	s.Equal(expected, actual)
 }
 

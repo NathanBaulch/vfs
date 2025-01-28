@@ -780,7 +780,7 @@ func (s *vfsTestSuite) file(baseLoc vfs.Location) {
 
 	touchedFile, err := srcLoc.NewFile("touch.txt")
 	s.Require().NoError(err)
-	defer func() { _ = touchedFile.Delete() }()
+	defer func() { s.Require().NoError(touchedFile.Delete()) }()
 	exists, err = touchedFile.Exists()
 	s.Require().NoError(err)
 	s.False(exists, "%s shouldn't yet exist", touchedFile)
