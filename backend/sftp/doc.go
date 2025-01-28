@@ -33,7 +33,7 @@ sftp can be augmented with some implementation-specific methods.  Backend return
 would have to be cast as sftp.FileSystem to use them.
 
 These methods are chainable:
-(*FileSystem) WithClient(client any) *FileSystem
+(*FileSystem) WithClient(client Client) *FileSystem
 (*FileSystem) WithOptions(opts vfs.Options) *FileSystem
 
 	  func DoSomething() {

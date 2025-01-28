@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 
 	"github.com/c2fo/vfs/v6"
 	"github.com/c2fo/vfs/v6/backend"
@@ -165,12 +164,9 @@ func (fs *FileSystem) WithOptions(opts vfs.Options) *FileSystem {
 }
 
 // WithClient passes in an sftp client and returns the filesystem (chainable)
-func (fs *FileSystem) WithClient(client any) *FileSystem {
-	switch client.(type) {
-	case Client, *ssh.Client:
-		fs.sftpclient = client.(Client)
-		fs.options = nil
-	}
+func (fs *FileSystem) WithClient(client Client) *FileSystem {
+	fs.sftpclient = client
+	fs.options = nil
 	return fs
 }
 

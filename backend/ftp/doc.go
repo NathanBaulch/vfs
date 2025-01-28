@@ -33,7 +33,7 @@ ftp can be augmented with some implementation-specific methods.  Backend returns
 would have to be cast as ftp.FileSystem to use them.
 
 These methods are chainable:
-(*FileSystem) WithClient(client any) *FileSystem
+(*FileSystem) WithClient(client types.Client) *FileSystem
 (*FileSystem) WithOptions(opts vfs.Options) *FileSystem
 
 	  func DoSomething() {
