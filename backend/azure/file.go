@@ -80,7 +80,7 @@ func (f *File) Close() error {
 // the file is created and read operations are performed against that.  The temp file is closed and flushed to Azure
 // when f.Close() is called.
 func (f *File) Read(p []byte) (n int, err error) {
-	if err := f.checkTempFile(); err != nil {
+	if err := f.checkTempFile(true); err != nil {
 		return 0, utils.WrapReadError(err)
 	}
 	read, err := f.tempFile.Read(p)
@@ -101,7 +101,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 // the file is created and operations are performed against that.  The temp file is closed and flushed to Azure
 // when f.Close() is called.
 func (f *File) Seek(offset int64, whence int) (int64, error) {
-	if err := f.checkTempFile(); err != nil {
+	if err := f.checkTempFile(true); err != nil {
 		return 0, utils.WrapSeekError(err)
 	}
 	pos, err := f.tempFile.Seek(offset, whence)
@@ -114,7 +114,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 // Write implements the io.Writer interface.  Writes are performed against a temporary local file.  The temp file is
 // closed and flushed to Azure with f.Close() is called.
 func (f *File) Write(p []byte) (int, error) {
-	if err := f.checkTempFile(); err != nil {
+	if err := f.checkTempFile(false); err != nil {
 		return 0, utils.WrapWriteError(err)
 	}
 
@@ -435,40 +435,46 @@ func (f *File) upload(ctx context.Context, content io.ReadSeeker, contentType st
 	return err
 }
 
-func (f *File) checkTempFile() error {
+func (f *File) checkTempFile(readOrSeek bool) error {
 	if f.tempFile == nil {
 		exists, err := f.Exists()
 		if err != nil {
 			return err
 		}
 		if !exists {
+			if readOrSeek {
+				return errors.New("TODO")
+			}
 			tf, tfErr := os.CreateTemp("", fmt.Sprintf("%s.%d", path.Base(f.Name()), time.Now().UnixNano()))
 			if tfErr != nil {
 				return tfErr
 			}
 			f.tempFile = tf
 		} else {
-			cli, err := f.newBlockBlobClient()
-			if err != nil {
-				return err
-			}
-			get, dlErr := cli.DownloadStream(context.Background(), nil)
-			if dlErr != nil {
-				return dlErr
-			}
-
 			tf, tfErr := os.CreateTemp("", fmt.Sprintf("%s.%d", path.Base(f.Name()), time.Now().UnixNano()))
 			if tfErr != nil {
 				return tfErr
 			}
 
-			buffer := make([]byte, utils.TouchCopyMinBufferSize)
-			if _, err := io.CopyBuffer(tf, get.Body, buffer); err != nil {
-				return err
-			}
+			if readOrSeek {
+				cli, err := f.newBlockBlobClient()
+				if err != nil {
+					return err
+				}
 
-			if _, err := tf.Seek(0, 0); err != nil {
-				return err
+				get, dlErr := cli.DownloadStream(context.Background(), nil)
+				if dlErr != nil {
+					return dlErr
+				}
+
+				buffer := make([]byte, utils.TouchCopyMinBufferSize)
+				if _, err := io.CopyBuffer(tf, get.Body, buffer); err != nil {
+					return err
+				}
+
+				if _, err := tf.Seek(0, 0); err != nil {
+					return err
+				}
 			}
 
 			f.tempFile = tf

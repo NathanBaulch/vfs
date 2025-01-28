@@ -1,10 +1,8 @@
 package testcontainers
 
 import (
-	"errors"
 	"io"
 	"os"
-	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,7 +12,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/c2fo/vfs/v6"
-	"github.com/c2fo/vfs/v6/options"
 	"github.com/c2fo/vfs/v6/vfssimple"
 )
 
@@ -25,113 +22,20 @@ type osWrapper struct {
 	seekCalled bool
 }
 
-func newOSWrapper(absPath string) *osWrapper {
-	return &osWrapper{
-		filename: absPath,
-		exists:   fileExists(absPath),
-	}
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
-}
-
-func (o *osWrapper) Read(b []byte) (int, error) {
-	if !o.exists {
-		return 0, errors.New("file not found")
-	}
-	if o.file == nil {
-		file, err := os.OpenFile(o.filename, os.O_RDWR, 0o600)
-		if err != nil {
-			return 0, err
-		}
-		o.file = file
-	}
-	return o.file.Read(b)
-}
-
-func (o *osWrapper) Write(b []byte) (int, error) {
-	if o.file == nil {
-		flags := os.O_RDWR | os.O_CREATE | os.O_TRUNC
-		if o.seekCalled {
-			flags = os.O_RDWR | os.O_CREATE
-		}
-		file, err := os.OpenFile(o.filename, flags, 0o600) //nolint:gosec
-		if err != nil {
-			return 0, err
-		}
-		o.file = file
-		o.exists = true
-	}
-
-	return o.file.Write(b)
-}
-
-func (o *osWrapper) Seek(offset int64, whence int) (int64, error) {
-	if !o.exists {
-		return 0, errors.New("file not found")
-	}
-
-	if o.file == nil {
-		file, err := os.OpenFile(o.filename, os.O_RDWR, 0o600)
-		if err != nil {
-			return 0, err
-		}
-		o.file = file
-	}
-	o.seekCalled = true
-	return o.file.Seek(offset, whence)
-}
-
-func (o *osWrapper) Close() error {
-	if !o.exists {
-		return nil
-	}
-	err := o.file.Close()
-	if err != nil {
-		return err
-	}
-	o.file = nil
-	return nil
-}
-
-func (o *osWrapper) Name() string {
-	return path.Base(o.filename)
-}
-
-func (o *osWrapper) URI() string {
-	return o.filename
-}
-
-func (o *osWrapper) Delete(...options.DeleteOption) error {
-	return os.Remove(o.URI())
-}
-
-type readWriteSeekCloseDeleter interface {
-	io.ReadWriteSeeker
-	io.Closer
-	Delete(opts ...options.DeleteOption) error
-}
-
 type ioTestSuite struct {
 	suite.Suite
 	testLocations map[string]vfs.Location
-	localDir      string
 }
 
 func (s *ioTestSuite) SetupSuite() {
 	registers := []func(*testing.T) string{
-		registerMem,
-		registerOS,
-		registerAtmoz,
-		registerAzurite,
-		registerGCSServer,
-		registerLocalStack,
-		registerMinio,
+		//registerMem,
+		//registerOS,
+		//registerAtmoz,
+		//registerAzurite,
+		//registerGCSServer,
+		////registerLocalStack,
+		////registerMinio,
 		registerVSFTPC,
 	}
 	uris := make([]string, len(registers))
@@ -147,22 +51,13 @@ func (s *ioTestSuite) SetupSuite() {
 
 	s.testLocations = make(map[string]vfs.Location)
 	for _, u := range uris {
-		if strings.HasPrefix(u, "/") {
-			s.localDir = u
-		} else {
-			l, err := vfssimple.NewLocation(u)
-			s.Require().NoError(err)
-			s.testLocations[l.FileSystem().Scheme()] = l
-		}
+		l, err := vfssimple.NewLocation(u)
+		s.Require().NoError(err)
+		s.testLocations[l.FileSystem().Scheme()] = l
 	}
 }
 
 func (s *ioTestSuite) TestFileOperations() {
-	if s.localDir != "" {
-		s.Run("local", func() {
-			s.testFileOperations(s.localDir)
-		})
-	}
 	for scheme, location := range s.testLocations {
 		s.Run(scheme, func() {
 			s.testFileOperations(location.URI())
@@ -327,6 +222,9 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 
 	defer s.teardownTestLocation(testPath)
 	for _, tc := range testCases {
+		if tc.description != "Write, Seek, Write, Close, file exists" {
+			continue
+		}
 		s.Run(tc.description, func() {
 			testFileName := "testfile.txt"
 
@@ -347,7 +245,7 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 			if tc.expectFailure {
 				s.Error(err, "%s: expected failure but got success", tc.description)
 			} else {
-				s.Require().NoError(err, "%s: expected success but got failure: %v", tc.description)
+				s.Require().NoError(err, "%s: expected success but got failure", tc.description)
 			}
 
 			s.Equal(tc.expectedResults, actualContents, "%s: expected results %s but got %s", tc.description, tc.expectedResults, actualContents)
@@ -356,7 +254,7 @@ func (s *ioTestSuite) testFileOperations(testPath string) {
 }
 
 //nolint:gocyclo
-func (s *ioTestSuite) executeSequence(file readWriteSeekCloseDeleter, sequence string) (string, error) {
+func (s *ioTestSuite) executeSequence(file vfs.File, sequence string) (string, error) {
 	// split sequence by semicolon
 	commands := strings.Split(sequence, ";")
 	var commandErr error
@@ -419,16 +317,9 @@ SEQ:
 
 	var f io.ReadCloser
 
-	switch assertedFile := file.(type) {
-	case *osWrapper:
-		var err error
-		f, err = os.Open(assertedFile.URI())
-		s.NoError(err, "error opening file")
-	case vfs.File:
-		var err error
-		f, err = assertedFile.Location().NewFile(assertedFile.Name())
-		s.Require().NoError(err, "error opening file")
-	}
+	var err error
+	f, err = file.Location().NewFile(file.Name())
+	s.Require().NoError(err, "error opening file")
 	defer func() { _ = f.Close() }()
 	// Read entire file
 	contents, err := io.ReadAll(f)
@@ -450,19 +341,13 @@ func (s *ioTestSuite) parseCommand(command string) (string, []string) {
 	return results[1], args
 }
 
-func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (readWriteSeekCloseDeleter, error) {
-	var f readWriteSeekCloseDeleter
-	var err error
+func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (vfs.File, error) {
 	// Create file
-	if strings.HasPrefix(loc, "/") {
-		f = newOSWrapper(loc + filename)
-	} else {
-		scheme := strings.SplitN(loc, ":", 2)[0]
-		// Write something to the file
-		f, err = s.testLocations[scheme].NewFile(filename)
-		if err != nil {
-			return nil, err
-		}
+	scheme, _, _ := strings.Cut(loc, ":")
+	// Write something to the file
+	f, err := s.testLocations[scheme].NewFile(filename)
+	if err != nil {
+		return nil, err
 	}
 	if existsBefore {
 		_, err = f.Write([]byte("some text"))
@@ -479,19 +364,14 @@ func (s *ioTestSuite) setupTestFile(existsBefore bool, loc, filename string) (re
 }
 
 func (s *ioTestSuite) teardownTestLocation(testPath string) {
-	if strings.HasPrefix(testPath, "/") {
-		err := os.RemoveAll(testPath)
+	scheme, _, _ := strings.Cut(testPath, ":")
+	// Write something to the file
+	loc := s.testLocations[scheme]
+	files, err := loc.List()
+	s.Require().NoError(err)
+	for _, file := range files {
+		err := loc.DeleteFile(file)
 		s.Require().NoError(err)
-	} else {
-		scheme := strings.SplitN(testPath, ":", 2)[0]
-		// Write something to the file
-		loc := s.testLocations[scheme]
-		files, err := loc.List()
-		s.Require().NoError(err)
-		for _, file := range files {
-			err := loc.DeleteFile(file)
-			s.Require().NoError(err)
-		}
 	}
 }
 

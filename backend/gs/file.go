@@ -36,8 +36,9 @@ type File struct {
 	seekCalled bool
 
 	// read-related fields
-	reader     io.ReadCloser
-	readCalled bool
+	reader      io.ReadCloser
+	readCalled  bool
+	readEOFSeen bool
 
 	// write-related fields
 	tempFileWriter *os.File
@@ -58,6 +59,7 @@ func (f *File) Close() error {
 		f.seekCalled = false
 		f.readCalled = false
 		f.writeCalled = false
+		f.readEOFSeen = false
 	}()
 
 	// cleanup reader (unless reader is also the writer tempfile)
@@ -149,6 +151,12 @@ func (f *File) cleanupTempFile() error {
 
 // Read implements the standard for io.Reader.
 func (f *File) Read(p []byte) (n int, err error) {
+	// reader returns io.EOF when reading the last byte (but not past the last byte) to save on bandwidth,
+	// but we want to return io.EOF only when reading past the last byte
+	if f.readEOFSeen {
+		return 0, io.EOF
+	}
+
 	// check/initialize for reader
 	r, err := f.getReader()
 	if err != nil {
@@ -157,11 +165,12 @@ func (f *File) Read(p []byte) (n int, err error) {
 
 	read, err := r.Read(p)
 	if err != nil {
-		// if we got io.EOF, we'll return the read and the EOF error
-		// because io.Copy looks for EOF to determine if it's done
-		// and doesn't support error wrapping
-		if errors.Is(err, io.EOF) {
-			return read, io.EOF
+		f.readEOFSeen = errors.Is(err, io.EOF)
+		if f.readEOFSeen {
+			if read < len(p) {
+				return read, io.EOF
+			}
+			return read, nil
 		}
 		return read, utils.WrapReadError(err)
 	}
@@ -247,6 +256,9 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 		return 0, utils.WrapSeekError(err)
 	}
 	f.cursorPos = pos
+
+	// set readEOFSeen if seeking to the end of the file
+	f.readEOFSeen = f.cursorPos >= int64(length)
 
 	f.seekCalled = true
 	return f.cursorPos, nil
