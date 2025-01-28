@@ -13,9 +13,8 @@ import (
 
 type fileSystemTestSuite struct {
 	suite.Suite
+	fs *FileSystem
 }
-
-var s3fs *FileSystem
 
 type mockClient struct {
 	*s3.Client
@@ -25,17 +24,17 @@ func (ts *fileSystemTestSuite) SetupTest() {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	ts.Require().NoError(err)
 	client := mockClient{s3.NewFromConfig(cfg)}
-	s3fs = &FileSystem{client: client}
+	ts.fs = &FileSystem{client: client}
 }
 
 func (ts *fileSystemTestSuite) TestNewFileSystem() {
-	newFS := NewFileSystem().WithClient(s3cliMock)
+	newFS := NewFileSystem()
 	ts.NotNil(newFS, "Should return a new fileSystem for s3")
 }
 
 func (ts *fileSystemTestSuite) TestNewFile() {
 	filePath := "/path/to/file.txt"
-	file, err := s3fs.NewFile("bucketName", filePath)
+	file, err := ts.fs.NewFile("bucketName", filePath)
 	ts.Require().NoError(err, "No errors returned by NewFile(%s)", filePath)
 	ts.NotNil(file, "fs.NewFile(%s) should assign all but first name component to key", filePath)
 }
@@ -47,19 +46,19 @@ func (ts *fileSystemTestSuite) TestNewFile_Error() {
 	ts.Require().EqualError(err, "non-nil s3.FileSystem pointer is required", "errors returned by NewFile")
 
 	// test validation error
-	file, err := s3fs.NewFile("bucketName", "relative/path/to/file.txt")
+	file, err := ts.fs.NewFile("bucketName", "relative/path/to/file.txt")
 	ts.Require().EqualError(err, utils.ErrBadAbsFilePath, "errors returned by NewFile")
 	ts.Nil(file, "NewFile shouldn't return a file")
 
 	filePath := ""
-	file, err = s3fs.NewFile("", filePath)
+	file, err = ts.fs.NewFile("", filePath)
 	ts.Require().Error(err, "NewFile(%s)", filePath)
 	ts.Nil(file, "NewFile(%s) shouldn't return a file", filePath)
 }
 
 func (ts *fileSystemTestSuite) TestNewLocation() {
 	locPath := "/path/to/"
-	loc, err := s3fs.NewLocation("bucketName", locPath)
+	loc, err := ts.fs.NewLocation("bucketName", locPath)
 	ts.Require().NoError(err, "No errors returned by NewLocation(%s)", locPath)
 	ts.NotNil(loc, "fs.NewLocation(%s) should assign all but first name component to key", locPath)
 }
@@ -71,43 +70,43 @@ func (ts *fileSystemTestSuite) TestNewLocation_Error() {
 	ts.Require().EqualError(err, "non-nil s3.FileSystem pointer is required", "errors returned by NewLocation")
 
 	// test validation error
-	file, err := s3fs.NewLocation("bucketName", "relative/path/to/")
+	file, err := ts.fs.NewLocation("bucketName", "relative/path/to/")
 	ts.Require().EqualError(err, utils.ErrBadAbsLocationPath, "errors returned by NewLocation")
 	ts.Nil(file, "NewFile shouldn't return a file")
 
 	locPath := ""
-	file, err = s3fs.NewLocation("", locPath)
+	file, err = ts.fs.NewLocation("", locPath)
 	ts.Require().EqualError(err, "non-empty strings for bucket and key are required", "NewLocation(%s)", locPath)
 	ts.Nil(file, "NewLocation(%s) shouldn't return a file", locPath)
 }
 
 func (ts *fileSystemTestSuite) TestName_Error() {
-	ts.Equal(name, s3fs.Name(), "Name() is s3.name const")
+	ts.Equal(name, ts.fs.Name(), "Name() is s3.name const")
 }
 
 func (ts *fileSystemTestSuite) TestWithOptions() {
 	// ignore non-s3.Options
-	s3fs.WithOptions("just a string")
-	ts.Nil(s3fs.options, "no change for non-s3.Options")
+	ts.fs.WithOptions("just a string")
+	ts.Nil(ts.fs.options, "no change for non-s3.Options")
 
 	// with option
-	s3fs.WithOptions(Options{
+	ts.fs.WithOptions(Options{
 		Region: "us-east-1",
 	})
-	ts.NotNil(s3fs.options, "fs.options is not nil")
+	ts.NotNil(ts.fs.options, "fs.options is not nil")
 }
 
 func (ts *fileSystemTestSuite) TestClient() {
 	// client already set
-	client, err := s3fs.Client()
+	client, err := ts.fs.Client()
 	ts.Require().NoError(err, "no error")
-	ts.Equal(s3fs.client, client, "client was already set")
+	ts.Equal(ts.fs.client, client, "client was already set")
 
-	s3fs = &FileSystem{}
-	client, err = s3fs.Client()
+	ts.fs = &FileSystem{}
+	client, err = ts.fs.Client()
 	ts.Require().NoError(err, "no error")
 	ts.NotNil(client, "client was set")
-	ts.NotNil(s3fs.client, "client was set")
+	ts.NotNil(ts.fs.client, "client was set")
 }
 
 func TestFileSystem(t *testing.T) {

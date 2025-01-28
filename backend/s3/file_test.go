@@ -26,25 +26,22 @@ import (
 
 type fileTestSuite struct {
 	suite.Suite
-}
-
-var (
-	s3cliMock      *mocks.Client
+	cliMock        *mocks.Client
 	fs             FileSystem
 	testFile       vfs.File
 	defaultOptions *Options
 	testFileName   string
 	bucket         string
-)
+}
 
 func (ts *fileTestSuite) SetupTest() {
 	var err error
-	s3cliMock = mocks.NewClient(ts.T())
-	defaultOptions = &Options{AccessKeyID: "abc"}
-	fs = FileSystem{client: s3cliMock, options: defaultOptions}
-	testFileName = "/some/path/to/file.txt"
-	bucket = "bucket"
-	testFile, err = fs.NewFile(bucket, testFileName)
+	ts.cliMock = mocks.NewClient(ts.T())
+	ts.defaultOptions = &Options{AccessKeyID: "abc"}
+	ts.fs = FileSystem{client: ts.cliMock, options: ts.defaultOptions}
+	ts.testFileName = "/some/path/to/file.txt"
+	ts.bucket = "bucket"
+	ts.testFile, err = ts.fs.NewFile(ts.bucket, ts.testFileName)
 	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 }
 
@@ -54,15 +51,15 @@ func (ts *fileTestSuite) TearDownTest() {
 func (ts *fileTestSuite) TestRead() {
 	contents := "hello world!"
 
-	file, err := fs.NewFile("bucket", "/some/path/file.txt")
+	file, err := ts.fs.NewFile("bucket", "/some/path/file.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
 	localFile := &bytes.Buffer{}
-	s3cliMock.EXPECT().
+	ts.cliMock.EXPECT().
 		HeadObject(mock.Anything, mock.Anything).
 		Return(&s3.HeadObjectOutput{ContentLength: aws.Int64(12)}, nil).
 		Twice()
-	s3cliMock.EXPECT().
+	ts.cliMock.EXPECT().
 		GetObject(mock.Anything, mock.Anything).
 		Return(&s3.GetObjectOutput{Body: io.NopCloser(strings.NewReader(contents))}, nil).
 		Once()
@@ -74,7 +71,7 @@ func (ts *fileTestSuite) TestRead() {
 
 	// test read with error
 	someErr := errors.New("some error")
-	s3cliMock.EXPECT().
+	ts.cliMock.EXPECT().
 		GetObject(mock.Anything, mock.Anything).
 		Return(nil, someErr).
 		Once()
@@ -85,7 +82,7 @@ func (ts *fileTestSuite) TestRead() {
 }
 
 func (ts *fileTestSuite) TestWrite() {
-	file, err := fs.NewFile("bucket", "/tmp/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/tmp/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
 	contents := []byte("Hello world!")
@@ -96,7 +93,7 @@ func (ts *fileTestSuite) TestWrite() {
 
 func (ts *fileTestSuite) TestSeek() {
 	contents := "hello world!"
-	file, err := fs.NewFile("bucket", "/tmp/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/tmp/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
 	// setup mock for Size(getHeadObject)
@@ -118,7 +115,7 @@ func (ts *fileTestSuite) TestSeek() {
 
 	for _, tc := range testCases {
 		ts.Run(fmt.Sprintf("SeekOffset %d Whence %d", tc.seekOffset, tc.seekWhence), func() {
-			m := s3cliMock.EXPECT().
+			m := ts.cliMock.EXPECT().
 				HeadObject(mock.Anything, mock.Anything).
 				Return(headOutput, nil)
 			if tc.expectedErr || tc.seekWhence == io.SeekEnd {
@@ -136,7 +133,7 @@ func (ts *fileTestSuite) TestSeek() {
 				ts.Equal(tc.expectedPos, pos, "Expected position does not match for seek offset %d and whence %d", tc.seekOffset, tc.seekWhence)
 
 				// Mock the GetObject call
-				m := s3cliMock.EXPECT().GetObject(mock.Anything, mock.Anything).
+				m := ts.cliMock.EXPECT().GetObject(mock.Anything, mock.Anything).
 					Return(&s3.GetObjectOutput{Body: io.NopCloser(strings.NewReader(tc.readContent))}, nil)
 				if tc.seekWhence != io.SeekEnd {
 					m.Once()
@@ -150,9 +147,9 @@ func (ts *fileTestSuite) TestSeek() {
 	}
 
 	// test fails with Size error
-	s3cliMock := mocks.NewClient(ts.T())
-	fs.client = s3cliMock
-	s3cliMock.EXPECT().
+	ts.cliMock = mocks.NewClient(ts.T())
+	ts.fs.client = ts.cliMock
+	ts.cliMock.EXPECT().
 		HeadObject(mock.Anything, mock.Anything).
 		Return(nil, &types.NotFound{}).
 		Once()
@@ -165,14 +162,14 @@ func (ts *fileTestSuite) TestSeek() {
 
 func (ts *fileTestSuite) TestReadEOFSeenReset() {
 	contents := "hello world!"
-	file, err := fs.NewFile("bucket", "/tmp/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/tmp/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file")
 
-	s3cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).
+	ts.cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).
 		Return(&s3.HeadObjectOutput{ContentLength: aws.Int64(int64(len(contents)))}, nil).
 		Maybe()
 
-	s3cliMock.EXPECT().GetObject(mock.Anything, mock.Anything).
+	ts.cliMock.EXPECT().GetObject(mock.Anything, mock.Anything).
 		Return(&s3.GetObjectOutput{Body: io.NopCloser(strings.NewReader(contents))}, nil).
 		Once()
 
@@ -187,7 +184,7 @@ func (ts *fileTestSuite) TestReadEOFSeenReset() {
 }
 
 func (ts *fileTestSuite) TestGetLocation() {
-	file, err := fs.NewFile("bucket", "/path/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
 	location := file.Location()
@@ -197,10 +194,10 @@ func (ts *fileTestSuite) TestGetLocation() {
 }
 
 func (ts *fileTestSuite) TestExists() {
-	file, err := fs.NewFile("bucket", "/path/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
-	s3cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(&s3.HeadObjectOutput{}, nil)
+	ts.cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(&s3.HeadObjectOutput{}, nil)
 
 	exists, err := file.Exists()
 	ts.Require().NoError(err, "Shouldn't return an error when exists is true")
@@ -208,10 +205,10 @@ func (ts *fileTestSuite) TestExists() {
 }
 
 func (ts *fileTestSuite) TestNotExists() {
-	file, err := fs.NewFile("bucket", "/path/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
-	s3cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).
+	ts.cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).
 		Return(&s3.HeadObjectOutput{}, &types.NotFound{})
 
 	exists, err := file.Exists()
@@ -222,34 +219,34 @@ func (ts *fileTestSuite) TestNotExists() {
 func (ts *fileTestSuite) TestCopyToFile() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
-			client:  s3cliMock,
-			options: defaultOptions,
+			client:  ts.cliMock,
+			options: ts.defaultOptions,
 		},
 		bucket: "TestBucket",
 		key:    "testKey.txt",
 	}
 
-	s3cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
 
-	err := testFile.CopyToFile(targetFile)
+	err := ts.testFile.CopyToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 
 	// Test With Non Minimum Buffer Size in TouchCopyBuffered
-	originalBufferSize := defaultOptions.FileBufferSize
-	defaultOptions.FileBufferSize = 2 * utils.TouchCopyMinBufferSize
+	originalBufferSize := ts.defaultOptions.FileBufferSize
+	ts.defaultOptions.FileBufferSize = 2 * utils.TouchCopyMinBufferSize
 	targetFile = &File{
 		fileSystem: &FileSystem{
-			client:  s3cliMock,
-			options: defaultOptions,
+			client:  ts.cliMock,
+			options: ts.defaultOptions,
 		},
 		bucket: "TestBucket",
 		key:    "testKey.txt",
 	}
-	defaultOptions.FileBufferSize = originalBufferSize
+	ts.defaultOptions.FileBufferSize = originalBufferSize
 
-	s3cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
 
-	err = testFile.CopyToFile(targetFile)
+	err = ts.testFile.CopyToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 }
 
@@ -257,28 +254,28 @@ func (ts *fileTestSuite) TestEmptyCopyToFile() {
 	targetFile := vfsmocks.NewFile(ts.T())
 	targetFile.EXPECT().Write(mock.Anything).Return(0, nil)
 	targetFile.EXPECT().Close().Return(nil)
-	s3cliMock.EXPECT().
+	ts.cliMock.EXPECT().
 		HeadObject(mock.Anything, mock.Anything).
 		Return(&s3.HeadObjectOutput{ContentLength: aws.Int64(0)}, nil).
 		Once()
-	err := testFile.CopyToFile(targetFile)
+	err := ts.testFile.CopyToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 }
 
 func (ts *fileTestSuite) TestMoveToFile() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
-			client:  s3cliMock,
-			options: defaultOptions,
+			client:  ts.cliMock,
+			options: ts.defaultOptions,
 		},
 		bucket: "TestBucket",
 		key:    "testKey.txt",
 	}
 
-	s3cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil)
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil)
 
-	err := testFile.MoveToFile(targetFile)
+	err := ts.testFile.MoveToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to MoveToFile")
 }
 
@@ -313,7 +310,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 		ts.Run(tc.key, func() {
 			sourceFile := &File{
 				fileSystem: &FileSystem{
-					client: s3cliMock,
+					client: ts.cliMock,
 					options: &Options{
 						AccessKeyID:                 "abc",
 						DisableServerSideEncryption: true,
@@ -325,7 +322,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 
 			targetFile := &File{
 				fileSystem: &FileSystem{
-					client: s3cliMock,
+					client: ts.cliMock,
 					options: &Options{
 						AccessKeyID: "abc",
 					},
@@ -345,8 +342,8 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 	// nil means we can't do s3-to-s3 copy so use TouchCopy
 	sourceFile := &File{
 		fileSystem: &FileSystem{
-			client:  s3cliMock,
-			options: defaultOptions,
+			client:  ts.cliMock,
+			options: ts.defaultOptions,
 		},
 		bucket: "TestBucket",
 		key:    "/path/to/file.txt",
@@ -354,7 +351,7 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 
 	targetFile := &File{
 		fileSystem: &FileSystem{
-			client: s3cliMock,
+			client: ts.cliMock,
 			options: &Options{
 				AccessKeyID: "xyz",
 				ACL:         "SomeCannedACL",
@@ -370,16 +367,16 @@ func (ts *fileTestSuite) TestGetCopyObject() {
 func (ts *fileTestSuite) TestMoveToFile_CopyError() {
 	targetFile := &File{
 		fileSystem: &FileSystem{
-			client:  s3cliMock,
-			options: defaultOptions,
+			client:  ts.cliMock,
+			options: ts.defaultOptions,
 		},
 		bucket: "TestBucket",
 		key:    "testKey.txt",
 	}
 
-	s3cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(nil, errors.New("some copy error"))
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(nil, errors.New("some copy error"))
 
-	err := testFile.MoveToFile(targetFile)
+	err := ts.testFile.MoveToFile(targetFile)
 	ts.Require().Error(err, "Error shouldn't be returned from successful call to CopyToFile")
 }
 
@@ -389,7 +386,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	f := &File{
 		fileSystem: &FileSystem{
 			client:  s3Mock1,
-			options: defaultOptions,
+			options: ts.defaultOptions,
 		},
 		bucket: "bucket",
 		key:    "/hello.txt",
@@ -403,7 +400,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	l := &Location{
 		fileSystem: &FileSystem{
 			client:  mocks.NewClient(ts.T()),
-			options: defaultOptions,
+			options: ts.defaultOptions,
 		},
 		bucket: "bucket",
 		prefix: "/subdir/",
@@ -426,7 +423,7 @@ func (ts *fileTestSuite) TestTouch() {
 	file := &File{
 		fileSystem: &FileSystem{
 			client:  s3Mock1,
-			options: defaultOptions,
+			options: ts.defaultOptions,
 		},
 		bucket: "newBucket",
 		key:    "/new/file/path/hello.txt",
@@ -444,7 +441,7 @@ func (ts *fileTestSuite) TestTouch() {
 	file2 := &File{
 		fileSystem: &FileSystem{
 			client:  s3Mock2,
-			options: defaultOptions,
+			options: ts.defaultOptions,
 		},
 		bucket: "newBucket",
 		key:    "/new/file/path/hello.txt",
@@ -464,7 +461,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	f := &File{
 		fileSystem: &FileSystem{
 			client:  s3Mock1,
-			options: defaultOptions,
+			options: ts.defaultOptions,
 		},
 		bucket: "newBucket",
 		key:    "/new/file/path/hello.txt",
@@ -472,10 +469,10 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	location := vfsmocks.NewLocation(ts.T())
 	location.EXPECT().NewFile(mock.Anything).Return(f, nil)
 
-	s3cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil)
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil)
 
-	file, err := fs.NewFile("bucket", "/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/hello.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 
 	defer func() {
@@ -491,11 +488,11 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	mockLocation.EXPECT().NewFile(mock.Anything).
 		Return(&File{fileSystem: &FileSystem{client: s3Mock1}, bucket: "bucket", key: "/new/hello.txt"}, nil)
 
-	s3cliMock2 := mocks.NewClient(ts.T())
-	s3cliMock2.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
+	ts.cliMock = mocks.NewClient(ts.T())
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(&s3.CopyObjectOutput{}, nil)
 
-	fs = FileSystem{client: s3cliMock2}
-	file2, err := fs.NewFile("bucket", "/hello.txt")
+	ts.fs = FileSystem{client: ts.cliMock}
+	file2, err := ts.fs.NewFile("bucket", "/hello.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 
 	_, err = file2.CopyToLocation(mockLocation)
@@ -505,11 +502,11 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 func (ts *fileTestSuite) TestMoveToLocationFail() {
 	// If CopyToLocation fails we need to ensure DeleteObject isn't called.
 	location := vfsmocks.NewLocation(ts.T())
-	location.EXPECT().NewFile(mock.Anything).Return(&File{fileSystem: &fs, bucket: "bucket", key: "/new/hello.txt"}, nil)
+	location.EXPECT().NewFile(mock.Anything).Return(&File{fileSystem: &ts.fs, bucket: "bucket", key: "/new/hello.txt"}, nil)
 
-	s3cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(nil, errors.New("didn't copy, oh noes"))
+	ts.cliMock.EXPECT().CopyObject(mock.Anything, mock.Anything).Return(nil, errors.New("didn't copy, oh noes"))
 
-	file, err := fs.NewFile("bucket", "/hello.txt")
+	file, err := ts.fs.NewFile("bucket", "/hello.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test s3.File instance.")
 
 	_, err = file.MoveToLocation(location)
@@ -520,14 +517,14 @@ func (ts *fileTestSuite) TestMoveToLocationFail() {
 }
 
 func (ts *fileTestSuite) TestDelete() {
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil)
-	err := testFile.Delete()
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil)
+	err := ts.testFile.Delete()
 	ts.Require().NoError(err, "Successful delete should not return an error.")
 }
 
 func (ts *fileTestSuite) TestDeleteError() {
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(nil, errors.New("something went wrong"))
-	err := testFile.Delete()
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(nil, errors.New("something went wrong"))
+	err := ts.testFile.Delete()
 	ts.Require().EqualError(err, "something went wrong", "Delete should return an error if s3 api had error.")
 }
 
@@ -538,10 +535,10 @@ func (ts *fileTestSuite) TestDeleteWithAllVersionsOption() {
 			{VersionId: aws.String("ver2")},
 		},
 	}
-	s3cliMock.EXPECT().ListObjectVersions(mock.Anything, mock.Anything).Return(&versOutput, nil)
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil).Times(3)
+	ts.cliMock.EXPECT().ListObjectVersions(mock.Anything, mock.Anything).Return(&versOutput, nil)
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, mock.Anything).Return(&s3.DeleteObjectOutput{}, nil).Times(3)
 
-	err := testFile.Delete(delete.WithAllVersions())
+	err := ts.testFile.Delete(delete.WithAllVersions())
 	ts.Require().NoError(err, "Successful delete should not return an error.")
 }
 
@@ -552,77 +549,77 @@ func (ts *fileTestSuite) TestDeleteWithAllVersionsOptionError() {
 			{VersionId: aws.String("ver2")},
 		},
 	}
-	s3cliMock.EXPECT().ListObjectVersions(mock.Anything, mock.Anything).
+	ts.cliMock.EXPECT().ListObjectVersions(mock.Anything, mock.Anything).
 		Return(&versOutput, nil)
-	key := utils.Ptr(utils.RemoveLeadingSlash(testFileName))
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, &s3.DeleteObjectInput{Key: key, Bucket: &bucket}).
+	key := utils.Ptr(utils.RemoveLeadingSlash(ts.testFileName))
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, &s3.DeleteObjectInput{Key: key, Bucket: &ts.bucket}).
 		Return(&s3.DeleteObjectOutput{}, nil).
 		Once()
-	s3cliMock.EXPECT().DeleteObject(mock.Anything, &s3.DeleteObjectInput{Key: key, Bucket: &bucket, VersionId: aws.String("ver1")}).
+	ts.cliMock.EXPECT().DeleteObject(mock.Anything, &s3.DeleteObjectInput{Key: key, Bucket: &ts.bucket, VersionId: aws.String("ver1")}).
 		Return(nil, errors.New("something went wrong")).
 		Once()
 
-	err := testFile.Delete(delete.WithAllVersions())
+	err := ts.testFile.Delete(delete.WithAllVersions())
 	ts.Require().Error(err, "Delete should return an error if s3 api had error.")
 }
 
 func (ts *fileTestSuite) TestLastModified() {
 	now := time.Now()
-	s3cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(&s3.HeadObjectOutput{
+	ts.cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(&s3.HeadObjectOutput{
 		LastModified: &now,
 	}, nil)
-	modTime, err := testFile.LastModified()
+	modTime, err := ts.testFile.LastModified()
 	ts.Require().NoError(err, "Error should be nil when correctly returning time of object.")
 	ts.Equal(&now, modTime, "Returned time matches expected LastModified time.")
 }
 
 func (ts *fileTestSuite) TestLastModifiedFail() {
 	// setup error on HEAD
-	s3cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(nil,
+	ts.cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(nil,
 		errors.New("boom"))
-	m, e := testFile.LastModified()
+	m, e := ts.testFile.LastModified()
 	ts.Require().Error(e, "got error as expected")
 	ts.Nil(m, "nil ModTime returned")
 }
 
 func (ts *fileTestSuite) TestName() {
-	ts.Equal("file.txt", testFile.Name(), "Name should return just the name of the file.")
+	ts.Equal("file.txt", ts.testFile.Name(), "Name should return just the name of the file.")
 }
 
 func (ts *fileTestSuite) TestSize() {
 	contentLength := int64(100)
-	s3cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(&s3.HeadObjectOutput{
+	ts.cliMock.EXPECT().HeadObject(mock.Anything, mock.Anything).Return(&s3.HeadObjectOutput{
 		ContentLength: &contentLength,
 	}, nil)
 
-	size, err := testFile.Size()
+	size, err := ts.testFile.Size()
 	ts.Require().NoError(err, "Error should be nil when requesting size for file that exists.")
 	ts.Equal(uint64(100), size, "Size should return the ContentLength value from s3 HEAD request.")
 }
 
 func (ts *fileTestSuite) TestPath() {
-	ts.Equal("/some/path/to/file.txt", testFile.Path(), "Should return file.key (with leading slash)")
+	ts.Equal("/some/path/to/file.txt", ts.testFile.Path(), "Should return file.key (with leading slash)")
 }
 
 func (ts *fileTestSuite) TestURI() {
-	s3cliMock = mocks.NewClient(ts.T())
-	fs = FileSystem{client: s3cliMock}
-	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.cliMock = mocks.NewClient(ts.T())
+	ts.fs = FileSystem{client: ts.cliMock}
+	file, err := ts.fs.NewFile("mybucket", "/some/file/test.txt")
 	ts.Require().NoError(err)
 	expected := "s3://mybucket/some/file/test.txt"
 	ts.Equal(expected, file.URI(), "%s does not match %s", file.URI(), expected)
 }
 
 func (ts *fileTestSuite) TestStringer() {
-	fs = FileSystem{client: mocks.NewClient(ts.T())}
-	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.fs = FileSystem{client: mocks.NewClient(ts.T())}
+	file, err := ts.fs.NewFile("mybucket", "/some/file/test.txt")
 	ts.Require().NoError(err)
 	ts.Equal("s3://mybucket/some/file/test.txt", file.String())
 }
 
 func (ts *fileTestSuite) TestUploadInput() {
-	fs = FileSystem{client: mocks.NewClient(ts.T())}
-	file, err := fs.NewFile("mybucket", "/some/file/test.txt")
+	ts.fs = FileSystem{client: mocks.NewClient(ts.T())}
+	file, err := ts.fs.NewFile("mybucket", "/some/file/test.txt")
 	ts.Require().NoError(err)
 	ts.Equal(types.ServerSideEncryptionAes256, uploadInput(file.(*File)).ServerSideEncryption, "sse was set")
 	ts.Equal("some/file/test.txt", *uploadInput(file.(*File)).Key, "key was set")
@@ -641,8 +638,8 @@ func (ts *fileTestSuite) TestUploadInputDisableSSE() {
 }
 
 func (ts *fileTestSuite) TestUploadInputContentType() {
-	fs = FileSystem{client: mocks.NewClient(ts.T())}
-	file, err := fs.NewFile("mybucket", "/some/file/test.txt", newfile.WithContentType("text/plain"))
+	ts.fs = FileSystem{client: mocks.NewClient(ts.T())}
+	file, err := ts.fs.NewFile("mybucket", "/some/file/test.txt", newfile.WithContentType("text/plain"))
 	ts.Require().NoError(err)
 	input := uploadInput(file.(*File))
 	ts.Equal("text/plain", *input.ContentType)
@@ -687,7 +684,7 @@ func (ts *fileTestSuite) TestCloseWithWrite() {
 	file := &File{
 		fileSystem: &FileSystem{
 			client:  s3Mock,
-			options: defaultOptions,
+			options: ts.defaultOptions,
 		},
 		bucket: "newBucket",
 		key:    "/new/file/path/hello.txt",
@@ -730,7 +727,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 				return &File{
 					fileSystem: &FileSystem{
 						client:  s3Mock,
-						options: defaultOptions,
+						options: ts.defaultOptions,
 					},
 					bucket: "newBucket",
 					key:    "/new/file/path/hello.txt",
@@ -757,7 +754,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 				return &File{
 					fileSystem: &FileSystem{
 						client:  s3Mock,
-						options: defaultOptions,
+						options: ts.defaultOptions,
 					},
 					bucket: "newBucket",
 					key:    "/new/file/path/hello.txt",
@@ -788,7 +785,7 @@ func (ts *fileTestSuite) TestWriteOperations() {
 				return &File{
 					fileSystem: &FileSystem{
 						client:  s3Mock,
-						options: defaultOptions,
+						options: ts.defaultOptions,
 					},
 					bucket: "newBucket",
 					key:    "/new/file/path/hello.txt",
