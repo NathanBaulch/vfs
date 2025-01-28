@@ -45,7 +45,7 @@ would have to be cast as s3.FileSystem to use the following:
 
 	    // to pass specific client, for instance a mock client
 	    s3cliMock := &mocks.Client{}
-	    s3cliMock.On("GetObject", matchContext, mock.AnythingOfType("*s3.GetObjectInput")).
+	    s3cliMock.On("GetObject", mock.Anything, mock.Anything).
 	        Return(&s3.GetObjectOutput{
 	            Body: nopCloser{bytes.NewBufferString("Hello world!")},
 	            }, nil)
