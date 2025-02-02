@@ -23,7 +23,7 @@ const (
 	defaultAutoDisconnectDuration = 10
 )
 
-var defaultClientGetter func(utils.Authority, *Options) (Client, io.Closer, error)
+var defaultClientGetter = getClient
 
 // FileSystem implements vfs.FileSystem for the SFTP filesystem.
 type FileSystem struct {
@@ -176,8 +176,6 @@ func NewFileSystem() *FileSystem {
 }
 
 func init() {
-	defaultClientGetter = getClient
-
 	// registers a default FileSystem
 	backend.Register(Scheme, NewFileSystem())
 }

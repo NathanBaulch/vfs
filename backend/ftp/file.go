@@ -21,14 +21,9 @@ import (
 )
 
 var (
-	tempFileNameGetter func(string) string
+	tempFileNameGetter = getTempFilename
 	now                = time.Now
 )
-
-func init() {
-	// this func is overridable for tests
-	tempFileNameGetter = getTempFilename
-}
 
 // File implements vfs.File interface for FTP fs.
 type File struct {

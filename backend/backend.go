@@ -9,7 +9,7 @@ import (
 
 var (
 	mmu sync.RWMutex
-	m   map[string]vfs.FileSystem
+	m   = make(map[string]vfs.FileSystem)
 )
 
 // Register a new file system in backend map
@@ -51,8 +51,4 @@ func RegisteredBackends() []string {
 	mmu.RUnlock()
 	sort.Strings(f)
 	return f
-}
-
-func init() {
-	m = make(map[string]vfs.FileSystem)
 }

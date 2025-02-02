@@ -19,8 +19,8 @@ const (
 )
 
 var (
-	dataConnGetterFunc  func(context.Context, utils.Authority, *FileSystem, *File, types.OpenType) (types.DataConn, error)
-	defaultClientGetter func(context.Context, utils.Authority, *Options) (client types.Client, err error)
+	defaultClientGetter = getClient
+	dataConnGetterFunc  = getDataConn
 )
 
 // FileSystem implements vfs.FileSystem for the FTP filesystem.
@@ -144,8 +144,6 @@ func NewFileSystem() *FileSystem {
 }
 
 func init() {
-	defaultClientGetter = getClient
-	dataConnGetterFunc = getDataConn
 	// registers a default FileSystem
 	backend.Register(Scheme, NewFileSystem())
 }
