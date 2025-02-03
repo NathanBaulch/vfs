@@ -38,6 +38,7 @@ func (ts *fileTestSuite) SetupTest() {
 	ts.fs = FileSystem{ftpclient: ts.ftpClientMock}
 	ts.testFile, err = ts.fs.NewFile("user@host.com:22", "/some/path/to/file.txt")
 	ts.Require().NoError(err, "Shouldn't return error creating test ftp.File instance.")
+	dataConnGetterFunc = getDataConn
 }
 
 var errClientGetter = errors.New("some dataconn getter error")
@@ -53,8 +54,8 @@ func (ts *fileTestSuite) TestRead() {
 
 	contents := "hello world!"
 
-	dc := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(dc.AssertReadContents(contents))
+	mockDataConn := mocks.NewDataConn(ts.T())
+	mockDataConn.EXPECT().Mode().Return(types.OpenRead)
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
 	ts.Require().NoError(err)
@@ -62,13 +63,17 @@ func (ts *fileTestSuite) TestRead() {
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			dataconn:  dc,
+			dataconn:  mockDataConn,
 		},
 		authority: auth,
 		path:      fp,
 	}
 	// test successful read
 	localFile := &bytes.Buffer{}
+	mockDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
 	b, err := io.Copy(localFile, ftpfile)
 	ts.Require().NoError(err, "no error expected")
 	ts.Len(contents, int(b), "byte count after copy")
@@ -76,7 +81,7 @@ func (ts *fileTestSuite) TestRead() {
 
 	// test read error
 	myReadErr := errors.New("some read error")
-	dc.AssertReadErr(myReadErr)
+	mockDataConn.EXPECT().Read(mock.Anything).Return(0, myReadErr).Once()
 	cnt, err := ftpfile.Read(make([]byte, 1))
 	ts.Require().ErrorIs(err, myReadErr, "error is a read error")
 	ts.Zero(cnt, "byte count is 0")
@@ -95,10 +100,7 @@ func (ts *fileTestSuite) TestClose() {
 	fp := "/some/path.txt"
 	client := mocks.NewClient(ts.T())
 
-	contents := "hello world!"
-
-	dc := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(dc.AssertReadContents(contents))
+	mockDataConn := mocks.NewDataConn(ts.T())
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
 	ts.Require().NoError(err)
@@ -106,7 +108,7 @@ func (ts *fileTestSuite) TestClose() {
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			dataconn:  dc,
+			dataconn:  mockDataConn,
 		},
 		authority: auth,
 		path:      fp,
@@ -119,24 +121,23 @@ func (ts *fileTestSuite) TestClose() {
 
 	// error closing ftpfile
 	myCloseErr := errors.New("some close error")
-	dc.AssertCloseErr(myCloseErr)
+	mockDataConn.EXPECT().Close().Return(myCloseErr).Once()
 	err = ftpfile.Close()
 	ts.Require().Error(err, "close error expected")
-	ts.Equal(1, dc.GetCloseCalledCount(), "dataconn.Close() called once")
 
 	// success closing ftpfile
-	dc.AssertCloseErr(nil)
+	mockDataConn.EXPECT().Close().Return(nil).Once()
 	err = ftpfile.Close()
 	ts.Require().NoError(err, "no close error expected")
 
 	// values zeroed after successful Close()
-	ts.True(ftpfile.fileSystem.resetConn, "resetConn should be true")
+	ts.Nil(ftpfile.fileSystem.dataconn, "dataconn should be nil")
 	ts.EqualValues(0, ftpfile.offset, "offset should be zero")
-	ts.Equal(2, dc.GetCloseCalledCount(), "dataconn.Close() called a second time")
 }
 
 func (ts *fileTestSuite) TestWrite() {
-	dataConn := newFakeDataConn(types.OpenWrite)
+	mockDataConn := mocks.NewDataConn(ts.T())
+	mockDataConn.EXPECT().Mode().Return(types.OpenWrite)
 
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
@@ -146,19 +147,24 @@ func (ts *fileTestSuite) TestWrite() {
 		path:       "/tmp/hello.txt",
 	}
 
-	file.fileSystem.dataconn = dataConn
+	file.fileSystem.dataconn = mockDataConn
 
 	contents := "hello world!"
 
 	// test write success
+	var written string
+	mockDataConn.EXPECT().Write(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		written = string(p)
+		return len(p), nil
+	}).Once()
 	count, err := file.Write([]byte(contents))
 	ts.Require().NoError(err, "Error should be nil when calling Write")
 	ts.Len(contents, count, "Returned count of bytes written should match number of bytes passed to Write.")
-	ts.Equal(dataConn.GetWriteContents(), contents, "expected contents written")
+	ts.Equal(contents, written, "expected contents written")
 
 	// test write failure
 	myWriteErr := errors.New("some write error")
-	dataConn.AssertWriteErr(myWriteErr)
+	mockDataConn.EXPECT().Write(mock.Anything).Return(0, myWriteErr).Once()
 	count, err = file.Write([]byte(contents))
 	ts.Require().ErrorIs(err, myWriteErr, "error is a write error")
 	ts.Zero(count, "byte count is 0")
@@ -173,10 +179,13 @@ func (ts *fileTestSuite) TestWrite() {
 }
 
 func (ts *fileTestSuite) TestSeek() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
+	mockDataConn := mocks.NewDataConn(ts.T())
+	mockDataConn.EXPECT().Mode().Return(types.OpenRead)
+	mockDataConn.EXPECT().IsTimePreciseInList().Return(true)
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		fs.dataconn = mockDataConn
+		return mockDataConn, nil
+	}
 
 	// set up ftpfile
 	fp := "/some/path.txt"
@@ -186,64 +195,85 @@ func (ts *fileTestSuite) TestSeek() {
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
 	ts.Require().NoError(err)
-	dataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(dataConn.AssertReadContents(contents))
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			dataconn:  dataConn,
 		},
 		authority: auth,
 		path:      fp,
 	}
 
 	// seek to position 6, whence 0
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
 	_, err = ftpfile.Seek(6, io.SeekStart)
 	ts.Require().NoError(err, "no error expected")
 	localFile := &bytes.Buffer{}
+	mockDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents[6:])
+		return len(contents) - 6, io.EOF
+	}).Once()
 	_, err = io.Copy(localFile, ftpfile)
 	ts.Require().NoError(err, "no error expected")
 	ts.Equal("world!", localFile.String(), "Seeking should move the ftp file cursor as expected")
 	localFile = &bytes.Buffer{}
 
 	// seek back to start
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
 	_, err = ftpfile.Seek(0, io.SeekStart)
 	ts.Require().NoError(err, "no error expected")
+	mockDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
 	_, err = io.Copy(localFile, ftpfile)
 	ts.Require().NoError(err, "no error expected")
 	ts.Equal(contents, localFile.String(), "Subsequent calls to seek work on temp ftp file as expected")
 
 	// whence = 1 (seek relative position), seek 2
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
 	pos, err := ftpfile.Seek(6, io.SeekStart) // seek to some mid point
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(6, pos, "position check")
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
+	mockDataConn.EXPECT().Close().Return(nil).Once()
 	pos, err = ftpfile.Seek(2, 1) // now seek to relative position
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(8, pos, "position check")
 	localFile.Reset()
+	mockDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents[8:])
+		return len(contents) - 8, io.EOF
+	}).Once()
 	_, err = io.Copy(localFile, ftpfile)
 	ts.Require().NoError(err, "no error expected")
 	ts.Equal("rld!", localFile.String(), "seek should be position 8, 2 relative to 6")
 
 	// whence = 1, original file offset < 0 (not even sure if this is possible)
 	ftpfile.offset = -2 // this SHOULD not be possible
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
+	mockDataConn.EXPECT().Close().Return(nil).Once()
 	pos, err = ftpfile.Seek(5, 1)
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(5, pos, "new offset should be 5")
 
 	// whence = 2 (seek from end)
-	ftpfile.fileSystem.dataconn.(*fakeDataConn).AssertSize(uint64(len(contents)))
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{Size: uint64(len(contents))}, nil).Twice()
+	mockDataConn.EXPECT().Close().Return(nil).Once()
 	pos, err = ftpfile.Seek(8, 2) // seek to some mid point
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(4, pos, "position check")
 	localFile.Reset()
+	mockDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents[4:])
+		return len(contents) - 4, io.EOF
+	}).Once()
 	_, err = io.Copy(localFile, ftpfile)
 	ts.Require().NoError(err, "no error expected")
 	ts.Equal("o world!", localFile.String(), "seek should be position 8, 2 relative to 6")
 
 	// dataconn != nil, so set file offset and get new dataconn
-	ftpfile.offset = 8                  // set it to some offset
-	ftpfile.fileSystem.resetConn = true // make dataconn nil
+	ftpfile.offset = 8 // set it to some offset
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
 	offset, err := ftpfile.Seek(6, io.SeekStart)
 	ts.Require().NoError(err, "error not expected")
 	ts.EqualValues(6, offset, "returned offset should be 6")
@@ -251,32 +281,34 @@ func (ts *fileTestSuite) TestSeek() {
 	ts.NotNil(ftpfile.fileSystem.dataconn, "dataconn should no longer be nil")
 
 	// whence = 2, correction of offset to 0 when whence 2 and seek offset > len(contents)
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Twice()
+	mockDataConn.EXPECT().Close().Return(nil).Once()
 	pos, err = ftpfile.Seek(15, 2)
 	ts.Require().NoError(err, "no error expected")
 	ts.EqualValues(0, pos, "new offset should be 5")
 
 	// whence = 2, file doesn't exist yet
-	ftpfile.fileSystem.dataconn.(*fakeDataConn).AssertExists(false)
+	mockDataConn.EXPECT().GetEntry(fp).Return(nil, os.ErrNotExist).Once()
 	_, err = ftpfile.Seek(15, 2)
 	ts.Require().ErrorIs(err, os.ErrNotExist, "os error not exist expected")
 }
 
 func (ts *fileTestSuite) TestSeekError() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
+	mockDataConn := mocks.NewDataConn(ts.T())
+	mockDataConn.EXPECT().Mode().Return(types.OpenRead)
+	mockDataConn.EXPECT().IsTimePreciseInList().Return(true)
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		fs.dataconn = mockDataConn
+		return mockDataConn, nil
+	}
 
 	// set up ftpfile
 	fp := "/some/path.txt"
 	client := mocks.NewClient(ts.T())
-
-	contents := "hello world!"
+	client.EXPECT().IsTimePreciseInList().Return(true)
 
 	auth, err := utils.NewAuthority("user@host1.com:22")
 	ts.Require().NoError(err)
-	dataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(dataConn.AssertReadContents(contents))
 	ftpfile := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
@@ -293,26 +325,23 @@ func (ts *fileTestSuite) TestSeekError() {
 	_, err = ftpfile.Seek(6, io.SeekStart)
 	ts.Require().ErrorIs(err, dconnErr, "should be right kind of error")
 
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		fs.dataconn = mockDataConn
+		return mockDataConn, nil
+	}
+
 	// whence = 1, f.dataconn.Close() error
-	dataConnGetterFunc = getFakeDataConn
-	dataConn = newFakeDataConn(types.OpenRead)
-	ftpfile.fileSystem.dataconn = dataConn
+	mockDataConn.EXPECT().GetEntry(fp).Return(&ftp.Entry{}, nil).Once()
 	closeErr := errors.New("some close error")
-	dataConn.AssertCloseErr(closeErr)
+	mockDataConn.EXPECT().Close().Return(closeErr).Once()
 	pos, err := ftpfile.Seek(3, 1)
 	ts.Require().ErrorIs(err, closeErr, "should be right kind of error")
 	ts.EqualValues(0, pos, "position should be 0 on error")
-	dataConn.AssertCloseErr(nil)
 
 	// whence = 2, f.Size() error (client.GetEntry error)
 	dataConnGetterFunc = getDataConn
-	ftpfile.fileSystem.resetConn = true
+	ftpfile.fileSystem.dataconn = nil
 	sizeErr := errors.New("some Size error")
-
-	client.EXPECT().
-		IsTimePreciseInList().
-		Return(true).
-		Once()
 	client.EXPECT().
 		GetEntry(ftpfile.Path()).
 		Return(nil, sizeErr). // return non-ErrNotFound error when calling Size()
@@ -321,9 +350,15 @@ func (ts *fileTestSuite) TestSeekError() {
 	ts.Require().ErrorIs(err, sizeErr, "should be right kind of error")
 	ts.EqualValues(0, pos, "position should be 0 on error")
 
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		fs.dataconn = mockDataConn
+		return mockDataConn, nil
+	}
+
 	// whence = 2, f.dataconn.Close() error
-	ftpfile.fileSystem.dataconn = dataConn
-	dataConn.AssertCloseErr(closeErr)
+	ftpfile.fileSystem.dataconn = nil
+	mockDataConn.EXPECT().GetEntry(ftpfile.Path()).Return(&ftp.Entry{}, nil).Twice()
+	mockDataConn.EXPECT().Close().Return(closeErr).Once()
 	pos, err = ftpfile.Seek(3, 2)
 	ts.Require().ErrorIs(err, closeErr, "should be right kind of error")
 	ts.EqualValues(0, pos, "position should be 0 on error")
@@ -424,101 +459,133 @@ func (ts *fileTestSuite) TestNotExists_mlst() {
 }
 
 func (ts *fileTestSuite) TestCopyToFile() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
-
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
+	mockReadDataConn := mocks.NewDataConn(ts.T())
+	mockReadDataConn.EXPECT().IsTimePreciseInList().Return(true)
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
+	sourceFS := NewFileSystem().WithClient(ts.ftpClientMock)
 	sourceFile := &File{
-		fileSystem: NewFileSystem().WithClient(ts.ftpClientMock),
+		fileSystem: sourceFS,
 		authority:  auth2,
 		path:       "/src/hello.txt",
 	}
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
-	fakeWriteDataConn := newFakeDataConn(types.OpenWrite)
+	mockWriteDataConn := mocks.NewDataConn(ts.T())
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
+	targetFS := NewFileSystem().WithClient(ts.ftpClientMock)
 	targetFile := &File{
-		fileSystem: NewFileSystem().WithClient(ts.ftpClientMock),
+		fileSystem: targetFS,
 		authority:  auth,
 		path:       "/targ/hello.txt",
 	}
-	targetFile.fileSystem.dataconn = fakeWriteDataConn
+
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		if fs == sourceFS {
+			return mockReadDataConn, nil
+		}
+		if fs == targetFS {
+			return mockWriteDataConn, nil
+		}
+		return fs.dataconn, nil
+	}
 
 	// successful copy
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(&ftp.Entry{}, nil).Once()
+	mockReadDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
+	var written string
+	mockWriteDataConn.EXPECT().Write(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		written = string(p)
+		return len(contents), nil
+	}).Once()
 	err = sourceFile.CopyToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
-	ts.Equal(contents, targetFile.fileSystem.dataconn.(*fakeDataConn).GetWriteContents(), "contents match")
+	ts.Equal(contents, written, "contents match")
 
 	// file doesn't exist error while copying
-	fakeSingleOpDataConn := newFakeDataConn(types.SingleOp)
-	fakeSingleOpDataConn.AssertExists(false)
-	sourceFile.fileSystem.resetConn = false
-	sourceFile.fileSystem.dataconn = fakeSingleOpDataConn
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(&ftp.Entry{}, nil).Once()
+	mockReadDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
+	mockWriteDataConn.EXPECT().Write(mock.Anything).Return(len(contents), os.ErrNotExist).Once()
 	err = sourceFile.CopyToFile(targetFile)
 	ts.Require().ErrorIs(err, os.ErrNotExist, "error is expected kind of error")
 
 	// writer close error while copying
-	fakeReadDataConn = newFakeDataConn(types.OpenRead)
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
-	sourceFile.fileSystem.resetConn = false
-	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
-	fakeWriteDataConn = newFakeDataConn(types.OpenWrite)
-	targetFile.fileSystem.dataconn = fakeWriteDataConn
-	targetFile.fileSystem.resetConn = false
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(&ftp.Entry{}, nil).Once()
+	mockReadDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
+	targetFile.fileSystem.dataconn = mockWriteDataConn
 	closeErr := errors.New("some close error")
-	fakeWriteDataConn.AssertCloseErr(closeErr) // assert writer close error
+	mockWriteDataConn.EXPECT().Write(mock.Anything).Return(len(contents), nil).Once()
+	mockWriteDataConn.EXPECT().Close().Return(closeErr).Twice()
 	err = sourceFile.CopyToFile(targetFile)
 	ts.Require().ErrorIs(err, closeErr, "error is expected kind of error")
 }
 
 func (ts *fileTestSuite) TestCopyToLocation() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
-
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
+	mockReadDataConn := mocks.NewDataConn(ts.T())
+	mockReadDataConn.EXPECT().IsTimePreciseInList().Return(true)
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
+	sourceFS := NewFileSystem().WithClient(ts.ftpClientMock)
 	sourceFile := &File{
-		fileSystem: NewFileSystem().WithClient(ts.ftpClientMock),
+		fileSystem: sourceFS,
 		authority:  auth2,
 		path:       "/src/hello.txt",
 	}
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
+	mockWriteDataConn := mocks.NewDataConn(ts.T())
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
+	targetFS := &FileSystem{
+		ftpclient: ts.ftpClientMock,
+	}
 	targetLocation := &Location{
-		fileSystem: &FileSystem{
-			ftpclient: ts.ftpClientMock,
-		},
-		Authority: auth,
-		path:      "/targ/",
+		fileSystem: targetFS,
+		Authority:  auth,
+		path:       "/targ/",
+	}
+
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		if fs == sourceFS {
+			return mockReadDataConn, nil
+		}
+		if fs == targetFS {
+			return mockWriteDataConn, nil
+		}
+		return fs.dataconn, nil
 	}
 
 	// copy to location success
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(&ftp.Entry{}, nil).Once()
+	mockReadDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
+	var written string
+	mockWriteDataConn.EXPECT().Write(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		written = string(p)
+		return len(p), nil
+	}).Once()
 	newFile, err := sourceFile.CopyToLocation(targetLocation)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 	ts.Equal("ftp://user@host.com:22/targ/hello.txt", newFile.URI(), "new file uri check")
-	ts.Equal(contents, newFile.(*File).fileSystem.dataconn.(*fakeDataConn).GetWriteContents(), "contents match")
+	ts.Equal(contents, written, "contents match")
 
 	// copy to location newfile failure
-	fakeReadDataConn = newFakeDataConn(types.OpenRead)
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
 	sourceFile.path = ""
 	newFile, err = sourceFile.CopyToLocation(targetLocation)
 	ts.Require().Error(err, "error is expected")
@@ -527,83 +594,98 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 }
 
 func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
-
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
+	mockReadDataConn := mocks.NewDataConn(ts.T())
+	mockReadDataConn.EXPECT().IsTimePreciseInList().Return(true)
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
+	sourceFS := NewFileSystem().WithClient(ts.ftpClientMock)
 	sourceFile := &File{
-		fileSystem: NewFileSystem().WithClient(ts.ftpClientMock),
+		fileSystem: sourceFS,
 		authority:  auth2,
 		path:       "/src/hello.txt",
 	}
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
-	fakeWriteDataConn := newFakeDataConn(types.OpenWrite)
+	mockWriteDataConn := mocks.NewDataConn(ts.T())
 	auth, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
+	targetFS := NewFileSystem().WithClient(ts.ftpClientMock)
 	targetFile := &File{
-		fileSystem: NewFileSystem().WithClient(ts.ftpClientMock),
+		fileSystem: targetFS,
 		authority:  auth,
 		path:       "/targ/hello.txt",
 	}
-	targetFile.fileSystem.dataconn = fakeWriteDataConn
+
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		if fs == sourceFS {
+			return mockReadDataConn, nil
+		}
+		if fs == targetFS {
+			return mockWriteDataConn, nil
+		}
+		return fs.dataconn, nil
+	}
 
 	// successfully MoveToFile for different authorities (copy-delete)
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(&ftp.Entry{}, nil).Once()
+	mockReadDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
+	mockReadDataConn.EXPECT().Delete("/src/hello.txt").Return(nil).Once()
+	var written string
+	mockWriteDataConn.EXPECT().Write(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		written = string(p)
+		return len(p), nil
+	}).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to MoveToFile")
-	ts.Equal(contents, targetFile.fileSystem.dataconn.(*fakeDataConn).GetWriteContents(), "contents match")
+	ts.Equal(contents, written, "contents match")
 	ts.Equal("ftp://user@host.com:22/targ/hello.txt", targetFile.URI(), "expected uri")
 
 	// CopyToFile failure on MoveToFile
-	fakeReadDataConn = newFakeDataConn(types.SingleOp)
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
-	sourceFile.fileSystem.resetConn = false
 	readErr := errors.New("some read error")
-	fakeReadDataConn.AssertExists(true)
-	fakeReadDataConn.AssertSingleOpErr(readErr)
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(nil, readErr).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().ErrorIs(err, readErr, "correct kind of error")
 }
 
 func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
-
 	// set up source
-	contents := "hello world!"
-	fakeReadDataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
+	mockReadDataConn := mocks.NewDataConn(ts.T())
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	srcMockFTPClient := mocks.NewClient(ts.T())
+	sourceFS := NewFileSystem().WithClient(srcMockFTPClient)
 	sourceFile := &File{
-		fileSystem: NewFileSystem().WithClient(srcMockFTPClient),
+		fileSystem: sourceFS,
 		authority:  auth2,
 		path:       "/src/hello.txt",
 	}
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
 	tgtMockFTPClient := mocks.NewClient(ts.T())
-	fakeWriteDataConn := newFakeDataConn(types.OpenWrite)
+	mockWriteDataConn := mocks.NewDataConn(ts.T())
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
+	targetFS := NewFileSystem().WithClient(tgtMockFTPClient)
 	targetFile := &File{
-		fileSystem: NewFileSystem().WithClient(tgtMockFTPClient),
+		fileSystem: targetFS,
 		authority:  auth,
 		path:       "/targ/hello.txt",
 	}
-	targetFile.fileSystem.dataconn = fakeWriteDataConn
+
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		if fs == sourceFS {
+			return mockReadDataConn, nil
+		}
+		if fs == targetFS {
+			return mockWriteDataConn, nil
+		}
+		return fs.dataconn, nil
+	}
 
 	// successfully MoveToFile for same authorities (rename) - dir exists
 	entries := []*ftp.Entry{
@@ -612,15 +694,15 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 			Type: ftp.EntryTypeFolder,
 		},
 	}
-	tgtMockFTPClient.EXPECT().
-		List("/").
-		Return(entries, nil).
-		Once()
+	mockReadDataConn.EXPECT().Rename("/src/hello.txt", "/targ/hello.txt").Return(nil).Once()
+	mockWriteDataConn.EXPECT().List("/").Return(entries, nil).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to MoveToFile")
 	ts.Equal("ftp://123@xyz.com:3022/targ/hello.txt", targetFile.URI(), "expected uri")
 
 	// successfully MoveToFile for same authorities (rename) - dir doesn't exist
+	mockReadDataConn.EXPECT().Rename("/src/hello.txt", "/targ/hello.txt").Return(nil).Once()
+	mockWriteDataConn.EXPECT().List("/").Return(entries, nil).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to MoveToFile")
 	ts.Equal("ftp://123@xyz.com:3022/targ/hello.txt", targetFile.URI(), "expected uri")
@@ -629,63 +711,76 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 	defaultClientGetter = clientGetterReturnsError
 	dataConnGetterFunc = getDataConn
 	sourceFile.fileSystem.WithClient(nil)
-	sourceFile.fileSystem.resetConn = true
+	tgtMockFTPClient.EXPECT().List("/").Return(entries, nil).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().ErrorIs(err, errClientGetter, "error is the right kind of error")
 	defaultClientGetter = getClient
-	targetFile.fileSystem.WithClient(tgtMockFTPClient)
-	dataConnGetterFunc = getFakeDataConn
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		return fs.dataconn, nil
+	}
+	sourceFile.fileSystem.dataconn = mockReadDataConn
 
 	// Exists failure
 	existsErr := errors.New("some exists error")
-	targetFile.fileSystem.dataconn = newFakeDataConn(types.SingleOp)
-	targetFile.fileSystem.dataconn.(*fakeDataConn).AssertSingleOpErr(existsErr)
-	targetFile.fileSystem.dataconn.(*fakeDataConn).AssertExists(true)
+	mockReadDataConn.EXPECT().Rename("/src/hello.txt", "/targ/hello.txt").Return(existsErr).Once()
+	tgtMockFTPClient.EXPECT().List("/").Return(entries, nil).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().ErrorIs(err, existsErr, "error is the right kind of error")
-	targetFile.fileSystem.dataconn = newFakeDataConn(types.SingleOp)
 
 	// Mkdir failure
 	mkdirErr := errors.New("some mkdir error")
-	sourceFile.fileSystem.dataconn = newFakeDataConn(types.SingleOp)
-	sourceFile.fileSystem.dataconn.(*fakeDataConn).AssertSingleOpErr(mkdirErr)
-	sourceFile.fileSystem.resetConn = false
+	mockReadDataConn.EXPECT().Rename("/src/hello.txt", "/targ/hello.txt").Return(mkdirErr).Once()
+	tgtMockFTPClient.EXPECT().List("/").Return(entries, nil).Once()
 	err = sourceFile.MoveToFile(targetFile)
 	ts.Require().ErrorIs(err, mkdirErr, "error is the right kind of error")
 }
 
 func (ts *fileTestSuite) TestMoveToLocation() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
-
 	// set up source
 	contents := "hello world!"
-	fakeReadDataConn := newFakeDataConn(types.OpenRead)
-	ts.Require().NoError(fakeReadDataConn.AssertReadContents(contents))
+	mockReadDataConn := mocks.NewDataConn(ts.T())
+	mockReadDataConn.EXPECT().IsTimePreciseInList().Return(true)
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	srcMockFTPClient := mocks.NewClient(ts.T())
+	sourceFS := NewFileSystem().WithClient(srcMockFTPClient)
 	sourceFile := &File{
-		fileSystem: NewFileSystem().WithClient(srcMockFTPClient),
+		fileSystem: sourceFS,
 		authority:  auth,
 		path:       "/src/hello.txt",
 	}
-	sourceFile.fileSystem.dataconn = fakeReadDataConn
 
 	// set up target
+	mockWriteDataConn := mocks.NewDataConn(ts.T())
 	auth2, err := utils.NewAuthority("user@host.com:22")
 	ts.Require().NoError(err)
+	targetFS := &FileSystem{
+		ftpclient: ts.ftpClientMock,
+	}
 	targetLocation := &Location{
-		fileSystem: &FileSystem{
-			ftpclient: ts.ftpClientMock,
-		},
-		Authority: auth2,
-		path:      "/targ/",
+		fileSystem: targetFS,
+		Authority:  auth2,
+		path:       "/targ/",
+	}
+
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		if fs == sourceFS {
+			return mockReadDataConn, nil
+		}
+		if fs == targetFS {
+			return mockWriteDataConn, nil
+		}
+		return fs.dataconn, nil
 	}
 
 	// successful MoveToLocation
+	mockReadDataConn.EXPECT().GetEntry("/src/hello.txt").Return(&ftp.Entry{}, nil).Once()
+	mockReadDataConn.EXPECT().Read(mock.Anything).RunAndReturn(func(p []byte) (int, error) {
+		copy(p, contents)
+		return len(contents), io.EOF
+	}).Once()
+	mockReadDataConn.EXPECT().Delete("/src/hello.txt").Return(nil).Once()
+	mockWriteDataConn.EXPECT().Write(mock.Anything).Return(len(contents), nil).Once()
 	newFile, err := sourceFile.MoveToLocation(targetLocation)
 	ts.Require().NoError(err, "error shouldn't be returned from successful call to MoveToFile")
 	ts.Equal("ftp://user@host.com:22/targ/hello.txt", newFile.URI(), "new file uri check")
@@ -701,13 +796,14 @@ func (ts *fileTestSuite) TestTouch_exists() {
 	filepath := "/some/path.txt"
 	// set up source
 	client := mocks.NewClient(ts.T())
-	dconn := newFakeDataConn(types.OpenRead)
+	mockDataConn := mocks.NewDataConn(ts.T())
+	mockDataConn.EXPECT().Mode().Return(types.OpenRead)
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	file := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			dataconn:  dconn,
+			dataconn:  mockDataConn,
 		},
 		authority: auth,
 		path:      filepath,
@@ -770,6 +866,7 @@ func (ts *fileTestSuite) TestTouch_exists() {
 		Rename(file.Location().Path()+tempFileName, file.Path()).
 		Return(nil).
 		Once()
+	mockDataConn.EXPECT().Close().Return(nil)
 	ts.Require().NoError(file.Touch())
 
 	// success calling Touch when SetTime is supported
@@ -851,28 +948,31 @@ func (ts *fileTestSuite) TestTouch_exists() {
 }
 
 func (ts *fileTestSuite) TestTouch_notExists() {
-	dataConnGetterFunc = getFakeDataConn
-	defer func() {
-		dataConnGetterFunc = getDataConn
-	}()
+	mockDataConn := mocks.NewDataConn(ts.T())
+	mockDataConn.EXPECT().IsTimePreciseInList().Return(true)
+	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {
+		fs.dataconn = mockDataConn
+		return mockDataConn, nil
+	}
 
 	filepath := "/some/path.txt"
 	// set up source
 	client := mocks.NewClient(ts.T())
-	dconn := newFakeDataConn(types.SingleOp)
+	client.EXPECT().IsTimePreciseInList().Return(true)
 	auth, err := utils.NewAuthority("123@xyz.com:3022")
 	ts.Require().NoError(err)
 	file := &File{
 		fileSystem: &FileSystem{
 			ftpclient: client,
-			dataconn:  dconn,
 		},
 		authority: auth,
 		path:      filepath,
 	}
 
 	// success calling Touch when file does not exist
-	dconn.AssertExists(false)
+	mockDataConn.EXPECT().GetEntry(filepath).Return(nil, errors.New("550")).Once()
+	mockDataConn.EXPECT().Write(mock.Anything).Return(0, nil).Once()
+	mockDataConn.EXPECT().Close().Return(nil).Once()
 	err = file.Touch()
 	ts.Require().NoError(err, "no error expected")
 
@@ -888,10 +988,6 @@ func (ts *fileTestSuite) TestTouch_notExists() {
 		}, nil).
 		Once()
 	client.EXPECT().
-		IsTimePreciseInList().
-		Return(true).
-		Once()
-	client.EXPECT().
 		GetEntry(file.Path()). // initial exists check
 		Return(&ftp.Entry{}, errors.New("550")).
 		Once()
@@ -901,7 +997,6 @@ func (ts *fileTestSuite) TestTouch_notExists() {
 		StorFrom(file.Path(), mock.Anything, uint64(0)).
 		Return(wErr).
 		Once()
-	file.fileSystem.resetConn = false
 
 	err = file.Touch()
 	ts.Require().ErrorIs(err, io.ErrClosedPipe, "error is correct error type")
@@ -939,7 +1034,7 @@ func (ts *fileTestSuite) TestDelete() {
 	// failure getting client
 	defaultClientGetter = clientGetterReturnsError
 	testFile.fileSystem.WithClient(nil)
-	testFile.fileSystem.resetConn = true
+	testFile.fileSystem.dataconn = nil
 	err = testFile.Delete()
 	ts.Require().ErrorIs(err, errClientGetter, "should be right kind of error")
 }
@@ -981,7 +1076,7 @@ func (ts *fileTestSuite) TestLastModified() {
 	// stat client error
 	defaultClientGetter = clientGetterReturnsError
 	ts.testFile.(*File).fileSystem.WithClient(nil)
-	ts.testFile.(*File).fileSystem.resetConn = true
+	ts.testFile.(*File).fileSystem.dataconn = nil
 	modTime, err = ts.testFile.LastModified()
 	ts.Require().ErrorIs(err, errClientGetter, "err should be correct type")
 	ts.Nil(modTime, "LastModified's time should be nil on error")
@@ -1079,189 +1174,4 @@ func (ts *fileTestSuite) TestNewFile() {
 	ts.IsType(&File{}, ftpFile, "newFile returned a File struct")
 	ts.Equal(authority, ftpFile.Location().Volume())
 	ts.Equal(key, ftpFile.Path())
-}
-
-// fakeDataConn implements a types.DataConn
-type fakeDataConn struct {
-	rw               *readWriteSeeker
-	mode             types.OpenType
-	closeErr         error
-	writeErr         error
-	readErr          error
-	singleOpErr      error
-	exists           bool
-	mlst             bool
-	size             uint64
-	closeCalledCount int
-}
-
-func (f *fakeDataConn) Delete(string) error {
-	return f.singleOpErr
-}
-
-func (f *fakeDataConn) GetEntry(string) (*ftp.Entry, error) {
-	if f.exists {
-		return &ftp.Entry{
-			Size: f.size,
-		}, f.singleOpErr
-	} else {
-		return nil, errors.New("550")
-	}
-}
-
-func (f *fakeDataConn) List(string) ([]*ftp.Entry, error) {
-	if f.exists {
-		return []*ftp.Entry{
-			{
-				Type: ftp.EntryTypeFolder,
-			},
-		}, f.singleOpErr
-	}
-	return nil, errors.New("550")
-}
-
-func (f *fakeDataConn) MakeDir(string) error {
-	return f.singleOpErr
-}
-
-func (f *fakeDataConn) Rename(_, _ string) error {
-	return f.singleOpErr
-}
-
-func (f *fakeDataConn) IsSetTimeSupported() bool {
-	return false
-}
-
-func (f *fakeDataConn) SetTime(string, time.Time) error {
-	return f.singleOpErr
-}
-
-func (f *fakeDataConn) IsTimePreciseInList() bool {
-	return f.mlst
-}
-
-func (f *fakeDataConn) Read(p []byte) (int, error) {
-	if f.readErr != nil {
-		return 0, f.readErr
-	}
-	return f.rw.Read(p)
-}
-
-func (f *fakeDataConn) Write(p []byte) (int, error) {
-	if f.writeErr != nil {
-		return 0, f.writeErr
-	}
-	return f.rw.Write(p)
-}
-
-func (f *fakeDataConn) Close() error {
-	f.closeCalledCount++
-	return f.closeErr
-}
-
-func (f *fakeDataConn) Mode() types.OpenType {
-	return f.mode
-}
-
-func newFakeDataConn(mode types.OpenType) *fakeDataConn {
-	return &fakeDataConn{
-		mode: mode,
-		rw:   &readWriteSeeker{},
-	}
-}
-
-func (f *fakeDataConn) AssertReadErr(err error) {
-	f.readErr = err
-}
-
-func (f *fakeDataConn) AssertWriteErr(err error) {
-	f.writeErr = err
-}
-
-func (f *fakeDataConn) AssertCloseErr(err error) {
-	f.closeErr = err
-}
-
-func (f *fakeDataConn) AssertExists(exists bool) {
-	f.exists = exists
-}
-
-func (f *fakeDataConn) AssertSingleOpErr(err error) {
-	f.singleOpErr = err
-}
-
-func (f *fakeDataConn) AssertMlst(mlst bool) {
-	f.mlst = mlst
-}
-
-func (f *fakeDataConn) AssertSize(size uint64) {
-	f.size = size
-}
-
-func (f *fakeDataConn) AssertReadContents(contents string) error {
-	// write contents to buffer
-	_, err := f.rw.Write([]byte(contents))
-	if err != nil {
-		return err
-	}
-
-	// reset cursor after writing contents
-	_, err = f.rw.Seek(0, io.SeekStart)
-
-	return err
-}
-
-func (f *fakeDataConn) GetWriteContents() string {
-	return string(f.rw.Bytes())
-}
-
-func (f *fakeDataConn) GetCloseCalledCount() int {
-	return f.closeCalledCount
-}
-
-func getFakeDataConn(_ context.Context, _ utils.Authority, fileSystem *FileSystem, f *File, t types.OpenType) (types.DataConn, error) {
-	if fileSystem.dataconn != nil {
-		if fileSystem.dataconn.Mode() != t {
-			// wrong session type ... close current session and unset it (so we can set a new one after)
-			err := fileSystem.dataconn.Close()
-			if err != nil {
-				return nil, err
-			}
-			if f != nil {
-				f.fileSystem.resetConn = true
-			}
-		}
-	}
-
-	if f != nil && f.fileSystem.resetConn {
-		if f != nil {
-			f.fileSystem.resetConn = false
-		}
-		contents := fileSystem.dataconn.(*fakeDataConn).rw.Bytes()
-		fileSystem.dataconn = newFakeDataConn(t)
-		_, err := fileSystem.dataconn.Write(contents)
-		if err != nil {
-			return nil, err
-		}
-		_, err = fileSystem.dataconn.(*fakeDataConn).rw.Seek(0, io.SeekStart)
-		if err != nil {
-			return nil, err
-		}
-		fileSystem.dataconn.(*fakeDataConn).exists = true
-		fileSystem.dataconn.(*fakeDataConn).mlst = true
-	}
-
-	if fileSystem.dataconn == nil {
-		fileSystem.dataconn = newFakeDataConn(t)
-	}
-
-	// Seek to offset (whence is always zero because of the way file.Seek calculates it for you)
-	if f != nil {
-		_, err := fileSystem.dataconn.(*fakeDataConn).rw.Seek(f.offset, io.SeekStart)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return fileSystem.dataconn, nil
 }

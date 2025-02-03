@@ -312,7 +312,7 @@ func (f *File) Close() error {
 		if err != nil {
 			return utils.WrapCloseError(err)
 		}
-		f.fileSystem.resetConn = true
+		f.fileSystem.dataconn = nil
 	}
 	// no op for unopened file
 	f.offset = 0
@@ -374,7 +374,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 			if err != nil {
 				return 0, utils.WrapSeekError(err)
 			}
-			f.fileSystem.resetConn = true
+			f.fileSystem.dataconn = nil
 		case io.SeekEnd: // offset from end of the file
 			sz, err := f.Size()
 			if err != nil {
@@ -395,7 +395,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 			if err != nil {
 				return 0, utils.WrapSeekError(err)
 			}
-			f.fileSystem.resetConn = true
+			f.fileSystem.dataconn = nil
 		}
 	}
 

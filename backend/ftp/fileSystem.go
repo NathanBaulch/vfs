@@ -28,7 +28,6 @@ type FileSystem struct {
 	options   *Options
 	ftpclient types.Client
 	dataconn  types.DataConn
-	resetConn bool
 }
 
 // Retry will return the default no-op retrier. The FTP client provides its own retryer interface, and is available
