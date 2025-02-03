@@ -55,7 +55,7 @@ func (lt *locationTestSuite) TestList() {
 	}
 }
 
-func (lt *locationTestSuite) TestList_pagedCall() {
+func (lt *locationTestSuite) TestList_PagedCall() {
 	firstKeyList := []string{"dir1/file.txt", "dir1/file2.txt"}
 	firstCallOutputMarker := firstKeyList[len(firstKeyList)-1]
 	secondKeyList := []string{"dir1/file3.txt", "dir1/file4.txt"}
@@ -203,7 +203,7 @@ func (lt *locationTestSuite) TestNewFile() {
 	lt.Require().EqualError(err, utils.ErrBadRelFilePath, "errors returned by NewLocation")
 }
 
-func (lt *locationTestSuite) TestExists_true() {
+func (lt *locationTestSuite) TestExists() {
 	bucket := "foo"
 	lt.s3cliMock.EXPECT().HeadBucket(mock.Anything, &s3.HeadBucketInput{
 		Bucket: &bucket,
@@ -215,7 +215,7 @@ func (lt *locationTestSuite) TestExists_true() {
 	lt.True(exists, "Call to Exists expected to return true.")
 }
 
-func (lt *locationTestSuite) TestExists_false() {
+func (lt *locationTestSuite) TestNotExists() {
 	bucket := "foo"
 	lt.s3cliMock.EXPECT().HeadBucket(mock.Anything, &s3.HeadBucketInput{
 		Bucket: &bucket,

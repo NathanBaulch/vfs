@@ -364,7 +364,7 @@ func (ts *fileTestSuite) TestSeekError() {
 	ts.EqualValues(0, pos, "position should be 0 on error")
 }
 
-func (ts *fileTestSuite) TestExists_noMlst() {
+func (ts *fileTestSuite) TestExists_NoMLST() {
 	ftpfile, err := ts.fs.NewFile("user@host.com", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
@@ -396,7 +396,7 @@ func (ts *fileTestSuite) TestExists_noMlst() {
 	ts.False(exists, "exists should be false on error")
 }
 
-func (ts *fileTestSuite) TestExists_mlst() {
+func (ts *fileTestSuite) TestExists_MLST() {
 	ftpfile, err := ts.fs.NewFile("user@host.com", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
@@ -426,7 +426,7 @@ func (ts *fileTestSuite) TestExists_mlst() {
 	ts.False(exists, "exists should be false on error")
 }
 
-func (ts *fileTestSuite) TestNotExists_noMlst() {
+func (ts *fileTestSuite) TestNotExists_NoMLST() {
 	ftpfile, err := ts.fs.NewFile("user@host.com", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
@@ -442,7 +442,7 @@ func (ts *fileTestSuite) TestNotExists_noMlst() {
 	ts.False(exists, "Should return false for exists based on setup")
 }
 
-func (ts *fileTestSuite) TestNotExists_mlst() {
+func (ts *fileTestSuite) TestNotExists_MLST() {
 	ftpfile, err := ts.fs.NewFile("user@host.com", "/path/hello.txt")
 	ts.Require().NoError(err, "Shouldn't fail creating new file.")
 
@@ -593,7 +593,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	ts.Require().ErrorContains(err, utils.ErrBadRelFilePath, "error is correct type")
 }
 
-func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
+func (ts *fileTestSuite) TestMoveToFile_DifferentAuthority() {
 	// set up source
 	contents := "hello world!"
 	mockReadDataConn := mocks.NewDataConn(ts.T())
@@ -652,7 +652,7 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 	ts.Require().ErrorIs(err, readErr, "correct kind of error")
 }
 
-func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
+func (ts *fileTestSuite) TestMoveToFile_SameAuthority() {
 	// set up source
 	mockReadDataConn := mocks.NewDataConn(ts.T())
 	auth2, err := utils.NewAuthority("123@xyz.com:3022")
@@ -792,7 +792,7 @@ func (ts *fileTestSuite) TestMoveToLocation() {
 	ts.Nil(newFile, "newFile should be nil on error")
 }
 
-func (ts *fileTestSuite) TestTouch_exists() {
+func (ts *fileTestSuite) TestTouch_Exists() {
 	filepath := "/some/path.txt"
 	// set up source
 	client := mocks.NewClient(ts.T())
@@ -947,7 +947,7 @@ func (ts *fileTestSuite) TestTouch_exists() {
 	ts.Require().ErrorIs(err, listErr, "error is correct error type")
 }
 
-func (ts *fileTestSuite) TestTouch_notExists() {
+func (ts *fileTestSuite) TestTouch_NotExists() {
 	mockDataConn := mocks.NewDataConn(ts.T())
 	mockDataConn.EXPECT().IsTimePreciseInList().Return(true)
 	dataConnGetterFunc = func(_ context.Context, _ utils.Authority, fs *FileSystem, _ *File, _ types.OpenType) (types.DataConn, error) {

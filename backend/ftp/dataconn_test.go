@@ -40,7 +40,7 @@ func (s *dataConnSuite) SetupTest() {
 	}
 }
 
-func (s *dataConnSuite) TestGetDataConn_alreadyExists() {
+func (s *dataConnSuite) TestGetDataConn_AlreadyExists() {
 	// dataconn already exists
 	s.ftpFile.fileSystem.dataconn = &dataConn{
 		mode: types.OpenRead,
@@ -50,7 +50,7 @@ func (s *dataConnSuite) TestGetDataConn_alreadyExists() {
 	s.IsTypef(&dataConn{}, dc, "dataconn returned")
 }
 
-func (s *dataConnSuite) TestGetDataConn_openForRead() {
+func (s *dataConnSuite) TestGetDataConn_OpenForRead() {
 	// dataconn is nil - open for read
 	s.client.EXPECT().
 		RetrFrom(s.ftpFile.Path(), uint64(0)).
@@ -61,7 +61,7 @@ func (s *dataConnSuite) TestGetDataConn_openForRead() {
 	s.IsTypef(&dataConn{}, dc, "dataconn returned")
 }
 
-func (s *dataConnSuite) TestGetDataConn_errorClientSetup() {
+func (s *dataConnSuite) TestGetDataConn_ErrorClientSetup() {
 	// dataconn is nil - error getting client
 	defaultClientGetter = clientGetterReturnsError
 	s.ftpFile.fileSystem.ftpclient = nil
@@ -123,7 +123,7 @@ func (s *dataConnSuite) TestGetDataConn_WriteLocationNotExistsFails() {
 	time.Sleep(50 * time.Millisecond)
 }
 
-func (s *dataConnSuite) TestGetDataConn_errorWriting() {
+func (s *dataConnSuite) TestGetDataConn_ErrorWriting() {
 	entries := []*ftp.Entry{{
 		Name: "some",
 		Type: ftp.EntryTypeFolder,
@@ -146,7 +146,7 @@ func (s *dataConnSuite) TestGetDataConn_errorWriting() {
 	s.Require().Error(err, "error is expected")
 }
 
-func (s *dataConnSuite) TestGetDataConn_writeSuccess() {
+func (s *dataConnSuite) TestGetDataConn_WriteSuccess() {
 	entries := []*ftp.Entry{{
 		Name: "some",
 		Type: ftp.EntryTypeFolder,
@@ -169,7 +169,7 @@ func (s *dataConnSuite) TestGetDataConn_writeSuccess() {
 	time.Sleep(50 * time.Millisecond)
 }
 
-func (s *dataConnSuite) TestGetDataConn_readAfterWriteError() {
+func (s *dataConnSuite) TestGetDataConn_ReadAfterWriteError() {
 	// open dataconn for read after dataconn for write exists - error on dataconn.Close
 	mockDataConn := mocks.NewDataConn(s.T())
 	mockDataConn.EXPECT().Mode().Return(types.OpenWrite)
@@ -181,7 +181,7 @@ func (s *dataConnSuite) TestGetDataConn_readAfterWriteError() {
 	s.Nil(dc, "dataconn should be nil on error")
 }
 
-func (s *dataConnSuite) TestGetDataConn_writeAfterReadSuccess() {
+func (s *dataConnSuite) TestGetDataConn_WriteAfterReadSuccess() {
 	// open dataconn for write after dataconn for read exists
 	entries := []*ftp.Entry{{
 		Name: "some",

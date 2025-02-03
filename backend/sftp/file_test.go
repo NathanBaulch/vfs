@@ -481,7 +481,7 @@ func (ts *fileTestSuite) TestCopyToLocation() {
 	ts.Equal("sftp://user@host2.com:22/some/path.txt", newFile.URI(), "new file uri check")
 }
 
-func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
+func (ts *fileTestSuite) TestMoveToFile_DifferentAuthority() {
 	content := "blah"
 
 	// set up source
@@ -530,7 +530,7 @@ func (ts *fileTestSuite) TestMoveToFile_differentAuthority() {
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 }
 
-func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
+func (ts *fileTestSuite) TestMoveToFile_SameAuthority() {
 	// set up source
 	sourceClient := mocks.NewClient(ts.T())
 	sourceClient.EXPECT().Rename(mock.Anything, mock.Anything).Return(nil).Once()
@@ -570,7 +570,7 @@ func (ts *fileTestSuite) TestMoveToFile_sameAuthority() {
 	ts.Require().NoError(err, "Error shouldn't be returned from successful call to CopyToFile")
 }
 
-func (ts *fileTestSuite) TestMoveToFile_fileExists() {
+func (ts *fileTestSuite) TestMoveToFile_FileExists() {
 	// set up source
 	sourceClient := mocks.NewClient(ts.T())
 

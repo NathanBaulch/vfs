@@ -169,7 +169,7 @@ func (lt *locationTestSuite) TestNewFile() {
 	lt.Require().EqualError(err, utils.ErrBadRelFilePath, "errors returned by NewLocation")
 }
 
-func (lt *locationTestSuite) TestExists_true() {
+func (lt *locationTestSuite) TestExists() {
 	bucket := "foo"
 	server := fakestorage.NewServer([]fakestorage.Object{
 		{
@@ -191,7 +191,7 @@ func (lt *locationTestSuite) TestExists_true() {
 	lt.True(exists, "Call to Exists expected to return true.")
 }
 
-func (lt *locationTestSuite) TestExists_false() {
+func (lt *locationTestSuite) TestNotExists() {
 	server := fakestorage.NewServer([]fakestorage.Object{})
 	defer server.Stop()
 	fs := NewFileSystem().WithClient(server.Client())
