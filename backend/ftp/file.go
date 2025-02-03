@@ -20,10 +20,7 @@ import (
 	"github.com/c2fo/vfs/v6/utils"
 )
 
-var (
-	tempFileNameGetter = getTempFilename
-	now                = time.Now
-)
+var now = time.Now
 
 // File implements vfs.File interface for FTP fs.
 type File struct {
@@ -128,7 +125,7 @@ func (f *File) Touch() error {
 	}
 
 	// doing move and move back to ensure last modified is updated
-	newFile, err := f.Location().NewFile(tempFileNameGetter(f.Name()))
+	newFile, err := f.Location().NewFile(getTempFilename(f.Name()))
 	if err != nil {
 		return err
 	}

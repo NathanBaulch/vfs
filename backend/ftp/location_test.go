@@ -1,7 +1,6 @@
 package ftp
 
 import (
-	"context"
 	"errors"
 	"os"
 	"regexp"
@@ -76,12 +75,12 @@ func (lt *locationTestSuite) TestList() {
 	lt.Empty(fileList, "Should return no files on file not found")
 
 	// error getting client
-	defaultClientGetter = clientGetterReturnsError
+	loc.(*Location).fileSystem.clientFactory = clientFactoryReturnsError
 	loc.(*Location).fileSystem.WithClient(nil)
 	loc.(*Location).fileSystem.dataconn = nil
 
 	fileList, err = loc.List()
-	lt.Require().ErrorIs(err, errClientGetter, "err should be correct type")
+	lt.Require().ErrorIs(err, errClientFactory, "err should be correct type")
 	lt.Nil(fileList, "fileList should be nil")
 }
 
@@ -227,11 +226,11 @@ func (lt *locationTestSuite) TestListByPrefix() {
 	lt.Empty(fileList, "fileList should be empty string slice")
 
 	// error getting client
-	defaultClientGetter = clientGetterReturnsError
+	loc.(*Location).fileSystem.clientFactory = clientFactoryReturnsError
 	loc.(*Location).fileSystem.WithClient(nil)
 	loc.(*Location).fileSystem.dataconn = nil
 	fileList, err = loc.ListByPrefix(prefix)
-	lt.Require().ErrorIs(err, errClientGetter, "err should be correct type")
+	lt.Require().ErrorIs(err, errClientFactory, "err should be correct type")
 	lt.Empty(fileList, "fileList should be empty string slice")
 
 	// error calling client.List()
@@ -458,11 +457,11 @@ func (lt *locationTestSuite) TestExists() {
 	lt.False(exists, "Call to Exists expected to return false.")
 
 	// error getting client
-	defaultClientGetter = clientGetterReturnsError
+	loc.(*Location).fileSystem.clientFactory = clientFactoryReturnsError
 	loc.(*Location).fileSystem.WithClient(nil)
 	loc.(*Location).fileSystem.dataconn = nil
 	exists, err = loc.Exists()
-	lt.Require().ErrorIs(err, errClientGetter, "err should be correct type")
+	lt.Require().ErrorIs(err, errClientFactory, "err should be correct type")
 	lt.False(exists, "exists should be false on error")
 }
 
@@ -514,7 +513,7 @@ func (lt *locationTestSuite) TestNewLocation() {
 func (lt *locationTestSuite) TestDeleteFile() {
 	mockDataConn := mocks.NewDataConn(lt.T())
 	mockDataConn.EXPECT().Delete("/old/filename.txt").Return(nil).Once()
-	dataConnGetterFunc = func(context.Context, utils.Authority, *FileSystem, *File, types.OpenType) (types.DataConn, error) {
+	lt.ftpfs.dataConnFactory = func(types.Client, *File, types.OpenType) (types.DataConn, error) {
 		return mockDataConn, nil
 	}
 	loc, err := lt.ftpfs.NewLocation("ftp.host.com:21", "/old/")
@@ -524,7 +523,7 @@ func (lt *locationTestSuite) TestDeleteFile() {
 	lt.Require().NoError(err, "Successful delete should not return an error.")
 
 	// error deleting
-	dataConnGetterFunc = getDataConn
+	lt.ftpfs.dataConnFactory = getDataConn
 	loc.(*Location).fileSystem.dataconn = nil
 	lt.client.EXPECT().Delete("/old/filename.txt").Return(os.ErrNotExist).Once()
 	err = loc.DeleteFile("filename.txt")

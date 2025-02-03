@@ -1,7 +1,6 @@
 package ftp
 
 import (
-	"context"
 	"errors"
 	"io"
 	"net/textproto"
@@ -10,7 +9,6 @@ import (
 	"github.com/jlaffaye/ftp"
 
 	"github.com/c2fo/vfs/v6/backend/ftp/types"
-	"github.com/c2fo/vfs/v6/utils"
 )
 
 type dataConn struct {
@@ -135,50 +133,31 @@ func (dc *dataConn) Close() error {
 	return nil
 }
 
-func getDataConn(ctx context.Context, authority utils.Authority, fs *FileSystem, f *File, t types.OpenType) (types.DataConn, error) {
-	if fs == nil {
-		return nil, errors.New("can not get a dataconn for a nil fileset")
-	}
-	if fs.dataconn != nil && fs.dataconn.Mode() != t {
-		// wrong session type ... close current session and unset it (ps so we can set a new one after)
-		if err := fs.dataconn.Close(); err != nil {
-			return nil, err
-		}
-		fs.dataconn = nil
-	}
-
-	if fs.dataconn == nil {
-		client, err := fs.Client(ctx, authority)
+func getDataConn(client types.Client, f *File, t types.OpenType) (types.DataConn, error) {
+	switch t {
+	case types.OpenRead:
+		resp, err := client.RetrFrom(f.Path(), uint64(f.offset))
 		if err != nil {
 			return nil, err
 		}
-
-		switch t {
-		case types.OpenRead:
-			resp, err := client.RetrFrom(f.Path(), uint64(f.offset))
-			// check errors
-			if err != nil {
-				return nil, err
-			}
-			fs.dataconn = &dataConn{
-				R:    resp,
-				mode: t,
-			}
-		case types.OpenWrite:
-			dc, err := openWriteConnection(client, f)
-			if err != nil {
-				return nil, err
-			}
-			fs.dataconn = dc
-		case types.SingleOp:
-			fs.dataconn = &dataConn{
-				mode: t,
-				c:    client,
-			}
+		return &dataConn{
+			R:    resp,
+			mode: t,
+		}, nil
+	case types.OpenWrite:
+		dc, err := openWriteConnection(client, f)
+		if err != nil {
+			return nil, err
 		}
+		return dc, nil
+	case types.SingleOp:
+		return &dataConn{
+			mode: t,
+			c:    client,
+		}, nil
+	default:
+		return nil, nil
 	}
-
-	return fs.dataconn, nil
 }
 
 func openWriteConnection(client types.Client, f *File) (types.DataConn, error) {

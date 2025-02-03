@@ -149,18 +149,6 @@ func (s *fileSystemSuite) TestRetry() {
 	s.Equal(sentinel, fs.Retry()(nil))
 }
 
-type mockClientCreatorWithError struct{}
-
-func (c *mockClientCreatorWithError) NewClient(context.Context, ...option.ClientOption) (*storage.Client, error) {
-	return nil, errors.New("mock error")
-}
-
-type mockClientCreator struct{}
-
-func (c *mockClientCreator) NewClient(context.Context, ...option.ClientOption) (*storage.Client, error) {
-	return &storage.Client{}, nil
-}
-
 func (s *fileSystemSuite) TestClient() {
 	testCases := []struct {
 		name         string
@@ -182,7 +170,9 @@ func (s *fileSystemSuite) TestClient() {
 			name: "New FileSystem without predefined client",
 			setup: func() *FileSystem {
 				return &FileSystem{
-					clientCreator: &mockClientCreator{},
+					clientFactory: func(context.Context, ...option.ClientOption) (*storage.Client, error) {
+						return &storage.Client{}, nil
+					},
 				}
 			},
 			expectError:  false,
@@ -192,7 +182,9 @@ func (s *fileSystemSuite) TestClient() {
 			name: "New FileSystem with error",
 			setup: func() *FileSystem {
 				return &FileSystem{
-					clientCreator: &mockClientCreatorWithError{},
+					clientFactory: func(context.Context, ...option.ClientOption) (*storage.Client, error) {
+						return nil, errors.New("mock error")
+					},
 				}
 			},
 			expectError:  true,

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/stretchr/testify/suite"
 )
@@ -29,11 +30,13 @@ func (s *OptionsTestSuite) TestNewOptions() {
 
 func (s *OptionsTestSuite) TestCredentials_ServiceAccount() {
 	options := Options{
-		AccountName:            "foo",
-		TenantID:               "foo",
-		ClientID:               "foo",
-		ClientSecret:           "foo",
-		tokenCredentialFactory: MockTokenCredentialFactory,
+		AccountName:  "foo",
+		TenantID:     "foo",
+		ClientID:     "foo",
+		ClientSecret: "foo",
+		tokenCredentialFactory: func(_, _, _ string) (azcore.TokenCredential, error) {
+			return &fake.TokenCredential{}, nil
+		},
 	}
 
 	credential, err := options.Credential()
@@ -44,9 +47,11 @@ func (s *OptionsTestSuite) TestCredentials_ServiceAccount() {
 
 func (s *OptionsTestSuite) TestCredentials_StorageAccount() {
 	options := Options{
-		AccountName:            "foo",
-		AccountKey:             base64.StdEncoding.EncodeToString([]byte("bar")),
-		tokenCredentialFactory: MockTokenCredentialFactory,
+		AccountName: "foo",
+		AccountKey:  base64.StdEncoding.EncodeToString([]byte("bar")),
+		tokenCredentialFactory: func(_, _, _ string) (azcore.TokenCredential, error) {
+			return &fake.TokenCredential{}, nil
+		},
 	}
 
 	credential, err := options.Credential()
@@ -57,8 +62,10 @@ func (s *OptionsTestSuite) TestCredentials_StorageAccount() {
 
 func (s *OptionsTestSuite) TestCredentials_Anon() {
 	options := Options{
-		AccountName:            "foo",
-		tokenCredentialFactory: MockTokenCredentialFactory,
+		AccountName: "foo",
+		tokenCredentialFactory: func(_, _, _ string) (azcore.TokenCredential, error) {
+			return &fake.TokenCredential{}, nil
+		},
 	}
 
 	credential, err := options.Credential()

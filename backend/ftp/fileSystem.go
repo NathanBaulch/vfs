@@ -18,16 +18,13 @@ const (
 	name   = "File Transfer Protocol"
 )
 
-var (
-	defaultClientGetter = getClient
-	dataConnGetterFunc  = getDataConn
-)
-
 // FileSystem implements vfs.FileSystem for the FTP filesystem.
 type FileSystem struct {
-	options   *Options
-	ftpclient types.Client
-	dataconn  types.DataConn
+	options         *Options
+	ftpclient       types.Client
+	dataconn        types.DataConn
+	clientFactory   clientFactory
+	dataConnFactory dataConnFactory
 }
 
 // Retry will return the default no-op retrier. The FTP client provides its own retryer interface, and is available
@@ -98,7 +95,31 @@ func (fs *FileSystem) DataConn(ctx context.Context, authority utils.Authority, t
 	if t != types.SingleOp && f == nil {
 		return nil, errors.New("can not create DataConn for read or write for a nil file")
 	}
-	return dataConnGetterFunc(ctx, authority, fs, f, t)
+
+	if fs == nil {
+		return nil, errors.New("can not get a dataconn for a nil fileset")
+	}
+	if fs.dataconn != nil && fs.dataconn.Mode() != t {
+		// wrong session type ... close current session and unset it (ps so we can set a new one after)
+		if err := fs.dataconn.Close(); err != nil {
+			return nil, err
+		}
+		fs.dataconn = nil
+	}
+
+	if fs.dataconn == nil {
+		client, err := fs.Client(ctx, authority)
+		if err != nil {
+			return nil, err
+		}
+
+		fs.dataconn, err = fs.dataConnFactory(client, f, t)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return fs.dataconn, nil
 }
 
 // Client returns the underlying ftp client, creating it, if necessary
@@ -106,7 +127,7 @@ func (fs *FileSystem) DataConn(ctx context.Context, authority utils.Authority, t
 func (fs *FileSystem) Client(ctx context.Context, authority utils.Authority) (types.Client, error) {
 	if fs.ftpclient == nil {
 		var err error
-		fs.ftpclient, err = defaultClientGetter(ctx, authority, fs.options)
+		fs.ftpclient, err = fs.clientFactory(ctx, authority, fs.options)
 		if err != nil {
 			return nil, err
 		}
@@ -137,9 +158,16 @@ func (fs *FileSystem) WithClient(client types.Client) *FileSystem {
 	return fs
 }
 
+type clientFactory func(ctx context.Context, authority utils.Authority, opts *Options) (types.Client, error)
+
+type dataConnFactory func(client types.Client, f *File, t types.OpenType) (types.DataConn, error)
+
 // NewFileSystem initializer for fileSystem struct.
 func NewFileSystem() *FileSystem {
-	return &FileSystem{}
+	return &FileSystem{
+		clientFactory:   getClient,
+		dataConnFactory: getDataConn,
+	}
 }
 
 func init() {

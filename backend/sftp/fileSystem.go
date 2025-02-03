@@ -23,15 +23,14 @@ const (
 	defaultAutoDisconnectDuration = 10
 )
 
-var defaultClientGetter = getClient
-
 // FileSystem implements vfs.FileSystem for the SFTP filesystem.
 type FileSystem struct {
-	options    *Options
-	sftpclient Client
-	sshConn    io.Closer
-	timerMutex sync.Mutex
-	connTimer  *time.Timer
+	options       *Options
+	sftpclient    Client
+	sshConn       io.Closer
+	timerMutex    sync.Mutex
+	connTimer     *time.Timer
+	clientFactory clientFactory
 }
 
 // Retry will return the default no-op retrier. The SFTP client provides its own retryer interface, and is available
@@ -103,7 +102,7 @@ func (fs *FileSystem) Client(authority utils.Authority) (Client, error) {
 	fs.connTimerStop()
 	if fs.sftpclient == nil {
 		var err error
-		fs.sftpclient, fs.sshConn, err = defaultClientGetter(authority, fs.options)
+		fs.sftpclient, fs.sshConn, err = fs.clientFactory(authority, fs.options)
 		if err != nil {
 			return nil, err
 		}
@@ -170,9 +169,11 @@ func (fs *FileSystem) WithClient(client Client) *FileSystem {
 	return fs
 }
 
+type clientFactory func(authority utils.Authority, opts *Options) (Client, io.Closer, error)
+
 // NewFileSystem initializer for fileSystem struct.
 func NewFileSystem() *FileSystem {
-	return &FileSystem{}
+	return &FileSystem{clientFactory: getClient}
 }
 
 func init() {
